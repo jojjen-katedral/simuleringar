@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simuleringar i kemi och biologi</title>
+<meta name="description" content="Interaktiva simuleringar för gymnasiets kemi och biologi.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='15' fill='%232b59c3'/><circle cx='11' cy='13' r='4' fill='white'/><circle cx='21' cy='13' r='4' fill='white'/><circle cx='16' cy='22' r='4' fill='white'/></svg>">
+<style>
+:root{
+  --bg:#f6f7fb; --surface:#ffffff; --ink:#16202e; --muted:#5b6678; --line:#e1e5ee;
+  --accent:#2b59c3; --accent-soft:#e8eefc; --kemi:#c2410c; --kemi-soft:#fdeee4; --bio:#15803d; --bio-soft:#e5f5ea;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 4px 16px rgba(16,24,40,.06);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1218; --surface:#161c25; --ink:#e7ecf3; --muted:#9aa6b8; --line:#273141;
+  --accent:#86a8ff; --accent-soft:#1c2740; --kemi:#fb9a5b; --kemi-soft:#33210f; --bio:#5fd38a; --bio-soft:#132a1c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1218; --surface:#161c25; --ink:#e7ecf3; --muted:#9aa6b8; --line:#273141;
+  --accent:#86a8ff; --accent-soft:#1c2740; --kemi:#fb9a5b; --kemi-soft:#33210f; --bio:#5fd38a; --bio-soft:#132a1c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+header.top{border-bottom:1px solid var(--line);background:var(--surface)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;text-decoration:none;font-size:1.05rem}
+.brand svg{flex:none}
+.tools{display:flex;gap:8px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:.82rem;font-weight:700;padding:5px 11px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.iconbtn{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hero{padding:44px 0 24px}
+.hero h1{font-size:clamp(1.8rem,4.5vw,2.7rem);line-height:1.15;margin:0 0 10px;letter-spacing:-.02em;text-wrap:balance}
+.hero p{margin:0;color:var(--muted);max-width:640px;font-size:1.08rem}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:26px 0 18px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 15px;font:inherit;font-size:.92rem;font-weight:600;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;padding-bottom:48px}
+.card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s,border-color .15s}
+.card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.thumb{height:130px;display:grid;place-items:center}
+.thumb svg{width:84px;height:84px}
+.body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.body h2{font-size:1.12rem;margin:0;line-height:1.3}
+.body p{margin:0;color:var(--muted);font-size:.93rem;flex:1}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tag{font-size:.75rem;font-weight:700;padding:2px 9px;border-radius:999px}
+.tag.kemi{background:var(--kemi-soft);color:var(--kemi)}
+.tag.bio{background:var(--bio-soft);color:var(--bio)}
+.tag.kurs{background:var(--accent-soft);color:var(--accent)}
+.empty{color:var(--muted);padding:20px 0 48px}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:.88rem;padding:22px 0 32px}
+@media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="./">
+      <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--accent)"/><circle cx="11" cy="13" r="4" fill="var(--surface)"/><circle cx="21" cy="13" r="4" fill="var(--surface)"/><circle cx="16" cy="22" r="4" fill="var(--surface)"/></svg>
+      <span data-t="brand">Simuleringar</span>
+    </a>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Språk / Language">
+        <button type="button" data-lang="sv" aria-pressed="true">SV</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <button type="button" class="iconbtn" id="themeBtn" aria-label="Byt ljust/mörkt läge">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1 data-t="h1">Interaktiva simuleringar i kemi och biologi</h1>
+    <p data-t="lead">Utforska molekyler, kretslopp och livets kemi. Simuleringarna fungerar direkt i webbläsaren – på dator, surfplatta och interaktiv tavla.</p>
+  </section>
+
+  <div class="filters" role="group" aria-label="Filtrera">
+    <button type="button" class="chip" data-filter="alla" aria-pressed="true" data-t="all">Alla</button>
+    <button type="button" class="chip" data-filter="kemi" aria-pressed="false" data-t="kemi">Kemi</button>
+    <button type="button" class="chip" data-filter="biologi" aria-pressed="false" data-t="bio">Biologi</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <p class="empty" id="empty" hidden data-t="empty">Inga simuleringar i den här kategorin ännu.</p>
+</main>
+
+<footer>
+  <div class="wrap" data-t="footer">Skapad av Johan Jensen, lärare i kemi och biologi.</div>
+</footer>
+
+<script src="simuleringar.js"></script>
+<script>
+const TEXT = {
+  sv: { brand:"Simuleringar", h1:"Interaktiva simuleringar i kemi och biologi",
+        lead:"Utforska molekyler, kretslopp och livets kemi. Simuleringarna fungerar direkt i webbläsaren – på dator, surfplatta och interaktiv tavla.",
+        all:"Alla", kemi:"Kemi", bio:"Biologi", empty:"Inga simuleringar i den här kategorin ännu.",
+        footer:"Skapad av Johan Jensen, lärare i kemi och biologi.", theme:"Byt ljust/mörkt läge", title:"Simuleringar i kemi och biologi" },
+  en: { brand:"Simulations", h1:"Interactive simulations in chemistry and biology",
+        lead:"Explore molecules, cycles and the chemistry of life. The simulations run right in the browser – on computers, tablets and interactive whiteboards.",
+        all:"All", kemi:"Chemistry", bio:"Biology", empty:"No simulations in this category yet.",
+        footer:"Created by Johan Jensen, chemistry and biology teacher.", theme:"Toggle light/dark mode", title:"Simulations in chemistry and biology" }
+};
+
+function get(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function set(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+
+let lang = get("sim-lang")==="en" ? "en" : "sv";
+let filter = "alla";
+
+function render(){
+  const t = TEXT[lang];
+  document.documentElement.lang = lang;
+  document.title = t.title;
+  document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t[el.dataset.t]; });
+  document.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang===lang)));
+  document.querySelectorAll("[data-filter]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.filter===filter)));
+  document.getElementById("themeBtn").setAttribute("aria-label", t.theme);
+
+  const list = SIMULERINGAR.filter(s => filter==="alla" || s.amnen.includes(filter));
+  document.getElementById("grid").innerHTML = list.map(s => {
+    const x = s[lang] || s.sv;
+    const tags = s.amnen.map(a => `<span class="tag ${a==="kemi"?"kemi":"bio"}">${a==="kemi"?t.kemi:t.bio}</span>`).join("")
+               + (s.kurs ? `<span class="tag kurs">${s.kurs}</span>` : "");
+    return `<a class="card" href="visa.html?sim=${encodeURIComponent(s.fil)}">
+      <div class="thumb" style="background:${s.farg}">${IKONER[s.ikon]||IKONER.standard}</div>
+      <div class="body"><h2>${x.titel}</h2><p>${x.text}</p><div class="tags">${tags}</div></div>
+    </a>`;
+  }).join("");
+  document.getElementById("empty").hidden = list.length > 0;
+}
+
+document.querySelectorAll("[data-lang]").forEach(b => b.addEventListener("click", () => { lang = b.dataset.lang; set("sim-lang", lang); render(); }));
+document.querySelectorAll("[data-filter]").forEach(b => b.addEventListener("click", () => { filter = b.dataset.filter; render(); }));
+
+const savedTheme = get("sim-theme");
+if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+document.getElementById("themeBtn").addEventListener("click", () => {
+  const dark = document.documentElement.dataset.theme
+    ? document.documentElement.dataset.theme === "dark"
+    : matchMedia("(prefers-color-scheme: dark)").matches;
+  const next = dark ? "light" : "dark";
+  document.documentElement.dataset.theme = next; set("sim-theme", next);
+});
+
+render();
+</script>
+</body>
+</html>
