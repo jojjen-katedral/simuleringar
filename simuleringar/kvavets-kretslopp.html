@@ -1,0 +1,1883 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Kvävets kretslopp</title>
+<style>
+  /* ============================================================
+     INSTÄLLNINGAR FÖR INBÄDDNING
+     Sidan fyller hela sin ram (iframe) och anpassar sig efter
+     ramens storlek. Inga externa filer eller typsnitt laddas.
+     ============================================================ */
+  :root {
+    color-scheme: dark;
+    --bg: #080d14;
+    --panel: #0e1621;
+    --panel-2: #121c29;
+    --line: rgba(255, 255, 255, 0.12);
+    --text: #f0f4f8;
+    --muted: #94a3b8;
+    --accent: #00d2ff;
+    --gold: #ffc107;
+    --green: #00e676;
+    --eq-bg: #06090e;
+    --eq-text: #fef08a;
+    --pink: #f472b6;
+    --sidebar-w: 340px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    min-height: 520px;
+    overflow: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* ---------- Sidhuvud ---------- */
+  header {
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    padding: 8px 14px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+  }
+  .title-group { min-width: 0; }
+  .title-group h1 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+  }
+  .title-group p { font-size: 0.76rem; color: var(--muted); margin-top: 2px; }
+  .badge-pill {
+    background: rgba(0, 210, 255, 0.15);
+    color: var(--accent);
+    border: 1px solid rgba(0, 210, 255, 0.35);
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 600;
+  }
+
+  .settings { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+  .lang-switch {
+    display: inline-flex;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .lang-switch button {
+    background: transparent;
+    color: var(--muted);
+    border: 0;
+    padding: 4px 10px;
+    font: inherit;
+    font-size: 0.74rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .lang-switch button[aria-pressed="true"] { background: var(--accent); color: #0b111a; }
+
+  .switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.76rem;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .switch .track {
+    position: relative;
+    width: 32px;
+    height: 18px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    transition: background 0.2s;
+    flex: none;
+  }
+  .switch .track::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s;
+  }
+  .switch input:checked + .track { background: var(--accent); }
+  .switch input:checked + .track::after { transform: translateX(14px); }
+
+  button:focus-visible, .switch input:focus-visible + .track {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  /* ---------- Huvudlayout ---------- */
+  .app-main {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--sidebar-w);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .simulation-area {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: #000;
+  }
+
+  .canvas-container {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #cycleCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: manipulation;
+  }
+
+  .interaction-banner {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: calc(100% - 24px);
+    background: rgba(11, 17, 26, 0.94);
+    border: 1px solid var(--accent);
+    box-shadow: 0 0 18px rgba(0, 210, 255, 0.3);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    pointer-events: none;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: blink 1s infinite alternate;
+    flex-shrink: 0;
+  }
+  @keyframes blink { from { opacity: 0.3; } to { opacity: 1; } }
+
+  .controls {
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #080d16;
+    border-top: 1px solid var(--line);
+  }
+  .next-options-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
+
+  .hud-btn, .choice-btn {
+    font: inherit;
+    font-size: 0.74rem;
+    padding: 5px 11px;
+    border-radius: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+  }
+  .hud-btn {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #e2e8f0;
+  }
+  .hud-btn:hover { background: rgba(255, 255, 255, 0.16); }
+  .choice-btn {
+    background: rgba(0, 210, 255, 0.15);
+    border: 1px solid rgba(0, 210, 255, 0.45);
+    color: #e0f2fe;
+    font-weight: 600;
+  }
+  .choice-btn:hover { background: var(--accent); color: #0b111a; }
+
+  .speed-wrap {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.7rem;
+    color: var(--muted);
+    padding-left: 6px;
+    border-left: 1px solid var(--line);
+  }
+  .speed-wrap input { width: 60px; accent-color: var(--accent); }
+
+  /* ---------- Sidopanel ---------- */
+  .info-panel {
+    min-height: 0;
+    overflow-y: auto;
+    background: var(--panel);
+    border-left: 1px solid var(--line);
+  }
+  .info-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--line); }
+  .phase-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+  }
+  .phase-title { font-size: 1.2rem; font-weight: 700; line-height: 1.25; margin-top: 2px; text-wrap: balance; }
+
+  .info-body { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+
+  .molecule-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--line);
+  }
+  .molecule-diagram { width: 70px; height: 70px; flex-shrink: 0; }
+  .molecule-details { min-width: 0; }
+  .mol-formula { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 1.15rem; font-weight: 800; color: var(--accent); }
+  .mol-name { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+  .ox-chip {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  .pool-desc { font-size: 0.84rem; line-height: 1.5; color: #d1d5db; }
+
+  .section-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .section-title {
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--green);
+    margin-bottom: 6px;
+  }
+  .process-name { font-size: 1.02rem; font-weight: 700; }
+  .process-actor { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+  .redox-chip {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+  .redox-red  { background: rgba(56, 189, 248, 0.15); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.45); }
+  .redox-ox   { background: rgba(248, 113, 113, 0.15); color: #fca5a5; border: 1px solid rgba(248, 113, 113, 0.45); }
+  .redox-none { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.4); }
+  .chem-eq {
+    margin-top: 8px;
+    background: var(--eq-bg);
+    border-left: 3px solid var(--gold);
+    padding: 7px 10px;
+    border-radius: 4px;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: var(--eq-text);
+    white-space: pre-line;
+    overflow-x: auto;
+  }
+  .section-text { font-size: 0.84rem; line-height: 1.5; color: #d1d5db; margin-top: 8px; }
+  .muted-note { font-size: 0.84rem; line-height: 1.5; color: var(--muted); }
+
+  .did-you-know-card {
+    background: linear-gradient(135deg, rgba(186, 104, 200, 0.15), rgba(11, 17, 26, 0.4));
+    border: 1px solid rgba(186, 104, 200, 0.3);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: #e2e8f0;
+  }
+  .did-you-know-card strong { display: block; color: var(--pink); margin-bottom: 4px; }
+
+  /* ---------- Mellanstora ramar ---------- */
+  @media (max-width: 1000px) {
+    :root { --sidebar-w: 290px; }
+    .title-group p { display: none; }
+  }
+
+  /* ---------- Smala ramar och mobil: panelen hamnar under bilden ---------- */
+  @media (max-width: 720px) {
+    body { overflow: auto; height: auto; min-height: 100%; }
+    .app-main { display: block; }
+    .simulation-area { height: 78vh; min-height: 480px; }
+    .info-panel { border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse-dot { animation: none; }
+  }
+</style>
+
+
+<header>
+  <div class="title-group">
+    <h1><span aria-hidden="true">🌱</span> <span id="appTitle">Kvävets kretslopp</span> <span class="badge-pill" id="appBadge">Klickstyrd simulering</span></h1>
+    <p id="appSubtitle"></p>
+  </div>
+  <div class="settings">
+    <div class="lang-switch" role="group" id="langGroup" aria-label="Språk">
+      <button type="button" id="langSv" data-lang="sv" aria-pressed="true">SV</button>
+      <button type="button" id="langEn" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <label class="switch" for="oxToggle">
+      <input type="checkbox" id="oxToggle" checked>
+      <span class="track" aria-hidden="true"></span>
+      <span id="oxToggleLabel">Visa oxidationstal</span>
+    </label>
+  </div>
+</header>
+
+<main class="app-main">
+  <div class="simulation-area">
+    <div class="canvas-container" id="canvasWrap">
+      <div class="interaction-banner" aria-live="polite">
+        <span class="pulse-dot"></span>
+        <span id="guideText"></span>
+      </div>
+      <canvas id="cycleCanvas" aria-label="Bild av kvävets kretslopp"></canvas>
+    </div>
+    <div class="controls">
+      <button type="button" class="hud-btn" id="resetBtn"></button>
+      <div class="next-options-bar" id="quickChoicesBar"></div>
+      <div class="speed-wrap">
+        <label for="speedSlider" id="speedLabel">Fart</label>
+        <input type="range" id="speedSlider" min="0.6" max="2.5" step="0.2" value="1.2">
+      </div>
+    </div>
+  </div>
+
+  <aside class="info-panel">
+    <div class="info-header">
+      <div class="phase-badge" id="sidebarBadge"></div>
+      <h2 class="phase-title" id="sidebarTitle"></h2>
+    </div>
+    <div class="info-body">
+      <div class="molecule-card">
+        <svg class="molecule-diagram" id="molSvg" width="70" height="70" viewBox="-35 -35 70 70" aria-hidden="true"></svg>
+        <div class="molecule-details">
+          <div class="mol-formula" id="molFormula"></div>
+          <div class="mol-name" id="molName"></div>
+          <span class="ox-chip" id="oxChip"></span>
+        </div>
+      </div>
+      <p class="pool-desc" id="poolDesc"></p>
+
+      <div class="section-box">
+        <div class="section-title" id="processHeading"></div>
+        <div id="processContent"></div>
+      </div>
+
+      <div class="did-you-know-card" id="didYouKnowBox"></div>
+    </div>
+  </aside>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  // ============================================================
+  // STANDARDVAL – ändra här om du vill att sidan ska starta på
+  // engelska eller utan oxidationstal när den bäddas in.
+  // Kan också styras med adressen: ?lang=en&ox=0
+  // ============================================================
+  const DEFAULT_LANG = "sv";     // "sv" eller "en"
+  const DEFAULT_SHOW_OX = true;  // true eller false
+
+  const $ = (id) => document.getElementById(id);
+  const canvas = $("cycleCanvas");
+  const ctx = canvas.getContext("2d");
+  const canvasWrap = $("canvasWrap");
+  const molSvg = $("molSvg");
+
+  // ---------- Inställningar: adress > sparat val > standard ----------
+  function readStored(key) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  }
+  function store(key, value) {
+    try { localStorage.setItem(key, value); } catch (e) { /* ignoreras i inbäddad ram */ }
+  }
+  const params = new URLSearchParams(location.search);
+  let lang = params.get("lang") || readStored("kvave-lang") || DEFAULT_LANG;
+  if (lang !== "sv" && lang !== "en") lang = "sv";
+  let showOx = params.has("ox") ? params.get("ox") !== "0"
+             : (readStored("kvave-ox") !== null ? readStored("kvave-ox") === "1" : DEFAULT_SHOW_OX);
+
+  // ---------- Tillstånd ----------
+  let currentLocation = "atmosphere";
+  let activeTransition = null;
+  let lastProcess = null;
+  let isTraveling = false;
+  let travelProgress = 0;
+  let animSpeed = 1.2;
+  let lightningActive = 0;
+  let hoveredClickable = null;
+  let S = 1;                       // skalfaktor för text och figurer i bilden
+  const SOIL_Y = 0.45;             // markytan som andel av höjden
+  const bgParticles = [];
+
+  // ============================================================
+  // TEXTER FÖR GRÄNSSNITTET
+  // ============================================================
+  const UI = {
+    sv: {
+      docTitle: "Kvävets kretslopp",
+      title: "Kvävets kretslopp",
+      badge: "Klickstyrd simulering",
+      subtitle: "Cirklarna visar i vilken form kvävet finns – pilarna visar processerna som omvandlar det",
+      lang: "Språk",
+      oxToggle: "Visa oxidationstal",
+      reset: "🔄 Börja om",
+      resetTitle: "Börja om med kvävgas i luften",
+      speed: "Fart",
+      canvasLabel: "Bild av kvävets kretslopp",
+      nowAs: "Kvävet finns nu som",
+      oxFor: "Oxidationstal för N",
+      process: "Process",
+      ongoing: "Pågående process",
+      latest: "Senaste process",
+      by: "Utförs av",
+      noProcess: "Ingen process ännu. Välj en pil i bilden eller en knapp nedanför den för att se hur kvävet kan omvandlas.",
+      howTitle: "Så läser du bilden",
+      how: "Cirklarna visar <em>i vilken form</em> kvävet finns. Pilarna visar <em>processerna</em> som omvandlar kvävet – och vem som utför dem.",
+      howOx: " Den lilla brickan på varje cirkel visar kvävets oxidationstal.",
+      dyk: "Visste du?",
+      banner: (name, f) => `Kvävet finns nu som ${name} (${f}). Välj en process!`,
+      redox: { red: "Reduktion", ox: "Oxidation", none: "Ingen ändring" },
+      air: "LUFT",
+      soil: "MARK (syrerik)",
+      anaerobic: "SYREFATTIG MARK",
+      pea: "Ärtväxt",
+      meadow: "Ängsväxt"
+    },
+    en: {
+      docTitle: "The Nitrogen Cycle",
+      title: "The Nitrogen Cycle",
+      badge: "Click-driven simulation",
+      subtitle: "The circles show the form the nitrogen is in – the arrows show the processes that convert it",
+      lang: "Language",
+      oxToggle: "Show oxidation numbers",
+      reset: "🔄 Start over",
+      resetTitle: "Start over with nitrogen gas in the air",
+      speed: "Speed",
+      canvasLabel: "Picture of the nitrogen cycle",
+      nowAs: "Nitrogen is now found as",
+      oxFor: "Oxidation number of N",
+      process: "Process",
+      ongoing: "Ongoing process",
+      latest: "Latest process",
+      by: "Carried out by",
+      noProcess: "No process yet. Choose an arrow in the picture or a button below it to see how the nitrogen can be converted.",
+      howTitle: "How to read the picture",
+      how: "The circles show <em>which form</em> the nitrogen is in. The arrows show the <em>processes</em> that convert it – and who carries them out.",
+      howOx: " The small badge on each circle shows the oxidation number of nitrogen.",
+      dyk: "Did you know?",
+      banner: (name, f) => `Nitrogen is now found as ${name} (${f}). Choose a process!`,
+      redox: { red: "Reduction", ox: "Oxidation", none: "No change" },
+      air: "AIR",
+      soil: "SOIL (oxygen-rich)",
+      anaerobic: "OXYGEN-POOR SOIL",
+      pea: "Pea plant",
+      meadow: "Meadow plant"
+    }
+  };
+  const T = () => UI[lang];
+
+  // ============================================================
+  // KVÄVEFORMER (noderna) – var kvävet FINNS
+  // ============================================================
+  const POOLS = {
+    atmosphere: {
+      formula: "N₂", ox: "0", chemType: "N2", color: "#00d2ff", pos: { x: 0.62, y: 0.25 },
+      sv: {
+        title: "Kvävgas i luften",
+        molName: "Kvävgas",
+        desc: "Luften består till ca 78 % av kvävgas. Trippelbindningen N≡N är mycket stark (945 kJ/mol), så de flesta organismer kan inte använda kvävet i den här formen. Det måste först <strong>fixeras</strong>, det vill säga omvandlas till en annan kväveförening."
+      },
+      en: {
+        title: "Nitrogen gas in the air",
+        molName: "Nitrogen gas",
+        desc: "About 78 % of the air is nitrogen gas. The triple bond N≡N is very strong (945 kJ/mol), so most organisms cannot use nitrogen in this form. It must first be <strong>fixed</strong>, that is, converted into another nitrogen compound."
+      }
+    },
+    plant: {
+      formula: "R–NH₂", ox: "−III", chemType: "ORGANIC", color: "#76ff03", pos: { x: 0.20, y: 0.30 },
+      sv: {
+        title: "Organiskt kväve i växter",
+        molName: "Aminogrupp i aminosyror och proteiner",
+        desc: "I växten sitter kvävet i aminosyror (som aminogrupp, –NH₂), proteiner, DNA, RNA och klorofyll. Hit kommer kväve från flera håll: direkt från rotknölarna hos ärtväxter, och som ammonium eller nitrat ur marken hos alla växter."
+      },
+      en: {
+        title: "Organic nitrogen in plants",
+        molName: "Amino group in amino acids and proteins",
+        desc: "In the plant, nitrogen is found in amino acids (as an amino group, –NH₂), proteins, DNA, RNA and chlorophyll. Nitrogen arrives here by several routes: directly from the root nodules of pea plants, and as ammonium or nitrate from the soil in all plants."
+      }
+    },
+    animal: {
+      formula: "R–NH₂", ox: "−III", chemType: "ORGANIC", color: "#f48fb1", pos: { x: 0.46, y: 0.31 },
+      sv: {
+        title: "Organiskt kväve i djur",
+        molName: "Aminogrupp i djurets proteiner",
+        desc: "Djuret bygger in kvävet i sina egna proteiner – muskler, enzymer och blod – och i DNA och RNA. Överskottskväve lämnar kroppen, hos däggdjur främst som urea (urinämne) i urinen."
+      },
+      en: {
+        title: "Organic nitrogen in animals",
+        molName: "Amino group in the animal's proteins",
+        desc: "The animal builds the nitrogen into its own proteins – muscles, enzymes and blood – and into DNA and RNA. Excess nitrogen leaves the body, in mammals mainly as urea in the urine."
+      }
+    },
+    soilNH4: {
+      formula: "NH₄⁺", ox: "−III", chemType: "NH4", color: "#ffb74d", pos: { x: 0.38, y: 0.70 },
+      sv: {
+        title: "Ammonium i marken",
+        molName: "Ammoniumjon",
+        desc: "Ammoniumjonen är positivt laddad och fastnar på de negativt laddade lerpartiklarna och humusen i jorden, så den lakas inte ut så lätt. Ammonium kan tas upp av växternas rötter eller oxideras till nitrat av nitrifikationsbakterier."
+      },
+      en: {
+        title: "Ammonium in the soil",
+        molName: "Ammonium ion",
+        desc: "The ammonium ion is positively charged and sticks to the negatively charged clay particles and humus in the soil, so it is not easily leached out. Ammonium can be taken up by plant roots or oxidised to nitrate by nitrifying bacteria."
+      }
+    },
+    soilNO3: {
+      formula: "NO₃⁻", ox: "+V", chemType: "NO3", color: "#ce93d8", pos: { x: 0.76, y: 0.70 },
+      sv: {
+        title: "Nitrat i marken",
+        molName: "Nitratjon",
+        desc: "Nitratjonen är negativt laddad och binds inte till markpartiklarna utan följer med markvattnet. Den är lätt för rötterna att ta upp, men kan också lakas ut till sjöar och vattendrag. I syrefattig mark kan bakterier använda nitratet i stället för syre i sin cellandning."
+      },
+      en: {
+        title: "Nitrate in the soil",
+        molName: "Nitrate ion",
+        desc: "The nitrate ion is negatively charged and is not held by soil particles, so it moves with the soil water. It is easy for roots to take up, but it can also be leached into lakes and streams. In oxygen-poor soil, bacteria can use nitrate instead of oxygen in their cellular respiration."
+      }
+    }
+  };
+  const poolText = (key) => POOLS[key][lang];
+
+  // ============================================================
+  // PROCESSER (pilarna) – det som OMVANDLAR kvävet
+  // ============================================================
+  const PROCESSES = [
+    {
+      id: "symbiotic", from: "atmosphere", to: "plant", icon: "🌱",
+      redox: "red", oxChange: "0 → −III",
+      cp1: { x: 0.15, y: 0.02 }, cp2: { x: 0.00, y: 0.90 }, labelT: 0.15,
+      sv: {
+        name: "Symbiotisk kvävefixering",
+        actor: "Rhizobium-bakterier i ärtväxtens rotknölar",
+        eq: "N₂ + 8H⁺ + 8e⁻ + 16 ATP → 2NH₃ + H₂ + 16 ADP + 16 Pᵢ\nNH₃ byggs direkt in i växtens aminosyror",
+        desc: "Ärtväxter (baljväxter) lever i symbios med <em>Rhizobium</em>-bakterier som bor i små knölar på rötterna. Bakterierna har enzymet <strong>nitrogenas</strong>, som kan bryta trippelbindningen i N₂ och reducera kvävet till ammoniak. Ammoniaken hamnar aldrig fritt i marken – den förs direkt in i växten och byggs in i aminosyror. Därför går pilen direkt från luften till växten.",
+        trivia: "Ärtväxten ger bakterierna socker från fotosyntesen och får fixerat kväve tillbaka – ett ömsesidigt utbyte (mutualism). Därför klarar baljväxter sig i kvävefattig jord och används för att göda åkrar på ett naturligt sätt."
+      },
+      en: {
+        name: "Symbiotic nitrogen fixation",
+        actor: "Rhizobium bacteria in the root nodules of the pea plant",
+        eq: "N₂ + 8H⁺ + 8e⁻ + 16 ATP → 2NH₃ + H₂ + 16 ADP + 16 Pᵢ\nNH₃ is built directly into the plant's amino acids",
+        desc: "Pea plants (legumes) live in symbiosis with <em>Rhizobium</em> bacteria that live in small nodules on the roots. The bacteria have the enzyme <strong>nitrogenase</strong>, which can break the triple bond in N₂ and reduce the nitrogen to ammonia. The ammonia never ends up free in the soil – it goes straight into the plant and is built into amino acids. That is why the arrow goes directly from the air to the plant.",
+        trivia: "The pea plant gives the bacteria sugar from photosynthesis and gets fixed nitrogen in return – a mutual exchange (mutualism). This is why legumes thrive in nitrogen-poor soil and are used to fertilise fields naturally."
+      }
+    },
+    {
+      id: "freeFix", from: "atmosphere", to: "soilNH4", icon: "🦠",
+      redox: "red", oxChange: "0 → −III",
+      cp1: { x: 0.56, y: 0.40 }, cp2: { x: 0.44, y: 0.56 }, labelT: 0.42,
+      sv: {
+        name: "Fri kvävefixering",
+        actor: "Frilevande markbakterier, t.ex. Azotobacter, och cyanobakterier",
+        eq: "N₂ + 8H⁺ + 8e⁻ → 2NH₃ + H₂   (nitrogenas)\nNH₃ + H₂O ⇌ NH₄⁺ + OH⁻",
+        desc: "Vissa bakterier lever fritt i jorden och kan ändå fixera kväve med enzymet nitrogenas. Ammoniaken de bildar reagerar med vattnet i marken och blir <strong>ammoniumjoner (NH₄⁺)</strong> i markvätskan.",
+        trivia: "Fria kvävefixerare ger mindre kväve per ytenhet än rotknölarna, men eftersom de finns nästan överallt blir bidraget stort totalt sett."
+      },
+      en: {
+        name: "Free-living nitrogen fixation",
+        actor: "Free-living soil bacteria, e.g. Azotobacter, and cyanobacteria",
+        eq: "N₂ + 8H⁺ + 8e⁻ → 2NH₃ + H₂   (nitrogenase)\nNH₃ + H₂O ⇌ NH₄⁺ + OH⁻",
+        desc: "Some bacteria live freely in the soil and can still fix nitrogen with the enzyme nitrogenase. The ammonia they form reacts with the water in the soil and becomes <strong>ammonium ions (NH₄⁺)</strong> in the soil solution.",
+        trivia: "Free-living nitrogen fixers add less nitrogen per area than root nodules, but since they are found almost everywhere, their total contribution is large."
+      }
+    },
+    {
+      id: "lightning", from: "atmosphere", to: "soilNO3", icon: "⚡",
+      redox: "ox", oxChange: "0 → +V",
+      cp1: { x: 0.70, y: 0.40 }, cp2: { x: 0.77, y: 0.52 }, labelT: 0.45,
+      sv: {
+        name: "Blixtfixering",
+        actor: "Blixtnedslag (ingen organism)",
+        eq: "N₂ + O₂ → 2NO   (blixtens hetta)\n2NO + O₂ → 2NO₂\n3NO₂ + H₂O → 2HNO₃ + NO\nHNO₃ (i regnvatten) → H⁺ + NO₃⁻",
+        desc: "I blixtkanalen blir det tiotusentals grader varmt. Då räcker energin för att bryta trippelbindningen i N₂, och kvävet reagerar med luftens syre till kväveoxid (NO). Den oxideras vidare till kvävedioxid (NO₂), som löser sig i regndropparna och bildar salpetersyra. Med regnet når kvävet marken som <strong>nitratjoner (NO₃⁻)</strong>.",
+        trivia: "Blixtfixering är en oxidation – till skillnad från den biologiska fixeringen, där kvävet reduceras. Blixtar står bara för några få procent av den naturliga kvävefixeringen; den allra största delen sker med hjälp av bakterier."
+      },
+      en: {
+        name: "Lightning fixation",
+        actor: "Lightning (no organism)",
+        eq: "N₂ + O₂ → 2NO   (heat of the lightning)\n2NO + O₂ → 2NO₂\n3NO₂ + H₂O → 2HNO₃ + NO\nHNO₃ (in rainwater) → H⁺ + NO₃⁻",
+        desc: "Inside a lightning bolt the temperature reaches tens of thousands of degrees. That is enough energy to break the triple bond in N₂, and the nitrogen reacts with oxygen in the air to form nitrogen monoxide (NO). This is oxidised further to nitrogen dioxide (NO₂), which dissolves in raindrops and forms nitric acid. The rain carries the nitrogen to the ground as <strong>nitrate ions (NO₃⁻)</strong>.",
+        trivia: "Lightning fixation is an oxidation – unlike biological fixation, where the nitrogen is reduced. Lightning accounts for only a few percent of natural nitrogen fixation; by far the largest part is done by bacteria."
+      }
+    },
+    {
+      id: "nitrification", from: "soilNH4", to: "soilNO3", icon: "🧪",
+      redox: "ox", oxChange: "−III → +III → +V",
+      cp1: { x: 0.52, y: 0.62 }, cp2: { x: 0.62, y: 0.62 }, labelT: 0.5,
+      sv: {
+        name: "Nitrifikation",
+        actor: "Nitrifikationsbakterier, t.ex. Nitrosomonas och Nitrobacter (kräver syre)",
+        eq: "1) 2NH₄⁺ + 3O₂ → 2NO₂⁻ + 4H⁺ + 2H₂O   (Nitrosomonas)\n2) 2NO₂⁻ + O₂ → 2NO₃⁻   (Nitrobacter)",
+        desc: "I syrerik mark oxiderar bakterier ammonium i två steg. Först oxiderar <em>Nitrosomonas</em> ammonium till nitrit (NO₂⁻), sedan oxiderar <em>Nitrobacter</em> nitriten vidare till <strong>nitrat (NO₃⁻)</strong>.",
+        trivia: "Bakterierna får sin energi från själva oxidationen av kvävet – på ungefär samma sätt som vi får energi när socker oxideras i vår cellandning."
+      },
+      en: {
+        name: "Nitrification",
+        actor: "Nitrifying bacteria, e.g. Nitrosomonas and Nitrobacter (need oxygen)",
+        eq: "1) 2NH₄⁺ + 3O₂ → 2NO₂⁻ + 4H⁺ + 2H₂O   (Nitrosomonas)\n2) 2NO₂⁻ + O₂ → 2NO₃⁻   (Nitrobacter)",
+        desc: "In oxygen-rich soil, bacteria oxidise ammonium in two steps. First <em>Nitrosomonas</em> oxidises ammonium to nitrite (NO₂⁻), then <em>Nitrobacter</em> oxidises the nitrite further to <strong>nitrate (NO₃⁻)</strong>.",
+        trivia: "The bacteria get their energy from the oxidation of the nitrogen itself – much like we get energy when sugar is oxidised in our cellular respiration."
+      }
+    },
+    {
+      id: "uptakeNH4", from: "soilNH4", to: "plant", icon: "🌿",
+      redox: "none", oxChange: "−III → −III",
+      cp1: { x: 0.26, y: 0.72 }, cp2: { x: 0.18, y: 0.56 }, labelT: 0.55,
+      sv: {
+        name: "Upptag av ammonium",
+        actor: "Växternas rötter",
+        eq: "NH₄⁺ (markvätska) → rötter → aminosyror → proteiner, DNA, klorofyll",
+        desc: "Växternas rötter tar upp ammoniumjoner ur markvätskan. Kvävet byggs in i aminosyror, som sedan blir proteiner, DNA och klorofyll.",
+        trivia: "Kvävet i ammonium har redan samma oxidationstal (−III) som i aminosyrorna, så växten behöver inte lägga energi på att reducera det.",
+        triviaNoOx: "Ammonium kan byggas in i aminosyror nästan direkt, så växten behöver inte lägga energi på att omvandla det först."
+      },
+      en: {
+        name: "Uptake of ammonium",
+        actor: "Plant roots",
+        eq: "NH₄⁺ (soil solution) → roots → amino acids → proteins, DNA, chlorophyll",
+        desc: "Plant roots take up ammonium ions from the soil solution. The nitrogen is built into amino acids, which then become proteins, DNA and chlorophyll.",
+        trivia: "The nitrogen in ammonium already has the same oxidation number (−III) as in amino acids, so the plant does not need to spend energy reducing it.",
+        triviaNoOx: "Ammonium can be built into amino acids almost directly, so the plant does not need to spend energy converting it first."
+      }
+    },
+    {
+      id: "uptakeNO3", from: "soilNO3", to: "plant", icon: "🌿",
+      redox: "red", oxChange: "+V → −III",
+      cp1: { x: 0.64, y: 0.97 }, cp2: { x: 0.06, y: 0.94 }, labelT: 0.5,
+      sv: {
+        name: "Upptag av nitrat",
+        actor: "Växternas rötter",
+        eq: "NO₃⁻ → NO₂⁻ → NH₄⁺   (inne i växten)\nNH₄⁺ → aminosyror → proteiner, DNA, klorofyll",
+        desc: "Nitrat är den kväveform som de flesta växter tar upp mest av. Innan kvävet kan byggas in i aminosyror måste växten <strong>reducera</strong> nitratet till ammonium, och det kostar energi.",
+        trivia: "Energin till reduktionen kommer ytterst från fotosyntesen. Kvävets oxidationstal sjunker från +V till −III – en ändring på åtta steg.",
+        triviaNoOx: "Energin som behövs för att omvandla nitratet kommer ytterst från fotosyntesen."
+      },
+      en: {
+        name: "Uptake of nitrate",
+        actor: "Plant roots",
+        eq: "NO₃⁻ → NO₂⁻ → NH₄⁺   (inside the plant)\nNH₄⁺ → amino acids → proteins, DNA, chlorophyll",
+        desc: "Nitrate is the form of nitrogen that most plants take up the most of. Before the nitrogen can be built into amino acids, the plant must <strong>reduce</strong> the nitrate to ammonium, and that costs energy.",
+        trivia: "The energy for the reduction ultimately comes from photosynthesis. The oxidation number of nitrogen drops from +V to −III – a change of eight steps.",
+        triviaNoOx: "The energy needed to convert the nitrate ultimately comes from photosynthesis."
+      }
+    },
+    {
+      id: "grazing", from: "plant", to: "animal", icon: "🐇",
+      redox: "none", oxChange: "−III → −III",
+      cp1: { x: 0.27, y: 0.17 }, cp2: { x: 0.39, y: 0.17 }, labelT: 0.5,
+      sv: {
+        name: "Konsumtion",
+        actor: "Växtätare, här en kanin",
+        eq: "Växtprotein → aminosyror (matsmältning) → djurets egna proteiner och DNA",
+        desc: "När kaninen äter växten bryts växtproteinerna ner till aminosyror i matsmältningen. Aminosyrorna används sedan för att bygga djurets egna proteiner, och kvävet byggs också in i djurets DNA och RNA.",
+        trivia: "Djur kan inte använda kvävgas, ammonium eller nitrat. Allt kväve de behöver får de från maten."
+      },
+      en: {
+        name: "Consumption",
+        actor: "Herbivores, here a rabbit",
+        eq: "Plant protein → amino acids (digestion) → the animal's own proteins and DNA",
+        desc: "When the rabbit eats the plant, the plant proteins are broken down into amino acids during digestion. The amino acids are then used to build the animal's own proteins, and the nitrogen is also built into the animal's DNA and RNA.",
+        trivia: "Animals cannot use nitrogen gas, ammonium or nitrate. All the nitrogen they need comes from their food."
+      }
+    },
+    {
+      id: "decayPlant", from: "plant", to: "soilNH4", icon: "🍂",
+      redox: "none", oxChange: "−III → −III",
+      cp1: { x: 0.27, y: 0.46 }, cp2: { x: 0.32, y: 0.58 }, labelT: 0.48,
+      sv: {
+        name: "Ammonifikation",
+        actor: "Nedbrytare (svampar och bakterier) bryter ner döda växtdelar",
+        eq: "Organiskt N (protein) → aminosyror → NH₃\nNH₃ + H₂O ⇌ NH₄⁺ + OH⁻",
+        desc: "När blad vissnar och växter dör bryter nedbrytare ner proteinerna. Aminogrupperna spjälkas av och kvävet frigörs som ammoniak, som blir <strong>ammonium (NH₄⁺)</strong> i markvätskan.",
+        trivia: "Utan nedbrytare skulle kvävet stanna i döda växter och djur, och marken skulle till slut bli utan näring."
+      },
+      en: {
+        name: "Ammonification",
+        actor: "Decomposers (fungi and bacteria) break down dead plant parts",
+        eq: "Organic N (protein) → amino acids → NH₃\nNH₃ + H₂O ⇌ NH₄⁺ + OH⁻",
+        desc: "When leaves wither and plants die, decomposers break down the proteins. The amino groups are split off and the nitrogen is released as ammonia, which becomes <strong>ammonium (NH₄⁺)</strong> in the soil solution.",
+        trivia: "Without decomposers, nitrogen would stay locked in dead plants and animals, and the soil would eventually run out of nutrients."
+      }
+    },
+    {
+      id: "decayAnimal", from: "animal", to: "soilNH4", icon: "🍄",
+      redox: "none", oxChange: "−III → −III",
+      cp1: { x: 0.50, y: 0.46 }, cp2: { x: 0.45, y: 0.60 }, labelT: 0.5,
+      sv: {
+        name: "Ammonifikation",
+        actor: "Nedbrytare (svampar och bakterier) bryter ner urin, spillning och döda djur",
+        eq: "CO(NH₂)₂ + H₂O → 2NH₃ + CO₂   (urea i urin)\nNH₃ + H₂O ⇌ NH₄⁺ + OH⁻",
+        desc: "Djur gör sig av med överskottskväve, till exempel som urea (urinämne) i urinen. Nedbrytare bryter ner urea, spillning och döda djur, och kvävet frigörs som ammoniak som blir <strong>ammonium (NH₄⁺)</strong> i markvätskan.",
+        trivia: "Den stickande lukten av ammoniak i ett stall kommer från just den här processen."
+      },
+      en: {
+        name: "Ammonification",
+        actor: "Decomposers (fungi and bacteria) break down urine, droppings and dead animals",
+        eq: "CO(NH₂)₂ + H₂O → 2NH₃ + CO₂   (urea in urine)\nNH₃ + H₂O ⇌ NH₄⁺ + OH⁻",
+        desc: "Animals get rid of excess nitrogen, for example as urea in the urine. Decomposers break down urea, droppings and dead animals, and the nitrogen is released as ammonia, which becomes <strong>ammonium (NH₄⁺)</strong> in the soil solution.",
+        trivia: "The sharp smell of ammonia in a stable comes from exactly this process."
+      }
+    },
+    {
+      id: "denit", from: "soilNO3", to: "atmosphere", icon: "💨",
+      redox: "red", oxChange: "+V → 0",
+      cp1: { x: 0.92, y: 1.08 }, cp2: { x: 0.99, y: 0.12 }, labelT: 0.45,
+      sv: {
+        name: "Denitrifikation",
+        actor: "Denitrifikationsbakterier, t.ex. Pseudomonas (i syrefattig mark)",
+        eq: "2NO₃⁻ + 10e⁻ + 12H⁺ → N₂ + 6H₂O\n(stegvis: NO₃⁻ → NO₂⁻ → NO → N₂O → N₂)",
+        desc: "I vattenmättad eller packad mark är det ont om syre. Där använder denitrifikationsbakterier nitrat i stället för syre i sin cellandning. Nitratet <strong>reduceras</strong> stegvis till kvävgas, och syreatomerna hamnar i vattenmolekyler. Kvävgasen går tillbaka till luften – kretsloppet är slutet!",
+        trivia: "På vägen kan lustgas (N₂O) bildas, och den är en kraftig växthusgas. Denitrifikationen gör också att blöta jordar förlorar växtnäring."
+      },
+      en: {
+        name: "Denitrification",
+        actor: "Denitrifying bacteria, e.g. Pseudomonas (in oxygen-poor soil)",
+        eq: "2NO₃⁻ + 10e⁻ + 12H⁺ → N₂ + 6H₂O\n(step by step: NO₃⁻ → NO₂⁻ → NO → N₂O → N₂)",
+        desc: "Waterlogged or compacted soil contains little oxygen. There, denitrifying bacteria use nitrate instead of oxygen in their cellular respiration. The nitrate is <strong>reduced</strong> step by step to nitrogen gas, and the oxygen atoms end up in water molecules. The nitrogen gas returns to the air – the cycle is complete!",
+        trivia: "Nitrous oxide (N₂O), a powerful greenhouse gas, can form along the way. Denitrification also makes waterlogged soils lose plant nutrients."
+      }
+    }
+  ];
+  const procText = (p) => p[lang];
+
+  // ============================================================
+  // GEOMETRI
+  // ============================================================
+  const poolPx = (key, w, h) => ({ x: POOLS[key].pos.x * w, y: POOLS[key].pos.y * h });
+
+  function getPath(proc, w, h) {
+    return {
+      p0: poolPx(proc.from, w, h),
+      cp1: { x: proc.cp1.x * w, y: proc.cp1.y * h },
+      cp2: { x: proc.cp2.x * w, y: proc.cp2.y * h },
+      p1: poolPx(proc.to, w, h)
+    };
+  }
+  function evaluateBezier(p0, cp1, cp2, p1, t) {
+    const u = 1 - t;
+    return {
+      x: u*u*u * p0.x + 3*u*u*t * cp1.x + 3*u*t*t * cp2.x + t*t*t * p1.x,
+      y: u*u*u * p0.y + 3*u*u*t * cp1.y + 3*u*t*t * cp2.y + t*t*t * p1.y
+    };
+  }
+  function pointOn(proc, t, w, h) {
+    const p = getPath(proc, w, h);
+    return evaluateBezier(p.p0, p.cp1, p.cp2, p.p1, t);
+  }
+  const font = (px, weight = "bold") => `${weight} ${Math.round(px * S)}px system-ui, sans-serif`;
+
+  // Ritar en figur i skala S runt punkten (x, y)
+  function drawAt(fn, x, y) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(S, S);
+    fn(0, 0);
+    ctx.restore();
+  }
+
+  // ============================================================
+  // RITYTA OCH STORLEK
+  // ============================================================
+  let cssW = 0, cssH = 0;
+  function resizeCanvas() {
+    const rect = canvasWrap.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cssW = rect.width;
+    cssH = rect.height;
+    canvas.width = Math.max(1, Math.round(cssW * dpr));
+    canvas.height = Math.max(1, Math.round(cssH * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    S = Math.max(0.7, Math.min(1.15, Math.min(cssW / 900, cssH / 620)));
+  }
+
+  function initBgParticles() {
+    bgParticles.length = 0;
+    for (let i = 0; i < 40; i++) {
+      bgParticles.push({
+        x: Math.random(), y: Math.random(),
+        vx: (Math.random() - 0.5) * 0.0006,
+        vy: (Math.random() - 0.5) * 0.0005,
+        radius: Math.random() * 2 + 1
+      });
+    }
+  }
+
+  // ============================================================
+  // LANDSKAPET
+  // ============================================================
+  function drawScenery(w, h) {
+    const soilY = h * SOIL_Y;
+
+    const sky = ctx.createLinearGradient(0, 0, 0, soilY);
+    sky.addColorStop(0, "#081526");
+    sky.addColorStop(0.6, "#153350");
+    sky.addColorStop(1, "#3b678c");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, w, soilY);
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+    ctx.beginPath();
+    ctx.arc(w * 0.10, h * 0.10, 50 * S, 0, Math.PI * 2);
+    ctx.arc(w * 0.16, h * 0.09, 70 * S, 0, Math.PI * 2);
+    ctx.arc(w * 0.23, h * 0.11, 45 * S, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(w * 0.78, h * 0.10, 55 * S, 0, Math.PI * 2);
+    ctx.arc(w * 0.85, h * 0.09, 75 * S, 0, Math.PI * 2);
+    ctx.arc(w * 0.92, h * 0.11, 50 * S, 0, Math.PI * 2);
+    ctx.fill();
+
+    const soil = ctx.createLinearGradient(0, soilY, 0, h);
+    soil.addColorStop(0, "#3e2716");
+    soil.addColorStop(0.25, "#2a180b");
+    soil.addColorStop(0.7, "#1a0d05");
+    soil.addColorStop(1, "#0d0602");
+    ctx.fillStyle = soil;
+    ctx.fillRect(0, soilY, w, h - soilY);
+
+    ctx.fillStyle = "#388e3c";
+    ctx.fillRect(0, soilY - 4, w, 7);
+    ctx.fillStyle = "#4caf50";
+    ctx.beginPath();
+    for (let x = 4; x < w; x += 10) {
+      ctx.moveTo(x, soilY - 3);
+      ctx.lineTo(x + 3, soilY - 12 - (x % 4));
+      ctx.lineTo(x + 5, soilY - 3);
+    }
+    ctx.fill();
+
+    ctx.save();
+    ctx.font = font(11);
+    ctx.textAlign = "left";
+    ctx.fillStyle = "rgba(186, 230, 253, 0.55)";
+    ctx.fillText(T().air, 12, soilY - 18 * S);
+    ctx.fillStyle = "rgba(255, 213, 158, 0.5)";
+    ctx.fillText(T().soil, 12, soilY + 22 * S);
+    ctx.restore();
+
+    drawAt(drawPeaPlant, w * 0.11, soilY);
+    drawAt(drawGeneralPlant, w * 0.29, soilY);
+    drawAt(drawHerbivore, w * 0.46, soilY - 2);
+    drawAt(drawMushrooms, w * 0.36, soilY - 2);
+
+    const byId = (id) => PROCESSES.find(p => p.id === id);
+    const fb = pointOn(byId("freeFix"), 0.80, w, h);
+    drawAt(drawFreeBacteriaColony, fb.x + 48 * S, fb.y);
+    const nf = pointOn(byId("nitrification"), 0.5, w, h);
+    drawAt(drawNitrifiersBiofilm, nf.x, nf.y + 38 * S);
+    drawDenitrificationZone(w, h);
+
+    if (lightningActive > 0) {
+      drawLightning(w, h);
+      lightningActive -= 0.04;
+    }
+  }
+
+  function drawDenitrificationZone(w, h) {
+    const zx = w * 0.86, zy = h * 0.84, rx = w * 0.11, ry = 32 * S;
+
+    ctx.save();
+    const g = ctx.createRadialGradient(zx, zy, 4, zx, zy, rx);
+    g.addColorStop(0, "rgba(8, 48, 78, 0.92)");
+    g.addColorStop(0.7, "rgba(10, 32, 54, 0.75)");
+    g.addColorStop(1, "rgba(7, 20, 34, 0.2)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.ellipse(zx, zy, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(100, 181, 246, 0.45)";
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.translate(zx, zy);
+    ctx.scale(S, S);
+    [{ x: -40, y: 2, a: 0.2 }, { x: -12, y: 10, a: -0.3 }, { x: 18, y: -2, a: 0.4 }, { x: 44, y: 8, a: -0.2 }].forEach(b => {
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      ctx.rotate(b.a);
+      ctx.fillStyle = "#64b5f6";
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 7, 3.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(144, 202, 249, 0.6)";
+      ctx.beginPath();
+      ctx.moveTo(-7, 0);
+      ctx.quadraticCurveTo(-11, -3, -15, 0);
+      ctx.stroke();
+      ctx.restore();
+    });
+    const bt = performance.now() / 320;
+    ctx.fillStyle = "rgba(186, 230, 253, 0.6)";
+    for (let b = 0; b < 5; b++) {
+      const bx = -50 + b * 25 + Math.sin(bt + b) * 4;
+      const by = 10 - ((bt * 14 + b * 12) % 36);
+      ctx.beginPath();
+      ctx.arc(bx, by, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = "#bae6fd";
+    ctx.font = "bold 10px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(T().anaerobic, 0, 32 + 14);
+    ctx.restore();
+  }
+
+    function drawPeaPlant(x, groundY) {
+      ctx.save();
+      ctx.strokeStyle = "#43a047";
+      ctx.lineWidth = 4.5;
+      ctx.beginPath();
+      ctx.moveTo(x, groundY);
+      ctx.bezierCurveTo(x - 15, groundY - 50, x + 20, groundY - 100, x, groundY - 145);
+      ctx.stroke();
+
+      ctx.strokeStyle = "#76ff03";
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(x, groundY - 145);
+      ctx.quadraticCurveTo(x + 20, groundY - 165, x + 15, groundY - 180);
+      ctx.moveTo(x - 5, groundY - 130);
+      ctx.quadraticCurveTo(x - 28, groundY - 145, x - 20, groundY - 160);
+      ctx.stroke();
+
+      const leafPos = [
+        { x: x - 10, y: groundY - 45, ang: -0.4 },
+        { x: x + 12, y: groundY - 60, ang: 0.5 },
+        { x: x - 12, y: groundY - 95, ang: -0.5 },
+        { x: x + 10, y: groundY - 115, ang: 0.4 }
+      ];
+      leafPos.forEach(l => {
+        ctx.save();
+        ctx.translate(l.x, l.y);
+        ctx.rotate(l.ang);
+        ctx.fillStyle = "#66bb6a";
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 14, 7, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#2e7d32";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+      });
+
+      drawPeaPod(x - 18, groundY - 80, -0.3);
+      drawPeaPod(x + 14, groundY - 125, 0.4);
+
+      ctx.save();
+      ctx.translate(x + 2, groundY - 145);
+      ctx.fillStyle = "#f3e5f5";
+      ctx.beginPath();
+      ctx.arc(0, -6, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ba68c8";
+      ctx.beginPath();
+      ctx.ellipse(-3, 2, 5, 4, 0, 0, Math.PI * 2);
+      ctx.ellipse(3, 2, 5, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.strokeStyle = "#8d6e63";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x, groundY);
+      ctx.quadraticCurveTo(x - 20, groundY + 50, x - 30, groundY + 95);
+      ctx.moveTo(x, groundY);
+      ctx.quadraticCurveTo(x + 15, groundY + 45, x + 25, groundY + 90);
+      ctx.moveTo(x, groundY);
+      ctx.lineTo(x - 5, groundY + 110);
+      ctx.stroke();
+
+      const nodules = [
+        { x: x - 18, y: groundY + 38 },
+        { x: x - 28, y: groundY + 70 },
+        { x: x - 12, y: groundY + 80 },
+        { x: x + 16, y: groundY + 42 },
+        { x: x + 24, y: groundY + 75 },
+        { x: x - 4, y: groundY + 58 }
+      ];
+      nodules.forEach(n => {
+        ctx.fillStyle = "#ffb74d";
+        ctx.beginPath();
+        ctx.ellipse(n.x, n.y, 7.5, 5.5, Math.PI / 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#e65100";
+        ctx.lineWidth = 1.3;
+        ctx.stroke();
+      });
+
+      ctx.fillStyle = "#a5d6a7";
+      ctx.font = "bold 11px system-ui";
+      ctx.fillText(T().pea, x - 40, groundY - 170);
+      ctx.restore();
+    }
+
+    function drawPeaPod(x, y, rot) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot);
+      ctx.fillStyle = "#7cb342";
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(12, 10, 24, 8);
+      ctx.quadraticCurveTo(28, 4, 25, 0);
+      ctx.quadraticCurveTo(12, -4, 0, 0);
+      ctx.fill();
+      ctx.strokeStyle = "#33691e";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      ctx.fillStyle = "#aed581";
+      ctx.beginPath();
+      ctx.arc(8, 3, 2.5, 0, Math.PI * 2);
+      ctx.arc(16, 4, 2.8, 0, Math.PI * 2);
+      ctx.arc(22, 3, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawFreeBacteriaColony(x, y) {
+      ctx.save();
+      ctx.fillStyle = "rgba(0, 210, 255, 0.15)";
+      ctx.beginPath();
+      ctx.ellipse(x, y, 35, 22, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(77, 208, 225, 0.5)";
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      const bDots = [
+        { x: x - 15, y: y - 5 },
+        { x: x - 5, y: y + 6 },
+        { x: x + 8, y: y - 7 },
+        { x: x + 16, y: y + 4 },
+        { x: x + 2, y: y - 2 }
+      ];
+      bDots.forEach(b => {
+        ctx.fillStyle = "#00e5ff";
+        ctx.beginPath();
+        ctx.ellipse(b.x, b.y, 4, 2.5, Math.PI / 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.restore();
+    }
+
+    function drawNitrifiersBiofilm(x, y) {
+      ctx.save();
+      ctx.fillStyle = "rgba(129, 199, 132, 0.18)";
+      ctx.beginPath();
+      ctx.ellipse(x, y, 42, 22, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(129, 199, 132, 0.6)";
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = "#81c784";
+      for (let i = 0; i < 6; i++) {
+        const ang = (i * Math.PI) / 3;
+        ctx.beginPath();
+        ctx.arc(x + 18 * Math.cos(ang), y + 9 * Math.sin(ang), 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawLightningNitratePool(x, y) {
+      ctx.save();
+      ctx.fillStyle = "rgba(255, 213, 79, 0.18)";
+      ctx.beginPath();
+      ctx.ellipse(x, y, 36, 18, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255, 213, 79, 0.65)";
+      ctx.setLineDash([2, 2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    function drawGeneralPlant(x, groundY) {
+      ctx.save();
+      ctx.strokeStyle = "#558b2f";
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(x, groundY);
+      ctx.quadraticCurveTo(x + 10, groundY - 60, x - 5, groundY - 130);
+      ctx.stroke();
+
+      ctx.fillStyle = "#7cb342";
+      ctx.beginPath();
+      ctx.ellipse(x + 12, groundY - 45, 16, 7, 0.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(x - 14, groundY - 75, 18, 8, -0.4, 0, Math.PI * 2);
+      ctx.fill();
+
+      const flowerY = groundY - 130;
+      const flowerX = x - 5;
+      ctx.fillStyle = "#fbc02d";
+      for (let i = 0; i < 8; i++) {
+        const ang = (i * Math.PI) / 4;
+        ctx.beginPath();
+        ctx.arc(flowerX + 11 * Math.cos(ang), flowerY + 11 * Math.sin(ang), 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = "#e65100";
+      ctx.beginPath();
+      ctx.arc(flowerX, flowerY, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#a1887f";
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(x, groundY);
+      ctx.quadraticCurveTo(x + 15, groundY + 45, x + 30, groundY + 80);
+      ctx.moveTo(x, groundY);
+      ctx.quadraticCurveTo(x - 12, groundY + 40, x - 20, groundY + 75);
+      ctx.stroke();
+
+      ctx.fillStyle = "#fff59d";
+      ctx.font = "bold 11px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText(T().meadow, x, groundY - 150);
+      ctx.restore();
+    }
+
+    function drawHerbivore(x, y) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = "#cfd8dc";
+      ctx.beginPath();
+      ctx.ellipse(0, -14, 18, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(-14, -22, 10, 8, -Math.PI / 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(-16, -34, 3, 9, -0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(16, -18, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#263238";
+      ctx.beginPath();
+      ctx.arc(-18, -24, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawMushrooms(x, y) {
+      ctx.fillStyle = "#ff7043";
+      ctx.beginPath();
+      ctx.arc(x, y - 10, 11, Math.PI, 0);
+      ctx.fill();
+      ctx.fillStyle = "#eceff1";
+      ctx.fillRect(x - 2.5, y - 10, 5, 10);
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(x - 4, y - 14, 1.8, 0, Math.PI * 2);
+      ctx.arc(x + 3, y - 16, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#ffa726";
+      ctx.beginPath();
+      ctx.arc(x + 14, y - 8, 8, Math.PI, 0);
+      ctx.fill();
+      ctx.fillStyle = "#eceff1";
+      ctx.fillRect(x + 12, y - 8, 4, 8);
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, y + 2);
+      ctx.lineTo(x - 18, y + 35);
+      ctx.lineTo(x - 8, y + 55);
+      ctx.moveTo(x + 14, y + 2);
+      ctx.lineTo(x + 30, y + 40);
+      ctx.stroke();
+    }
+
+    function drawLightning(w, h) {
+      ctx.save();
+      ctx.strokeStyle = "#fffb96";
+      ctx.lineWidth = 3.5;
+      ctx.shadowColor = "#ffea00";
+      ctx.shadowBlur = 24;
+
+      ctx.beginPath();
+      let curX = POOLS.atmosphere.pos.x * w + 30;
+      let groundY = h * SOIL_Y;
+      let curY = 0;
+      ctx.moveTo(curX, curY);
+
+      const segments = 8;
+      for (let i = 0; i < segments; i++) {
+        curX += (Math.random() - 0.48) * 35;
+        curY += groundY / segments;
+        ctx.lineTo(curX, curY);
+      }
+      ctx.stroke();
+
+      ctx.fillStyle = `rgba(255, 255, 240, ${lightningActive * 0.35})`;
+      ctx.fillRect(0, 0, w, groundY);
+      ctx.restore();
+    }
+
+
+    function drawSmallAtom(x, y, color, symbol, radius, textColor = "#fff") {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.5)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = textColor;
+      ctx.font = `bold ${radius + 1}px system-ui`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(symbol, x, y + 0.5);
+    }
+
+    function updateAndDrawParticles(w, h) {
+      ctx.save();
+      bgParticles.forEach(p => {
+        p.x += p.vx * animSpeed;
+        p.y += p.vy * animSpeed;
+
+        if (p.x < 0) p.x = 1;
+        if (p.x > 1) p.x = 0;
+        if (p.y < 0) p.y = 1;
+        if (p.y > 1) p.y = 0;
+
+        const screenX = p.x * w;
+        const screenY = p.y * h;
+
+        if (screenY < h * SOIL_Y) {
+          ctx.fillStyle = "rgba(144, 202, 249, 0.35)";
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, p.radius, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = "rgba(255, 213, 79, 0.2)";
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, p.radius * 0.8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+      ctx.restore();
+    }
+
+    function updateChemicalViewer(chemType) {
+      molSvg.innerHTML = "";
+      const createSvgEl = (tag, attrs) => {
+        const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        for (const k in attrs) el.setAttribute(k, attrs[k]);
+        return el;
+      };
+
+      if (chemType === "N2") {
+        const line1 = createSvgEl("line", { x1: -12, y1: -4, x2: 12, y2: -4, stroke: "#64748b", "stroke-width": 2 });
+        const line2 = createSvgEl("line", { x1: -12, y1: 0, x2: 12, y2: 0, stroke: "#64748b", "stroke-width": 2 });
+        const line3 = createSvgEl("line", { x1: -12, y1: 4, x2: 12, y2: 4, stroke: "#64748b", "stroke-width": 2 });
+        molSvg.appendChild(line1);
+        molSvg.appendChild(line2);
+        molSvg.appendChild(line3);
+
+        const atomN1 = createSvgEl("circle", { cx: -15, cy: 0, r: 12, fill: "#0288d1" });
+        const atomN2 = createSvgEl("circle", { cx: 15, cy: 0, r: 12, fill: "#0288d1" });
+        molSvg.appendChild(atomN1);
+        molSvg.appendChild(atomN2);
+
+        const t1 = createSvgEl("text", { x: -15, y: 4, "text-anchor": "middle", fill: "#fff", "font-size": 11, "font-weight": "bold" });
+        t1.textContent = "N";
+        const t2 = createSvgEl("text", { x: 15, y: 4, "text-anchor": "middle", fill: "#fff", "font-size": 11, "font-weight": "bold" });
+        t2.textContent = "N";
+        molSvg.appendChild(t1);
+        molSvg.appendChild(t2);
+      } else if (chemType === "NH4") {
+        const hPos = [{ x: 0, y: -22 }, { x: -20, y: 10 }, { x: 20, y: 10 }, { x: 0, y: 22 }];
+        hPos.forEach(p => {
+          molSvg.appendChild(createSvgEl("line", { x1: 0, y1: 0, x2: p.x, y2: p.y, stroke: "#94a3b8", "stroke-width": 2 }));
+          molSvg.appendChild(createSvgEl("circle", { cx: p.x, cy: p.y, r: 7, fill: "#e2e8f0" }));
+          const txt = createSvgEl("text", { x: p.x, y: p.y + 3.5, "text-anchor": "middle", fill: "#0f172a", "font-size": 9, "font-weight": "bold" });
+          txt.textContent = "H";
+          molSvg.appendChild(txt);
+        });
+        molSvg.appendChild(createSvgEl("circle", { cx: 0, cy: 0, r: 13, fill: "#0288d1" }));
+        const nTxt = createSvgEl("text", { x: 0, y: 4, "text-anchor": "middle", fill: "#fff", "font-size": 11, "font-weight": "bold" });
+        nTxt.textContent = "N⁺";
+        molSvg.appendChild(nTxt);
+      } else if (chemType === "NO3") {
+        const oPos = [{ x: 0, y: -22 }, { x: -19, y: 14 }, { x: 19, y: 14 }];
+        oPos.forEach(p => {
+          molSvg.appendChild(createSvgEl("line", { x1: 0, y1: 0, x2: p.x, y2: p.y, stroke: "#94a3b8", "stroke-width": 2 }));
+          molSvg.appendChild(createSvgEl("circle", { cx: p.x, cy: p.y, r: 8, fill: "#ef4444" }));
+          const txt = createSvgEl("text", { x: p.x, y: p.y + 3.5, "text-anchor": "middle", fill: "#fff", "font-size": 9, "font-weight": "bold" });
+          txt.textContent = "O";
+          molSvg.appendChild(txt);
+        });
+        molSvg.appendChild(createSvgEl("circle", { cx: 0, cy: 0, r: 13, fill: "#0288d1" }));
+        const nTxt = createSvgEl("text", { x: 0, y: 4, "text-anchor": "middle", fill: "#fff", "font-size": 11, "font-weight": "bold" });
+        nTxt.textContent = "N";
+        molSvg.appendChild(nTxt);
+      } else {
+        molSvg.appendChild(createSvgEl("circle", { cx: -15, cy: 0, r: 11, fill: "#0288d1" }));
+        molSvg.appendChild(createSvgEl("circle", { cx: 15, cy: 0, r: 11, fill: "#64748b" }));
+        molSvg.appendChild(createSvgEl("line", { x1: -15, y1: 0, x2: 15, y2: 0, stroke: "#94a3b8", "stroke-width": 2 }));
+        const t1 = createSvgEl("text", { x: -15, y: 4, "text-anchor": "middle", fill: "#fff", "font-size": 10, "font-weight": "bold" });
+        t1.textContent = "NH₂";
+        const t2 = createSvgEl("text", { x: 15, y: 4, "text-anchor": "middle", fill: "#fff", "font-size": 10, "font-weight": "bold" });
+        t2.textContent = "C-R";
+        molSvg.appendChild(t1);
+        molSvg.appendChild(t2);
+      }
+    }
+
+  // ============================================================
+  // PILAR (processer) OCH NODER (kväveformer)
+  // ============================================================
+  function drawProcesses(w, h) {
+    const now = performance.now();
+    PROCESSES.forEach(proc => {
+      const isAvailable = !isTraveling && proc.from === currentLocation;
+      const isActive = isTraveling && activeTransition && activeTransition.id === proc.id;
+      const path = getPath(proc, w, h);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(path.p0.x, path.p0.y);
+      ctx.bezierCurveTo(path.cp1.x, path.cp1.y, path.cp2.x, path.cp2.y, path.p1.x, path.p1.y);
+      if (isActive) {
+        ctx.strokeStyle = "rgba(0, 210, 255, 0.95)";
+        ctx.lineWidth = 4.5 * S;
+        ctx.setLineDash([8, 6]);
+        ctx.lineDashOffset = -now / 20;
+      } else if (isAvailable) {
+        ctx.strokeStyle = `rgba(0, 210, 255, ${0.5 + 0.4 * Math.sin(now / 220)})`;
+        ctx.lineWidth = 3.5 * S;
+        ctx.setLineDash([6, 6]);
+        ctx.lineDashOffset = -now / 35;
+      } else {
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.10)";
+        ctx.lineWidth = 1.4;
+        ctx.setLineDash([4, 4]);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (isAvailable || isActive) {
+        const tip = evaluateBezier(path.p0, path.cp1, path.cp2, path.p1, 0.93);
+        const back = evaluateBezier(path.p0, path.cp1, path.cp2, path.p1, 0.89);
+        ctx.fillStyle = "#00d2ff";
+        ctx.translate(tip.x, tip.y);
+        ctx.rotate(Math.atan2(tip.y - back.y, tip.x - back.x));
+        ctx.scale(S, S);
+        ctx.beginPath();
+        ctx.moveTo(8, 0);
+        ctx.lineTo(-6, -6);
+        ctx.lineTo(-6, 6);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+
+      proc.labelRect = null;
+      if (isAvailable || isActive) {
+        const mid = evaluateBezier(path.p0, path.cp1, path.cp2, path.p1, proc.labelT);
+        const hovered = hoveredClickable && hoveredClickable.type === "process" && hoveredClickable.item.id === proc.id;
+        const text = `${proc.icon} ${procText(proc).name}`;
+        ctx.save();
+        ctx.font = font(12);
+        const bw = ctx.measureText(text).width + 20 * S;
+        const bh = 24 * S;
+        const rx = Math.max(4, Math.min(w - bw - 4, mid.x - bw / 2));
+        const ry = mid.y - bh / 2;
+        const lit = hovered || isActive;
+        ctx.fillStyle = lit ? "#00d2ff" : "rgba(8, 20, 32, 0.95)";
+        ctx.strokeStyle = "#00d2ff";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(rx, ry, bw, bh, bh / 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = lit ? "#0b111a" : "#e0f2fe";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(text, rx + bw / 2, mid.y + 1);
+        ctx.restore();
+        if (isAvailable) proc.labelRect = { x: rx, y: ry, w: bw, h: bh };
+      }
+    });
+  }
+
+  function drawPools(w, h) {
+    const availableDest = new Set(PROCESSES.filter(p => p.from === currentLocation).map(p => p.to));
+    const now = performance.now();
+
+    Object.keys(POOLS).forEach(key => {
+      const pool = POOLS[key];
+      const n = poolPx(key, w, h);
+      const isCurrent = currentLocation === key && !isTraveling;
+      const isClickable = !isTraveling && availableDest.has(key);
+      const hovered = hoveredClickable && hoveredClickable.type === "pool" && hoveredClickable.key === key;
+      const R = 25 * S;
+
+      ctx.save();
+      if (isClickable) {
+        const haloR = R + (7 + 4 * Math.sin(now / 240)) * S;
+        ctx.fillStyle = "rgba(0, 210, 255, 0.15)";
+        ctx.strokeStyle = "rgba(0, 210, 255, 0.85)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, haloR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = "rgba(8, 14, 22, 0.92)";
+      ctx.strokeStyle = isCurrent ? "#ffea00" : pool.color;
+      ctx.lineWidth = (isCurrent || hovered ? 4 : 3) * S;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, R, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = pool.color;
+      ctx.font = font(13);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(pool.formula, n.x, n.y + 1);
+
+      if (showOx) {
+        const bx = n.x + R * 0.78, by = n.y - R * 0.78;
+        ctx.font = font(10);
+        const ow = Math.max(22 * S, ctx.measureText(pool.ox).width + 10 * S);
+        const oh = 18 * S;
+        ctx.fillStyle = "#0b111a";
+        ctx.strokeStyle = pool.color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(bx - ow / 2, by - oh / 2, ow, oh, oh / 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(pool.ox, bx, by + 1);
+      }
+
+      const label = poolText(key).title;
+      ctx.font = font(isCurrent ? 12 : 11);
+      const tw = ctx.measureText(label).width;
+      const pw = tw + 16 * S, ph = 20 * S;
+      const px = Math.max(4, Math.min(w - pw - 4, n.x - pw / 2));
+      const py = n.y + R + 6 * S;
+      ctx.fillStyle = isClickable ? "rgba(0, 42, 65, 0.95)" : "rgba(11, 17, 26, 0.88)";
+      ctx.strokeStyle = isCurrent ? "#ffea00" : (isClickable ? "rgba(0, 210, 255, 0.7)" : "rgba(255, 255, 255, 0.25)");
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.roundRect(px, py, pw, ph, ph / 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = isCurrent ? "#fde047" : (isClickable ? "#7dd3fc" : "#f0f4f8");
+      ctx.fillText(label, px + pw / 2, py + ph / 2 + 0.5);
+      ctx.restore();
+    });
+  }
+
+  // ============================================================
+  // MOLEKYLEN SOM FÄRDAS
+  // ============================================================
+  function drawMolecule(w, h) {
+    let pos;
+    let pool = POOLS[currentLocation];
+
+    if (isTraveling && activeTransition) {
+      pos = pointOn(activeTransition, travelProgress, w, h);
+      pool = travelProgress > 0.5 ? POOLS[activeTransition.to] : POOLS[activeTransition.from];
+
+      // Syreatomerna lämnar nitratet vid denitrifikation och vid nitratupptag
+      if ((activeTransition.id === "denit" || activeTransition.id === "uptakeNO3") && travelProgress > 0.35 && travelProgress < 0.9) {
+        const burst = (travelProgress - 0.35) / 0.55;
+        const alpha = Math.max(0, 1 - burst);
+        ctx.save();
+        for (let i = 0; i < 3; i++) {
+          const ang = (i * 2 * Math.PI) / 3 + burst * 3;
+          const dist = (14 + burst * 32) * S;
+          const ox = pos.x + Math.cos(ang) * dist;
+          const oy = pos.y + Math.sin(ang) * dist - burst * 14 * S;
+          ctx.fillStyle = `rgba(239, 68, 68, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(ox, oy, 5 * S, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+          ctx.font = font(8);
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("O", ox, oy);
+        }
+        ctx.restore();
+      }
+    } else {
+      pos = poolPx(currentLocation, w, h);
+    }
+
+    const now = performance.now();
+    ctx.save();
+    ctx.translate(pos.x, pos.y);
+    ctx.scale(S, S);
+
+    const pulse = Math.sin(now / 140) * 4;
+    const glow = ctx.createRadialGradient(0, 0, 7, 0, 0, 24 + pulse);
+    glow.addColorStop(0, "rgba(0, 210, 255, 0.95)");
+    glow.addColorStop(0.5, "rgba(0, 210, 255, 0.3)");
+    glow.addColorStop(1, "rgba(0, 210, 255, 0)");
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(0, 0, 24 + pulse, 0, Math.PI * 2);
+    ctx.fill();
+
+    const nGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 13);
+    nGrad.addColorStop(0, "#80d8ff");
+    nGrad.addColorStop(0.7, "#0091ea");
+    nGrad.addColorStop(1, "#01579b");
+    ctx.fillStyle = nGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, 13, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 12px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("N", 0, 1);
+
+    const time = now / 320;
+    if (pool.chemType === "N2") {
+      const px = 19 * Math.cos(time), py = 19 * Math.sin(time);
+      ctx.strokeStyle = "rgba(255,255,255,0.7)";
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(px, py);
+      ctx.stroke();
+      drawSmallAtom(px, py, "#0288d1", "N", 8.5, "#fff");
+    } else if (pool.chemType === "NH4") {
+      for (let i = 0; i < 4; i++) {
+        const ang = time + (i * Math.PI) / 2;
+        drawSmallAtom(19 * Math.cos(ang), 19 * Math.sin(ang), "#ffffff", "H", 5.5, "#222");
+      }
+    } else if (pool.chemType === "NO3") {
+      for (let i = 0; i < 3; i++) {
+        const ang = time + (i * 2 * Math.PI) / 3;
+        drawSmallAtom(20 * Math.cos(ang), 20 * Math.sin(ang), "#ef4444", "O", 7, "#fff");
+      }
+    } else {
+      drawSmallAtom(17 * Math.cos(time), 17 * Math.sin(time), "#ffffff", "H", 5.5, "#222");
+      drawSmallAtom(17 * Math.cos(time + Math.PI), 17 * Math.sin(time + Math.PI), "#ffffff", "H", 5.5, "#222");
+      drawSmallAtom(20 * Math.cos(time + Math.PI / 2), 20 * Math.sin(time + Math.PI / 2), "#90a4ae", "C", 7.5, "#fff");
+    }
+
+    ctx.font = "bold 11px ui-monospace, Menlo, Consolas, monospace";
+    const fw = Math.max(52, ctx.measureText(pool.formula).width + 16);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.9)";
+    ctx.beginPath();
+    ctx.roundRect(-fw / 2, -44, fw, 18, 5);
+    ctx.fill();
+    ctx.strokeStyle = "#00d2ff";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.fillStyle = "#00d2ff";
+    ctx.fillText(pool.formula, 0, -35);
+    ctx.restore();
+  }
+
+  // ============================================================
+  // SIDOPANEL, KNAPPAR OCH TEXTER
+  // ============================================================
+  function lowerFirst(s) { return s.charAt(0).toLowerCase() + s.slice(1); }
+
+  function updatePoolInfo() {
+    const pool = POOLS[currentLocation];
+    const txt = poolText(currentLocation);
+    $("sidebarBadge").textContent = T().nowAs;
+    $("sidebarTitle").textContent = txt.title;
+    $("molFormula").textContent = pool.formula;
+    $("molName").textContent = txt.molName;
+    const chip = $("oxChip");
+    chip.hidden = !showOx;
+    chip.textContent = `${T().oxFor}: ${pool.ox}`;
+    chip.style.borderColor = pool.color;
+    $("poolDesc").innerHTML = txt.desc;
+    updateChemicalViewer(pool.chemType);
+  }
+
+  function updateProcessInfo() {
+    const proc = isTraveling ? activeTransition : lastProcess;
+    const heading = $("processHeading");
+    const content = $("processContent");
+    const dyk = $("didYouKnowBox");
+
+    if (!proc) {
+      heading.textContent = "⚗️ " + T().process;
+      content.innerHTML = `<p class="muted-note">${T().noProcess}</p>`;
+      dyk.innerHTML = `<strong>${T().howTitle}</strong>${T().how}${showOx ? T().howOx : ""}`;
+      return;
+    }
+    const pt = procText(proc);
+    heading.textContent = "⚗️ " + (isTraveling ? T().ongoing : T().latest);
+    const chip = showOx
+      ? `<span class="redox-chip redox-${proc.redox}">${T().redox[proc.redox]}: ${proc.oxChange}</span>`
+      : "";
+    content.innerHTML = `
+      <div class="process-name">${proc.icon} ${pt.name}</div>
+      <div class="process-actor">${T().by}: ${pt.actor}</div>
+      ${chip}
+      <div class="chem-eq">${pt.eq}</div>
+      <p class="section-text">${pt.desc}</p>`;
+    const trivia = (!showOx && pt.triviaNoOx) ? pt.triviaNoOx : pt.trivia;
+    dyk.innerHTML = `<strong>${T().dyk}</strong>${trivia}`;
+  }
+
+  function renderQuickChoices() {
+    const bar = $("quickChoicesBar");
+    bar.innerHTML = "";
+    const guide = $("guideText");
+    if (isTraveling) {
+      const p = activeTransition;
+      guide.textContent = `${p.icon} ${procText(p).name}: ${POOLS[p.from].formula} → ${POOLS[p.to].formula}`;
+      return;
+    }
+    guide.textContent = T().banner(lowerFirst(poolText(currentLocation).title), POOLS[currentLocation].formula);
+    PROCESSES.filter(p => p.from === currentLocation).forEach(proc => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "choice-btn";
+      btn.textContent = `${proc.icon} ${procText(proc).name} → ${POOLS[proc.to].formula}`;
+      btn.addEventListener("click", () => triggerTransition(proc));
+      bar.appendChild(btn);
+    });
+  }
+
+  function applyLanguage() {
+    const t = T();
+    document.documentElement.lang = lang;
+    document.title = t.docTitle;
+    $("appTitle").textContent = t.title;
+    $("appBadge").textContent = t.badge;
+    $("appSubtitle").textContent = t.subtitle;
+    $("langGroup").setAttribute("aria-label", t.lang);
+    $("langSv").setAttribute("aria-pressed", String(lang === "sv"));
+    $("langEn").setAttribute("aria-pressed", String(lang === "en"));
+    $("oxToggleLabel").textContent = t.oxToggle;
+    $("resetBtn").textContent = t.reset;
+    $("resetBtn").title = t.resetTitle;
+    $("speedLabel").textContent = t.speed;
+    canvas.setAttribute("aria-label", t.canvasLabel);
+    refreshTexts();
+  }
+
+  function refreshTexts() {
+    updatePoolInfo();
+    updateProcessInfo();
+    renderQuickChoices();
+    requestFrame();
+  }
+
+  function triggerTransition(proc) {
+    if (isTraveling) return;
+    if (proc.id === "lightning") lightningActive = 1.0;
+    activeTransition = proc;
+    isTraveling = true;
+    travelProgress = 0;
+    hoveredClickable = null;
+    canvas.style.cursor = "default";
+    updateProcessInfo();
+    renderQuickChoices();
+    requestFrame();
+  }
+
+  function finishTransition() {
+    currentLocation = activeTransition.to;
+    lastProcess = activeTransition;
+    isTraveling = false;
+    activeTransition = null;
+    refreshTexts();
+  }
+
+  function resetToAtmosphere() {
+    if (isTraveling) return;
+    currentLocation = "atmosphere";
+    lastProcess = null;
+    refreshTexts();
+  }
+
+  // ---------- Händelser ----------
+  $("resetBtn").addEventListener("click", resetToAtmosphere);
+  $("speedSlider").addEventListener("input", e => { animSpeed = parseFloat(e.target.value); });
+  [$("langSv"), $("langEn")].forEach(btn => btn.addEventListener("click", () => {
+    lang = btn.dataset.lang;
+    store("kvave-lang", lang);
+    applyLanguage();
+  }));
+  const oxToggle = $("oxToggle");
+  oxToggle.checked = showOx;
+  oxToggle.addEventListener("change", () => {
+    showOx = oxToggle.checked;
+    store("kvave-ox", showOx ? "1" : "0");
+    refreshTexts();
+  });
+
+  function getHit(clientX, clientY) {
+    if (isTraveling) return null;
+    const rect = canvas.getBoundingClientRect();
+    const x = clientX - rect.left, y = clientY - rect.top;
+    const available = PROCESSES.filter(p => p.from === currentLocation);
+    for (const proc of available) {
+      const r = proc.labelRect;
+      if (r && x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) return { type: "process", item: proc };
+    }
+    for (const proc of available) {
+      const n = poolPx(proc.to, cssW, cssH);
+      if (Math.hypot(x - n.x, y - n.y) < 34 * S) return { type: "pool", key: proc.to, item: proc };
+    }
+    return null;
+  }
+
+  canvas.addEventListener("pointermove", e => {
+    if (e.pointerType !== "mouse") return;
+    hoveredClickable = getHit(e.clientX, e.clientY);
+    canvas.style.cursor = hoveredClickable ? "pointer" : "default";
+  });
+  canvas.addEventListener("pointerleave", () => { hoveredClickable = null; });
+  canvas.addEventListener("click", e => {
+    const hit = getHit(e.clientX, e.clientY);
+    if (hit) triggerTransition(hit.item);
+  });
+
+  // ============================================================
+  // ANIMATIONSLOOP – pausas när bilden inte syns (sparar batteri
+  // och processorkraft när sidan är inbäddad längre ner på en sida)
+  // ============================================================
+  let visible = true;
+  let rafId = null;
+  let lastTs = 0;
+
+  function requestFrame() {
+    if (rafId === null && visible && !document.hidden) {
+      lastTs = 0;
+      rafId = requestAnimationFrame(loop);
+    }
+  }
+
+  function loop(ts) {
+    rafId = null;
+    if (!visible || document.hidden) return;
+    const dt = lastTs ? Math.min((ts - lastTs) / 1000, 0.1) : 0;
+    lastTs = ts;
+
+    const w = cssW, h = cssH;
+    if (w > 0 && h > 0) {
+      ctx.clearRect(0, 0, w, h);
+      drawScenery(w, h);
+      updateAndDrawParticles(w, h);
+      drawProcesses(w, h);
+      drawPools(w, h);
+
+      if (isTraveling && activeTransition) {
+        travelProgress += (dt / 2.8) * animSpeed;
+        if (travelProgress >= 1) finishTransition();
+      }
+      drawMolecule(w, h);
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+
+  new ResizeObserver(() => { resizeCanvas(); requestFrame(); }).observe(canvasWrap);
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(entries => {
+      visible = entries[0].isIntersecting;
+      if (visible) requestFrame();
+    }).observe(canvasWrap);
+  }
+  document.addEventListener("visibilitychange", requestFrame);
+
+  // ---------- Start ----------
+  resizeCanvas();
+  initBgParticles();
+  applyLanguage();
+  requestFrame();
+})();
+</script>
+
+</body></html>

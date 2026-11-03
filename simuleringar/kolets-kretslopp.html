@@ -1,0 +1,2503 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+  <title>Kolets kretslopp</title>
+  <style>
+    :root {
+      --sky-top: #0b192c;
+      --sky-bottom: #1e3e62;
+      --soil-surface: #3b2314;
+      --soil-deep: #160c06;
+      --ocean-surface: #0284c7;
+      --ocean-deep: #032b43;
+      --accent-cyan: #00d2ff;
+      --accent-gold: #fbbf24;
+      --accent-green: #10b981;
+      --accent-red: #f87171;
+      --panel-bg: rgba(13, 20, 31, 0.94);
+      --panel-border: rgba(255, 255, 255, 0.12);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      color-scheme: dark; /* medvetet mörkt tema */
+    }
+    html { height: 100%; background: #060b11; }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #060b11;
+      color: var(--text-main);
+      overflow-x: hidden;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (max-width: 1024px) {
+      body { height: auto; min-height: 100vh; }
+    }
+
+    header {
+      background: linear-gradient(180deg, rgba(13, 20, 31, 0.98), rgba(13, 20, 31, 0.88));
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      z-index: 20;
+    }
+
+    .title-group h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-group p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .badge-pill {
+      background: rgba(0, 210, 255, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 210, 255, 0.35);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .app-main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    @media (max-width: 1024px) {
+      .app-main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+      }
+    }
+
+    .simulation-area {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .canvas-container {
+      position: relative;
+      background: #000;
+      width: 100%;
+      flex: 1;
+      min-height: 340px;
+      overflow: hidden;
+    }
+
+    #cycleCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .interaction-banner {
+      position: relative;
+      align-self: center;
+      margin: 8px 12px;
+      flex-shrink: 0;
+      background: rgba(11, 19, 30, 0.94);
+      border: 1px solid var(--accent-cyan);
+      box-shadow: 0 0 22px rgba(0, 210, 255, 0.35);
+      border-radius: 30px;
+      padding: 8px 20px;
+      font-size: 1rem;
+      color: #fff;
+      font-weight: 600;
+      pointer-events: none;
+      z-index: 12;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: pulseBanner 2.8s infinite ease-in-out;
+      text-align: center;
+      max-width: 94%;
+    }
+
+    @keyframes pulseBanner {
+      0%, 100% { box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+      50% { box-shadow: 0 0 22px rgba(0, 210, 255, 0.5); }
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      box-shadow: 0 0 8px var(--accent-cyan);
+      animation: blink 1s infinite alternate;
+      flex-shrink: 0;
+    }
+
+    @keyframes blink {
+      from { opacity: 0.3; }
+      to { opacity: 1; }
+    }
+
+    .hud-toast {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      transform: translateY(-10px);
+      opacity: 0;
+      pointer-events: none;
+      background: rgba(13, 20, 31, 0.96);
+      border: 1px solid var(--accent-cyan);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      max-width: 50%;
+      text-align: center;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 100;
+      box-shadow: 0 6px 24px rgba(0, 210, 255, 0.35);
+    }
+    .hud-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .canvas-hud-controls {
+      position: relative;
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #080e18;
+      padding: 10px 12px;
+      border-top: 1px solid var(--panel-border);
+      box-shadow: 0 -2px 14px rgba(0, 0, 0, 0.45);
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .hud-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e2e8f0;
+      padding: 8px 14px;
+      border-radius: 18px;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+
+    .hud-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .next-options-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .choice-btn {
+      background: rgba(0, 210, 255, 0.15);
+      border: 1px solid rgba(0, 210, 255, 0.42);
+      color: #e0f2fe;
+      padding: 8px 14px;
+      border-radius: 18px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .choice-btn:hover {
+      background: var(--accent-cyan);
+      color: #080f18;
+      box-shadow: 0 0 12px rgba(0, 210, 255, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .speed-slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      padding-left: 10px;
+      border-left: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .speed-slider-wrap input[type="range"] {
+      width: 90px;
+      height: 6px;
+      accent-color: var(--accent-cyan);
+      cursor: pointer;
+    }
+
+    .info-panel {
+      background: var(--panel-bg);
+      border-left: 1px solid var(--panel-border);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow-y: auto;
+      z-index: 15;
+    }
+
+    .info-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .phase-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-gold);
+      margin-bottom: 4px;
+    }
+
+    .phase-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.25;
+    }
+
+    .info-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+    }
+
+    .molecule-card {
+      background: linear-gradient(135deg, rgba(14, 23, 36, 0.95), rgba(7, 12, 20, 0.98));
+      border: 1px solid rgba(0, 210, 255, 0.28);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .molecule-diagram {
+      width: 84px;
+      height: 84px;
+      background: radial-gradient(circle at 40% 38%, rgba(0, 210, 255, 0.18) 0%, rgba(10, 22, 38, 0.8) 60%, rgba(4, 9, 16, 0.95) 100%);
+      border: 1px solid rgba(0, 210, 255, 0.32);
+      box-shadow: inset 0 0 14px rgba(0, 210, 255, 0.12), 0 3px 10px rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .molecule-details {
+      flex: 1;
+    }
+
+    .mol-formula {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--accent-cyan);
+      font-family: monospace;
+    }
+
+    .mol-name {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .mol-role {
+      font-size: 0.92rem;
+      color: #cbd5e1;
+      margin-top: 4px;
+      line-height: 1.38;
+    }
+
+    .section-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-green);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-text {
+      font-size: 1rem;
+      line-height: 1.55;
+      color: #d1d5db;
+    }
+
+    .chem-eq {
+      background: #06090f;
+      border-left: 3px solid var(--accent-gold);
+      padding: 7px 10px;
+      border-radius: 4px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.95rem;
+      color: #fef08a;
+      overflow-x: auto;
+      margin-top: 5px;
+      white-space: pre-wrap;
+    }
+
+    .did-you-know-card {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(11, 18, 28, 0.4));
+      border: 1px solid rgba(14, 165, 233, 0.3);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+      line-height: 1.5;
+    }
+
+    .did-you-know-card strong {
+      color: #38bdf8;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .choice-btn .time-tag {
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 999px;
+      color: #0b1220;
+      margin-left: 4px;
+    }
+
+    .time-legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 12px;
+      max-width: 100%;
+      background: rgba(8, 14, 24, 0.88);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 5px 10px;
+      font-size: 0.82rem;
+      color: #e2e8f0;
+      z-index: 11;
+      pointer-events: none;
+      line-height: 1.5;
+    }
+    .time-legend strong { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; }
+    .time-legend .lg-row { display: flex; align-items: center; gap: 7px; }
+    .time-legend .lg-dot { width: 18px; height: 5px; border-radius: 3px; flex-shrink: 0; }
+
+    .time-scale {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin: 4px 0 8px;
+    }
+    .ts-seg {
+      text-align: center;
+      font-size: 0.75rem;
+      padding: 5px 2px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      line-height: 1.25;
+    }
+    .ts-seg.active { color: #0b1220; font-weight: 800; }
+
+    @media (max-width: 1024px) {
+      .canvas-container { min-height: 480px; }
+    }
+
+    @media (max-width: 600px) {
+      .time-legend { font-size: 0.7rem; padding: 4px 7px; }
+      .choice-btn { white-space: normal; text-align: left; }
+      .interaction-banner { font-size: 0.88rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .interaction-banner, .pulse-dot { animation: none; }
+    }
+    .choice-btn:hover .time-tag { background: #080f18 !important; color: #e0f2fe; }
+  </style>
+  <header>
+    <div class="title-group">
+      <h1>
+        <span>🌍</span> Kolets kretslopp
+        <span class="badge-pill">Interaktiv flödessimulering</span>
+      </h1>
+      <p>Följ kolatomen genom fotosyntes, cellandning, marin kemi, biologiska pumpen och geologiska kollager</p>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div class="simulation-area">
+      <!-- Guide Banner (ovanför bilden så att den inte täcker noderna) -->
+      <div class="interaction-banner" id="guideBanner">
+        <span class="pulse-dot"></span>
+        <span id="guideText">Kolatomen är i atmosfären som koldioxid (CO₂). Klicka på en pilcirkel för att starta!</span>
+      </div>
+
+      <div class="canvas-container" id="canvasWrap">
+
+        <!-- Toast notifications -->
+        <div class="hud-toast" id="hudToast">Klicka på en pilcirkel för att omvandla kolatomen!</div>
+
+        <!-- Canvas -->
+        <canvas id="cycleCanvas"></canvas>
+      </div>
+
+      <!-- Bottom HUD Controls -->
+      <div class="canvas-hud-controls">
+        <button class="hud-btn" id="resetBtn" title="Återställ kolmolekylen till atmosfären">🔄 Återställ CO₂</button>
+
+        <div class="next-options-bar" id="quickChoicesBar"></div>
+
+        <div class="speed-slider-wrap">
+          <span>Fart</span>
+          <input type="range" id="speedSlider" min="0.6" max="2.5" step="0.2" value="1.2">
+        </div>
+      </div>
+    </div>
+
+    <aside class="info-panel" id="infoSidebar">
+      <div class="info-header">
+        <div class="phase-badge" id="sidebarBadge">Startläge</div>
+        <h2 class="phase-title" id="sidebarTitle">Atmosfärisk koldioxid</h2>
+      </div>
+
+      <div class="info-body">
+        <div class="molecule-card">
+          <div class="molecule-diagram">
+            <svg id="molSvg" width="82" height="82" viewBox="-42 -42 84 84"></svg>
+          </div>
+          <div class="molecule-details">
+            <div class="mol-formula" id="molFormula">CO₂</div>
+            <div class="mol-name" id="molName">Koldioxid</div>
+            <div class="mol-role" id="molRole">Linjär gasmolekyl med två kovalenta dubbelbindningar (O=C=O).</div>
+          </div>
+        </div>
+
+        <div class="section-box" id="chemEqSection">
+          <div class="section-title">
+            <span>⚗️</span> Kemisk reaktion & process
+          </div>
+          <div class="chem-eq" id="chemEquation"></div>
+        </div>
+
+        <div class="section-box" id="timeSection" style="display:none">
+          <div class="section-title">
+            <span>⏱️</span> Hur lång tid tar steget?
+          </div>
+          <div class="time-scale" id="timeScale"></div>
+          <p class="section-text" id="timeText"></p>
+        </div>
+
+        <div class="section-box">
+          <div class="section-title">
+            <span>🔬</span> Vad sker i detta skede?
+          </div>
+          <p class="section-text" id="descText">
+            Kolatomen befinner sig i atmosfären bunden till två syreatomer. Här utgör koldioxid en central växthusgas som reglerar jordens medeltemperatur. Den tas upp av växter och växtplankton genom fotosyntes.
+          </p>
+        </div>
+
+        <div class="did-you-know-card" id="didYouKnowBox">
+          <strong>Biologiskt & Geologiskt sammanhang</strong>
+          Atmosfärens koldioxidhalt mäts i ppm (parts per million). Den har ökat från ca 280 ppm före industrialiseringen till över 420 ppm idag till följd av förbränning av fossila bränslen.
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("cycleCanvas");
+    const ctx = canvas.getContext("2d");
+    const canvasWrap = document.getElementById("canvasWrap");
+    const guideText = document.getElementById("guideText");
+    const toast = document.getElementById("hudToast");
+    const resetBtn = document.getElementById("resetBtn");
+    const speedSlider = document.getElementById("speedSlider");
+    const quickChoicesBar = document.getElementById("quickChoicesBar");
+    const sidebarBadge = document.getElementById("sidebarBadge");
+    const sidebarTitle = document.getElementById("sidebarTitle");
+    const molSvg = document.getElementById("molSvg");
+    const molFormula = document.getElementById("molFormula");
+    const molName = document.getElementById("molName");
+    const molRole = document.getElementById("molRole");
+    const chemEqSection = document.getElementById("chemEqSection");
+    const chemEquation = document.getElementById("chemEquation");
+    const descText = document.getElementById("descText");
+    const didYouKnowBox = document.getElementById("didYouKnowBox");
+
+    // Exact radius of the clickable dashed arrow circle
+    const ARROW_CIRCLE_RADIUS = 14;
+    const HIT_PADDING = 10; // extra klickyta runt cirkeln (smartboard/finger)
+
+    // Tidsskalor: fyra nivåer med färgkod
+    const TIERS = [
+      { name: "Snabbt",     range: "sekunder–dagar",       color: "#34d399" },
+      { name: "Medel",      range: "månader–århundraden",  color: "#facc15" },
+      { name: "Långsamt",   range: "årtusenden",           color: "#fb923c" },
+      { name: "Geologiskt", range: "miljontals år",        color: "#f87171" }
+    ];
+
+    // Ungefärlig tid för varje steg (tier = index i TIERS)
+    const TIMESCALES = {
+      atm_to_plant:                       { label: "Sekunder–timmar", tier: 0 },
+      plant_to_atm:                       { label: "Timmar–dagar", tier: 0 },
+      plant_to_animal:                    { label: "Dagar–år", tier: 0 },
+      animal_to_atm:                      { label: "Minuter–dagar", tier: 0 },
+      animal_to_decomposer:               { label: "Dagar–år", tier: 0 },
+      plant_to_decomposer:                { label: "Månader–århundraden", tier: 1, note: "Ett löv faller efter några månader, men ett träd kan binda kol i flera hundra år innan det dör." },
+      decomposer_to_atm:                  { label: "Månader–århundraden", tier: 1, note: "Löv bryts ner på några år, men stabil humus kan lagra kol i hundratals år." },
+      decomposer_to_fossil:               { label: "Miljontals år", tier: 3 },
+      fossil_to_atm:                      { label: "Sekunder", tier: 0, note: "Jämför: det tog miljontals år att bilda de fossila bränslena – men bara sekunder att förbränna dem. Därför hinner inte naturen balansera flödet." },
+      atm_to_ocean:                       { label: "Månader–år", tier: 1 },
+      ocean_to_atm:                       { label: "Månader–år", tier: 1 },
+      ocean_to_phytoplankton:             { label: "Sekunder–timmar", tier: 0 },
+      phytoplankton_to_ocean:             { label: "Timmar–dagar", tier: 0 },
+      phytoplankton_to_marineAnimal:      { label: "Dagar–veckor", tier: 0 },
+      marineAnimal_to_ocean:              { label: "Minuter–dagar", tier: 0 },
+      marineAnimal_to_marineDecomposer:   { label: "Dagar–månader", tier: 1 },
+      phytoplankton_to_marineDecomposer:  { label: "Veckor–månader", tier: 1 },
+      marineDecomposer_to_oceanDissolved: { label: "Hundratals–tusen år", tier: 2, note: "Nedbrytningen går snabbt, men djupvattnet når ytan igen först efter hundratals upp till tusen år." },
+      marineDecomposer_to_fossil:         { label: "Miljontals år", tier: 3 },
+      ocean_to_carbonicAcid:              { label: "Sekunder–minuter", tier: 0 },
+      carbonicAcid_to_ocean:              { label: "Sekunder", tier: 0 },
+      carbonicAcid_to_bicarbonate:        { label: "Bråkdel av en sekund", tier: 0 },
+      bicarbonate_to_carbonicAcid:        { label: "Bråkdel av en sekund", tier: 0 },
+      bicarbonate_to_carbonate:           { label: "Sekunder–år", tier: 0, note: "Jonreaktionen sker direkt, medan ett skal byggs upp under dagar till år." },
+      carbonate_to_bicarbonate:           { label: "År–årtusenden", tier: 2 }
+    };
+
+    // Processens namn som visas på händelseknapparna
+    const PROCESS_NAMES = {
+      atm_to_plant: "Fotosyntes",
+      plant_to_atm: "Cellandning",
+      plant_to_animal: "Konsumtion",
+      animal_to_atm: "Cellandning",
+      animal_to_decomposer: "Död & spillning",
+      plant_to_decomposer: "Förna bildas",
+      decomposer_to_atm: "Nedbrytning",
+      decomposer_to_fossil: "Fossilering",
+      fossil_to_atm: "Förbränning",
+      atm_to_ocean: "Upplösning (gasutbyte)",
+      ocean_to_atm: "Avgasning",
+      ocean_to_phytoplankton: "Fotosyntes",
+      phytoplankton_to_ocean: "Cellandning",
+      phytoplankton_to_marineAnimal: "Konsumtion",
+      marineAnimal_to_ocean: "Cellandning",
+      marineAnimal_to_marineDecomposer: "Sedimentation",
+      phytoplankton_to_marineDecomposer: "Sedimentation",
+      marineDecomposer_to_oceanDissolved: "Nedbrytning",
+      marineDecomposer_to_fossil: "Fossilering",
+      ocean_to_carbonicAcid: "Hydratisering",
+      carbonicAcid_to_ocean: "Sönderfall av kolsyra",
+      carbonicAcid_to_bicarbonate: "Protolys",
+      bicarbonate_to_carbonicAcid: "Protonupptag",
+      bicarbonate_to_carbonate: "Protolys & utfällning",
+      carbonate_to_bicarbonate: "Upplösning av kalk"
+    };
+
+    // Kort formel som visas ovanför den rörliga kolatomen
+    const SHORT_FORMULA = {
+      atmosphere: "CO₂", plant: "C₆H₁₂O₆", animal: "Organiskt C", decomposer: "Organiskt C",
+      fossilFuel: "C / CₙH₂ₙ₊₂", phytoplankton: "C₆H₁₂O₆", marineAnimal: "Organiskt C",
+      marineDecomposer: "Organiskt C", oceanDissolved: "CO₂ (aq)", oceanCarbonicAcid: "H₂CO₃",
+      oceanBicarbonate: "HCO₃⁻", oceanCarbonate: "CO₃²⁻ / CaCO₃"
+    };
+
+    function hexToRgba(hex, a) {
+      const n = parseInt(hex.slice(1), 16);
+      return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+    }
+
+    // Teckenstorlek i canvas som växer med bildens bredd
+    function labelFont(w) {
+      return Math.round(Math.max(10, Math.min(14, w / 64)));
+    }
+
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let toastTimer = null;
+
+    // State variables
+    let currentLocation = "atmosphere";
+    let activeTransition = null;
+    let lastTransition = null;
+    let isTraveling = false;
+    let travelProgress = 0;
+    let animSpeed = 1.2;
+    let combustionFlameEffect = 0;
+    let hoveredClickable = null;
+    const NUM_BG_PARTICLES = 40;
+    const bgParticles = [];
+
+    const STAGES_DATA = {
+      atmosphere: {
+        title: "Atmosfären",
+        formula: "CO₂ (Koldioxid)",
+        badge: "Atmosfärisk reservoar",
+        molName: "Gasformig koldioxid",
+        molRole: "Linjär gasmolekyl med två starka kovalenta dubbelbindningar (O=C=O).",
+        eq: null,
+        desc: "Kolatomen svävar fritt i luften som koldioxid (CO₂). Den fungerar som en livsavgörande växthusgas som reglerar jordens medeltemperatur och utgör kolkällan för fotosyntesen på land samt löser sig i havets ytvatten.",
+        trivia: "Atmosfärens CO₂-halt mäts i ppm (miljondelar). Den har ökat från ca 280 ppm före industrialiseringen till över 420 ppm idag, främst genom förbränning av fossila bränslen och avskogning.",
+        chemType: "CO2"
+      },
+      plant: {
+        title: "Växter & Skog (Fotosyntes)",
+        formula: "C₆H₁₂O₆ (Glukos & biomassa)",
+        badge: "Terrestrisk assimilering",
+        molName: "Kolhydrater & Växtmassa",
+        molRole: "Koldioxiden binds och omvandlas till glukos som sedan används till alla organiska molekyler.",
+        eq: "6CO₂ + 6H₂O + Ljusenergi → C₆H₁₂O₆ + 6O₂",
+        desc: "Växterna fångar solenergi och omvandlar koldioxid och vatten till glukos (C₆H₁₂O₆). Glukosen fungerar som energikälla och grundläggande byggsten för att bygga alla typer av organiska molekyler i växten, såsom cellulosa, stärkelse, aminosyror, proteiner och lipider.",
+        trivia: "Jordens skogar binder enorma mängder kol i levande träd och rötter och kallas ofta för biosfärens gröna lungor.",
+        chemType: "ORGANIC"
+      },
+      animal: {
+        title: "Djur (Konsument)",
+        formula: "Organiskt C (Proteiner & fett)",
+        badge: "Näringskedjan",
+        molName: "Animalisk vävnad",
+        molRole: "Kolatomen ingår i djurets aminosyror, muskelvävnad, fettceller, enzymer och arvsmassa (DNA).",
+        eq: "Växtglukos & cellulosa → Fria näringsämnen → Glykogen, lipider, proteiner & DNA",
+        desc: "När en växtätare äter av växten bryts kolhydraterna ner. Kolatomerna används för att bygga upp djurets egna kroppsvävnader, muskler, energilager och cellstrukturer.",
+        trivia: "Djur är heterotrofa och måste få i sig alla sina kolatomer genom födan; de kan inte själva binda koldioxid från luften.",
+        chemType: "ORGANIC"
+      },
+      decomposer: {
+        title: "Dött material & nedbrytare (mark)",
+        formula: "Organiskt C & Humus",
+        badge: "Humus & Förmultning",
+        molName: "Dött organiskt material & markfukt",
+        molRole: "Svampar och bakterier bryter ner döda växtdelar och spillning.",
+        eq: null,
+        desc: "När växter fäller löv eller djur dör tar markens nedbrytare (svampar och bakterier) vid. Genom sin cellandning frigör de en stor del av kolet tillbaka till luften som koldioxid (CO₂). Resten lagras som stabil humus i marken eller används för att bygga upp nedbrytarna själva.",
+        trivia: "Permafrost och torvmossar innehåller enorma mängder organiskt bundet kol som riskerar att frigöras när klimatet värms upp.",
+        chemType: "ORGANIC"
+      },
+      fossilFuel: {
+        title: "Fossila bränslen (Stenkol & Råolja)",
+        formula: "C & CₙH₂ₙ₊₂ (Stenkol & kolväten)",
+        badge: "Geologisk långtidssänka",
+        molName: "Stenkol & fossila kolväten",
+        molRole: "Stenkol består till största delen av kol (C). Råolja och fossilgas består av kolväten, t.ex. alkaner (CₙH₂ₙ₊₂).",
+        eq: "Forntida biomassa + Tryck + Värme (årmiljoner) →\nStenkol (mest C), råolja & fossilgas (CₙH₂ₙ₊₂)",
+        desc: "En del döda växter, djur och plankton har under årmiljoner sjunkit ned i syrefria sumpmarker och på havsbottnar. Där utsattes det organiska materialet för högt tryck och hög temperatur under sedimentlager, vilket omvandlade det till stenkol, råolja och fossilgas.",
+        trivia: "Det tog naturen över 300 miljoner år att bilda de fossila reserver som mänskligheten nu förbrukar på bara några århundraden.",
+        chemType: "HYDROCARBON"
+      },
+      phytoplankton: {
+        title: "Växtplankton (Marin fotosyntes)",
+        formula: "C₆H₁₂O₆ (Marin biomassa)",
+        badge: "Biologiska kolpumpen",
+        molName: "Kiselalger & marina mikroskopiska alger",
+        molRole: "Mikroskopiska alger fixerar löst CO₂ (aq) till marin biomassa.",
+        eq: "6CO₂ (aq) + 6H₂O + Solljus → C₆H₁₂O₆ + 6O₂",
+        desc: "I havets övre solbelysta vattenlager svävar mikroskopiska växtplankton. De tar upp löst koldioxid direkt ur vattnet och genomför fotosyntes. De står för cirka 50 % av hela jordens primärproduktion.",
+        trivia: "När växtplankton dör dalar en del ner som 'marin snö' mot botten och för ner kol till djupet – detta kallas den biologiska kolpumpen.",
+        chemType: "ORGANIC"
+      },
+      marineAnimal: {
+        title: "Marin konsument (Djurplankton & fisk)",
+        formula: "Organiskt C (Marin vävnad)",
+        badge: "Marin näringskedja",
+        molName: "Proteiner & fett i havslevande djur",
+        molRole: "Kolatomen ingår i djurplanktonets och fiskens proteiner, lipider och DNA.",
+        eq: "Växtplankton → Djurplankton → Fiskar & marina rovdjur",
+        desc: "Djurplankton och fiskar äter växtplankton och bygger in kolet i sina egna vävnader. Genom marin cellandning förbränns en del av kolet till löst CO₂, medan spillning och döda djur sjunker nedåt i vattenpelaren mot havsbotten.",
+        trivia: "Djurplankton rör sig vertikalt i vattenpelaren varje dygn, vilket aktivt transporterar organiskt kol från ytan ner mot djupet.",
+        chemType: "ORGANIC"
+      },
+      marineDecomposer: {
+        title: "Dött material & nedbrytare (havsbotten)",
+        formula: "Organiskt C & Löst CO₂",
+        badge: "Bakteriell remineralisering",
+        molName: "Marin förna & bentiska bakterier",
+        molRole: "Bakterier bryter ner marint material och frigör löst CO₂.",
+        eq: "Dött organiskt C + O₂ → CO₂ (aq) + H₂O + Näringssalter",
+        desc: "När plankton och marina djur dör dalar resterna ned till botten som marin snö. Där bryts det organiska kolet ned av bentiska bakterier genom marin cellandning och återgår till löst koldioxid i vattnet.",
+        trivia: "Det organiska material som undgår nedbrytning i syrefria bottensediment kan under årmiljoner ge upphov till råolja och fossilgas.",
+        chemType: "ORGANIC"
+      },
+      oceanDissolved: {
+        title: "Havsytan: Löst CO₂",
+        formula: "CO₂ (aq) (Löst gas)",
+        badge: "Fysikalisk diffusion",
+        molName: "Löst koldioxid i havsvatten",
+        molRole: "Koldioxidgas löser sig fysikaliskt i havsvattnet.",
+        eq: "CO₂ (g) ⇌ CO₂ (aq) (Reversibel gasdiffusion)",
+        desc: "Koldioxid från atmosfären löser sig i havets ytvatten genom diffusion. Processen är helt reversibel: kallt havsvatten har högre löslighet och kan ta upp mer gas, medan uppvärmt vatten avgasar CO₂ tillbaka till luften.",
+        trivia: "Haven absorberar ca en fjärdedel av människans koldioxidutsläpp, vilket fungerar som en dämpande kolsänka för atmosfären.",
+        chemType: "CO2"
+      },
+      oceanCarbonicAcid: {
+        title: "Kolsyra (H₂CO₃)",
+        formula: "H₂CO₃ (Kolsyra)",
+        badge: "Kemisk hydratisering",
+        molName: "Kolsyramolekyl i vatten",
+        molRole: "Löst koldioxid reagerar reversibelt med vattenmolekyler och bildar kolsyra.",
+        eq: "CO₂ (aq) + H₂O ⇌ H₂CO₃ (Reversibel jämvikt)",
+        desc: "En del av den lösta koldioxiden reagerar med vattenmolekyler och bildar kolsyra (H₂CO₃). Reaktionen är helt reversibel och befinner sig i kontinuerlig kemisk jämvikt: kolsyra kan spjälkas tillbaka till löst koldioxid och vatten, eller protolyseras vidare till vätekarbonat.",
+        trivia: "Kolsyra är en svag diprotisk syra – den kan avge två vätejoner. När mer koldioxid löser sig bildas mer kolsyra, och då blir havet surare (lägre pH).",
+        chemType: "CARBONIC_ACID"
+      },
+      oceanBicarbonate: {
+        title: "Vätekarbonatjoner (HCO₃⁻)",
+        formula: "HCO₃⁻ (Vätekarbonat)",
+        badge: "Oceanens kemiska buffert",
+        molName: "Vätekarbonatjon i havsvatten",
+        molRole: "Kolsyran protolyseras reversibelt till vätekarbonat.",
+        eq: "H₂CO₃ ⇌ H⁺ + HCO₃⁻ (Reversibel protolys)",
+        desc: "Kolsyran avger reversibelt en vätejon (proton) och bildar vätekarbonat (HCO₃⁻). Denna jämvikt kan gå åt båda hållen och fungerar som havets centrala pH-buffert. Över 90 % av allt löst oorganiskt kol i haven finns lagrat just som vätekarbonatjoner.",
+        trivia: "Detta buffertsystem håller havets pH relativt stabilt, men ökad koldioxidhalt förskjuter jämvikterna och sänker pH (havsförsurning).",
+        chemType: "BICARBONATE"
+      },
+      oceanCarbonate: {
+        title: "Karbonatjoner (Skal & Kalksten)",
+        formula: "CO₃²⁻ & CaCO₃",
+        badge: "Karbonatjämvikt & Sedimentering",
+        molName: "Karbonatjoner & Kalciumkarbonat",
+        molRole: "Reversibel utfällning och upplösning av kalciumkarbonatskal.",
+        eq: "HCO₃⁻ ⇌ H⁺ + CO₃²⁻\nCa²⁺ + CO₃²⁻ ⇌ CaCO₃ (s) (Reversibel)",
+        desc: "Vätekarbonat avger reversibelt ytterligare en proton och bildar karbonatjoner (CO₃²⁻). Karbonatjonerna reagerar med kalciumjoner (Ca²⁺) för att bygga skal och skelett av kalciumkarbonat (CaCO₃). Processen är reversibel: skalen kan lösas upp i surare vatten, eller sjunka till botten och bilda kalkstenssediment.",
+        trivia: "Jordens kalkstensberg består av forntida organismers kalkskal och utgör jordens allra största långsiktiga kollager.",
+        chemType: "CARBONATE"
+      }
+    };
+
+    const TRANSITIONS = [
+      {
+        id: "atm_to_plant",
+        from: "atmosphere",
+        to: "plant",
+        btnLabel: "🌿 Fotosyntes (Glukos & biomassa)",
+        bannerText: "Växterna tar upp koldioxid och vatten och bildar glukos och syre med hjälp av solenergi!",
+        startChem: "CO2",
+        endChem: "ORGANIC",
+        resultBadge: "Terrestrisk fotosyntes",
+        resultTitle: "Växter & Skog (Fotosyntes)",
+        resultRole: "Koldioxiden binds och omvandlas till glukos som sedan används till alla organiska molekyler.",
+        resultEq: "6CO₂ + 6H₂O + Ljusenergi → C₆H₁₂O₆ + 6O₂",
+        resultDesc: "Växterna fångar solenergi och omvandlar koldioxid och vatten till glukos (C₆H₁₂O₆). Glukosen fungerar som energikälla och grundläggande byggsten för att bygga alla typer av organiska molekyler i växten, såsom cellulosa, stärkelse, aminosyror, proteiner och lipider.",
+        resultTrivia: "Jordens skogar binder enorma mängder kol i levande träd och rötter och kallas ofta för biosfärens gröna lungor."
+      },
+      {
+        id: "plant_to_atm",
+        from: "plant",
+        to: "atmosphere",
+        btnLabel: "💨 Växtens cellandning",
+        bannerText: "Växten förbränner glukos i sin cellandning och avger koldioxid (CO₂) till luften.",
+        startChem: "ORGANIC",
+        endChem: "CO2",
+        resultBadge: "Växtens cellandning",
+        resultTitle: "Atmosfären: CO₂ (från växters cellandning)",
+        resultRole: "Koldioxidgas avges från trädets klyvöppningar till luften.",
+        resultEq: "C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + Energi",
+        resultDesc: "Trädet och växterna genomför cellandning dygnet runt för att utvinna energi till tillväxt, underhåll och näringstransport. Glukosen oxideras och kolatomen återförs till atmosfären som fri koldioxidgas (CO₂).",
+        resultTrivia: "Ett växande träd tar under dygnet upp betydligt mer CO₂ via fotosyntesen än det avger via cellandningen, vilket ger en nettolagring av kol i trädstam och rötter."
+      },
+      {
+        id: "plant_to_animal",
+        from: "plant",
+        to: "animal",
+        btnLabel: "🐇 Djur betar (Konsumtion)",
+        bannerText: "Växtätaren äter växten – kolet byggs in i djurets proteiner, fetter och muskler!",
+        startChem: "ORGANIC",
+        endChem: "ORGANIC",
+        resultBadge: "Herbivor konsumtion",
+        resultTitle: "Djur (Konsument): Växtätare",
+        resultRole: "Växtens kolhydrater har brutits ner och byggts in i djurets vävnader, muskler, fetter och DNA.",
+        resultEq: "Växtkolhydrater → Glukos & aminosyror → Glykogen, lipider & proteiner",
+        resultDesc: "Växtätaren äter av bladen och frukterna. I djurets matspjälkning spjälkas växtens makromolekyler, och kolatomerna tas upp av cellerna och byggs in i djurets egna kroppsvävnader, muskler och energireserver.",
+        resultTrivia: "Endast cirka 10 % av energin och biomassan överförs till nästa trofinivå i näringskedjan; resten förbränns i cellandning eller avgår som spillning."
+      },
+      {
+        id: "animal_to_atm",
+        from: "animal",
+        to: "atmosphere",
+        btnLabel: "💨 Djurets cellandning",
+        bannerText: "Djuret förbränner kolhydrater i cellandningen och andas ut koldioxid (CO₂).",
+        startChem: "ORGANIC",
+        endChem: "CO2",
+        resultBadge: "Djurets cellandning",
+        resultTitle: "Atmosfären: CO₂ (från djurs utandning)",
+        resultRole: "Koldioxidgas transporteras med blodet till lungorna och andas ut.",
+        resultEq: "C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + Rörelseenergi & värme",
+        resultDesc: "Djuret förbränner organiska molekyler (glukos, fett) med inandat syre i sina cellers mitokondrier. Koldioxiden transporteras med cirkulationssystemet till lungorna och andas ut till atmosfären.",
+        resultTrivia: "Varje gång ett varmblodigt djur rör sig eller upprätthåller kroppstemperaturen förbränns kolatomer som omedelbart återgår till atmosfären."
+      },
+      {
+        id: "animal_to_decomposer",
+        from: "animal",
+        to: "decomposer",
+        btnLabel: "🍄 Spillning & död biomassa",
+        bannerText: "Djurrester och spillning hamnar i marken och tas om hand av nedbrytare.",
+        startChem: "ORGANIC",
+        endChem: "ORGANIC",
+        resultBadge: "Animalisk förmultning",
+        resultTitle: "Markens nedbrytare (Spillning & kadaver)",
+        resultRole: "Svampar och bakterier bryter ner proteiner, fetter och organiska restprodukter från djur.",
+        resultEq: null,
+        resultDesc: "När djur lämnar spillning eller dör tar markens saprofyter (svampar och bakterier) vid. De bryter ner de animaliska resterna. En del av kolet förbränns via nedbrytarnas cellandning, medan resten lagras som stabil humus i jorden eller bygger upp nedbrytarnas egna kroppar.",
+        resultTrivia: "Spillning och kadaver tillför marken lättillgängliga näringsämnen och stimulerar mikrobiell aktivitet snabbare än hård vedartad växtförna."
+      },
+      {
+        id: "plant_to_decomposer",
+        from: "plant",
+        to: "decomposer",
+        btnLabel: "🍂 Vissna löv till marken",
+        bannerText: "Döda växtdelar bildar förna som bryts ner av markens svampar och bakterier.",
+        startChem: "ORGANIC",
+        endChem: "ORGANIC",
+        resultBadge: "Vegetabilisk förna",
+        resultTitle: "Markens nedbrytare (Vissna löv & förna)",
+        resultRole: "Marksvampar och bakterier klyver cellulosa och lignin från döda växtdelar.",
+        resultEq: null,
+        resultDesc: "När träd och växter fäller löv, grenar eller dör bildas ett förnaskikt på markytan. Markens nedbrytare klyver den sega cellulosan och ligninet. En del av kolet förbränns i cellandning och resten lagras som långsiktig humus i jorden.",
+        resultTrivia: "Barrförna bryts ned långsammare än lövförna, vilket skapar olika jordmåner (podsol respektive brunjord) med varierande kolförråd."
+      },
+      {
+        id: "decomposer_to_atm",
+        from: "decomposer",
+        to: "atmosphere",
+        btnLabel: "💨 Nedbrytarnas cellandning",
+        bannerText: "Nedbrytarnas cellandning frigör koldioxid (CO₂) som stiger upp i atmosfären.",
+        startChem: "ORGANIC",
+        endChem: "CO2",
+        resultBadge: "Markens cellandning",
+        resultTitle: "Atmosfären: CO₂ (från nedbrytarnas cellandning)",
+        resultRole: "Koldioxidgas diffunderar upp genom markporerna till den öppna luften.",
+        resultEq: "Organiskt C + O₂ → CO₂ + H₂O + Mikrobiell värme",
+        resultDesc: "Markens miljarder mikroorganismer genomför cellandning när de bryter ner dött material. Den bildade koldioxiden stiger upp ur jorden och återgår till atmosfären som fri koldioxidgas.",
+        resultTrivia: "Markens cellandning frigör globalt cirka tio gånger mer CO₂ till atmosfären än människans alla fossila utsläpp, men den balanseras naturligt av växternas fotosyntes."
+      },
+      {
+        id: "decomposer_to_fossil",
+        from: "decomposer",
+        to: "fossilFuel",
+        btnLabel: "⏳ Begravs innan nedbrytarna hinner (fossilering)",
+        bannerText: "Om dött material begravs i syrefri miljö hinner nedbrytarna inte bryta ner det – det pressas till stenkol!",
+        startChem: "ORGANIC",
+        endChem: "HYDROCARBON",
+        resultBadge: "Terrestrisk fossilering",
+        resultTitle: "Fossila bränslen: Stenkol & Torv (Forntida landbiomassa)",
+        resultRole: "Forntida växter och träd som begravts i syrefria sumpmarker och omvandlats till stenkol.",
+        resultEq: "Forntida landväxter + Tryck + Hög temperatur (årmiljoner) → Stenkol (C-rik berggrund)",
+        resultDesc: "En del döda växter och träd sjönk under geologiska tidsperioder ned i syrefria sumpmarker och våtmarker där nedbrytarna inte kunde leva. Under miljontals år täcktes materialet av sediment, pressades samman under enormt tryck och värme, och omvandlades till tjocka lager av stenkol.",
+        resultTrivia: "En hypotes är att det under karbonperioden (ca 300–360 miljoner år sedan) ännu inte fanns svampar som effektivt kunde bryta ned lignin. Andra forskare menar att klimatet och de enorma sumpmarkerna var viktigare – frågan är omdiskuterad."
+      },
+      {
+        id: "fossil_to_atm",
+        from: "fossilFuel",
+        to: "atmosphere",
+        btnLabel: "🏭 Förbränning av fossila bränslen",
+        bannerText: "Industrier och fordon förbränner fossila kolväten – snabb frigörelse av CO₂ till luften!",
+        startChem: "HYDROCARBON",
+        endChem: "CO2",
+        resultBadge: "Fossil förbränning (Antropogen)",
+        resultTitle: "Atmosfären: CO₂ (från industri & förbränning)",
+        resultRole: "Snabb oxidation av geologiskt lagrat kol till atmosfärisk växthusgas.",
+        resultEq: "Stenkol:  C + O₂ → CO₂ + värme\nAlkaner:  CₙH₂ₙ₊₂ + (1,5n + 0,5)O₂ → nCO₂ + (n + 1)H₂O\nT.ex. metan:  CH₄ + 2O₂ → CO₂ + 2H₂O",
+        resultDesc: "Människan utvinner och förbränner fossila kolväten (stenkol, råolja, fossilgas) i kraftverk, fabriker och fordon. Kol som varit inlåst i berggrunden i miljontals år frigörs på bara några sekunder och späder på atmosfärens växthusgashalt.",
+        resultTrivia: "Denna ensidiga process rubbar kretsloppet: naturen behöver årmiljoner för att bilda fossila bränslen, men mänskligheten förbränner dem miljontals gånger snabbare."
+      },
+      {
+        id: "atm_to_ocean",
+        from: "atmosphere",
+        to: "oceanDissolved",
+        btnLabel: "🌊 Koldioxiden löser sig i havsvattnet",
+        bannerText: "Koldioxidgas löser sig i havsvattnet: CO₂ (g) ⇌ CO₂ (aq).",
+        startChem: "CO2",
+        endChem: "CO2",
+        resultBadge: "Fysikalisk diffusion",
+        resultTitle: "Havsytan: Löst CO₂ (från luften)",
+        resultRole: "Koldioxidgas från luften löser sig fysikaliskt i havsvattnet.",
+        resultEq: "CO₂ (g) ⇌ CO₂ (aq) (Fysikalisk diffusion)",
+        resultDesc: "Koldioxidgas från atmosfären löser sig i havets ytvatten genom gasutbyte och diffusion. Processen är helt reversibel: kallt havsvatten har högre löslighet och kan ta upp mer gas, medan uppvärmt vatten avgasar CO₂ tillbaka till luften.",
+        resultTrivia: "Världshaven absorberar ca 25-30 % av människans årliga koldioxidutsläpp, vilket dämpar växthuseffekten i luften men samtidigt påverkar havets kemi."
+      },
+      {
+        id: "ocean_to_atm",
+        from: "oceanDissolved",
+        to: "atmosphere",
+        btnLabel: "💨 Avgasning från havsvattnet",
+        bannerText: "Reversibel process: Löst koldioxid avgasas från ytvattnet till atmosfären: CO₂ (aq) ⇌ CO₂ (g).",
+        startChem: "CO2",
+        endChem: "CO2",
+        resultBadge: "Marin avgasning",
+        resultTitle: "Atmosfären: CO₂ (avgasad från havsvattnet)",
+        resultRole: "Löst koldioxid övergår från vattenfas till fri gas i luften.",
+        resultEq: "CO₂ (aq) ⇌ CO₂ (g) (Reversibel avgasning)",
+        resultDesc: "När havsvatten värms upp eller strömmar mot varmare breddgrader minskar gasens löslighet i vattnet. Den lösta koldioxiden avgasas då från vattenytan och återgår till atmosfären som fri koldioxidgas.",
+        resultTrivia: "Under perioder med varmare havstemperaturer minskar havens förmåga att hålla löst koldioxid, vilket leder till ökad naturlig avgasning till atmosfären."
+      },
+      {
+        id: "ocean_to_phytoplankton",
+        from: "oceanDissolved",
+        to: "phytoplankton",
+        btnLabel: "🔬 Fotosyntes i växtplankton",
+        bannerText: "Växtplankton i den solbelysta zonen tar upp löst CO₂ (aq) för marin fotosyntes!",
+        startChem: "CO2",
+        endChem: "ORGANIC",
+        resultBadge: "Marin fotosyntes",
+        resultTitle: "Växtplankton: Marin primärproduktion",
+        resultRole: "Mikroskopiska alger fixerar löst CO₂ (aq) till glukos och cellstrukturer.",
+        resultEq: "6CO₂ (aq) + 6H₂O + Solljus → C₆H₁₂O₆ + 6O₂",
+        resultDesc: "I havets övre solbelysta vattenlager (fotiska zonen) fångar mikroskopiska växtplankton solljus. De tar upp löst koldioxid direkt ur vattnet och omvandlar det till glukos och marin biomassa. De står för cirka 50 % av jordens totala fotosyntes.",
+        resultTrivia: "Växtplankton som kiselalger och kokkolitoforider utgör basen för praktiskt taget alla näringskedjor i haven."
+      },
+      {
+        id: "phytoplankton_to_ocean",
+        from: "phytoplankton",
+        to: "oceanDissolved",
+        btnLabel: "💨 Marin cellandning",
+        bannerText: "Växtplankton förbränner glukos och avger koldioxid tillbaka till det lösta vattnet.",
+        startChem: "ORGANIC",
+        endChem: "CO2",
+        resultBadge: "Planktons cellandning",
+        resultTitle: "Havsvatten: Löst CO₂ (från växtplankton)",
+        resultRole: "Växtplankton förbränner glukos och avger koldioxid direkt till det omgivande vattnet.",
+        resultEq: "C₆H₁₂O₆ + 6O₂ → 6CO₂ (aq) + 6H₂O + Energi",
+        resultDesc: "Växtplankton genomför cellandning dygnet runt (särskilt under natten då inget solljus finns) för att driva sina cellprocesser. Glukosen förbränns med syre och koldioxiden diffunderar ut i det omgivande vattnet som löst CO₂ (aq).",
+        resultTrivia: "I den fotiska zonen överstiger växtplanktons fotosyntes normalt deras cellandning under dygnet som helhet."
+      },
+      {
+        id: "phytoplankton_to_marineAnimal",
+        from: "phytoplankton",
+        to: "marineAnimal",
+        btnLabel: "🐟 Konsument äter växtplankton",
+        bannerText: "Djurplankton och fiskar äter växtplankton – kolet vandrar vidare i den marina näringsväven!",
+        startChem: "ORGANIC",
+        endChem: "ORGANIC",
+        resultBadge: "Marin konsumtion",
+        resultTitle: "Marin konsument (Djurplankton & fisk)",
+        resultRole: "Kolet byggs in i fiskens muskler, fettreserver, cellmembran och arvsmassa.",
+        resultEq: "Växtplanktonbiomassa → Matspjälkning → Fiskproteiner, lipider & DNA",
+        resultDesc: "Djurplankton (t.ex. krill och hoppkräftor) och småfisk betar av växtplanktonen. Kolet förs vidare uppåt i den marina näringsväven till större fiskar, marina däggdjur och fåglar där det bygger upp vävnader och energilager.",
+        resultTrivia: "Många djurplankton vandrar hundratals meter vertikalt varje natt för att äta vid ytan i skydd av mörkret och simmar sedan ner i djupet under dagen."
+      },
+      {
+        id: "marineAnimal_to_ocean",
+        from: "marineAnimal",
+        to: "oceanDissolved",
+        btnLabel: "💨 Fiskens cellandning",
+        bannerText: "Marina djur förbränner kolhydrater i cellandningen och avger löst CO₂ (aq).",
+        startChem: "ORGANIC",
+        endChem: "CO2",
+        resultBadge: "Fiskens cellandning",
+        resultTitle: "Havsvatten: Löst CO₂ (från fiskars respiration)",
+        resultRole: "Koldioxid från marina djurs respiration avges via gälarna direkt till havsvattnet.",
+        resultEq: "Organiskt C + O₂ → CO₂ (aq) + H₂O + Rörelseenergi",
+        resultDesc: "Marina djur förbränner kolhydrater och fett i sin cellandning för att simma och upprätthålla livsfunktioner. Den bildade koldioxiden förs med cirkulationsvätskan till gälarna där den avges direkt till havsvattnet som löst CO₂ (aq).",
+        resultTrivia: "Stora fiskstim och djurplankton bidrar kontinuerligt till vattenpelarens pool av löst koldioxid genom sin gälandning."
+      },
+      {
+        id: "marineAnimal_to_marineDecomposer",
+        from: "marineAnimal",
+        to: "marineDecomposer",
+        btnLabel: "🍄 Dött material & spillning till botten",
+        bannerText: "Marina djurrester och spillning sjunker ned och tas om hand av nedbrytare på botten.",
+        startChem: "ORGANIC",
+        endChem: "ORGANIC",
+        resultBadge: "Marin nekromassa & spillning",
+        resultTitle: "Marina nedbrytare (Djurkadaver & fekalier)",
+        resultRole: "Bentiska bakterier bryter ner sjunkande djurrester, fekalier och skal.",
+        resultEq: null,
+        resultDesc: "När fiskar och djurplankton avger spillningspellets eller dör sjunker resterna nedåt i vattenpelaren mot havsbotten. Där koloniseras det organiska materialet av bentiska nedbrytare (bakterier och djuphavsarter) som klyver proteinerna och fettet.",
+        resultTrivia: "Stora kadaver (som 'valfall') kan skapa rika mikrobiella oaser på havsbotten som livnär specialiserade nedbrytarsamhällen i årtionden."
+      },
+      {
+        id: "phytoplankton_to_marineDecomposer",
+        from: "phytoplankton",
+        to: "marineDecomposer",
+        btnLabel: "❄️ Marin snö dalar till nedbrytare",
+        bannerText: "Dött växtplankton dalar som marin snö ner till bakterierna på botten.",
+        startChem: "ORGANIC",
+        endChem: "ORGANIC",
+        resultBadge: "Biologiska kolpumpen",
+        resultTitle: "Marina nedbrytare (Marin snö & planktonrester)",
+        resultRole: "Bentiska bakterier på botten tar emot dött växtplankton som dalat genom djupet.",
+        resultEq: null,
+        resultDesc: "Döda växtplankton klumpar ihop sig med slem och mineralpartiklar och dalar nedåt genom vattenpelaren som en ständig 'marin snö'. På botten bryts detta organiska kol ned av bakterier, vilket effektivt pumpar kol från ytan ner till havsbotten.",
+        resultTrivia: "Endast ca 1-2 % av det kol som växtplankton fixerar vid ytan når hela vägen ner till djupbottnen; resten återcirkuleras i de övre vattenlagren."
+      },
+      {
+        id: "marineDecomposer_to_oceanDissolved",
+        from: "marineDecomposer",
+        to: "oceanDissolved",
+        btnLabel: "💨 Bakteriell cellandning frigör CO₂",
+        bannerText: "Nedbrytarnas cellandning frigör löst CO₂ i djuphavet – havsströmmar för den till slut upp till ytan.",
+        startChem: "ORGANIC",
+        endChem: "CO2",
+        resultBadge: "Bakteriell remineralisering",
+        resultTitle: "Havsvatten: Löst CO₂ (från marina nedbrytare)",
+        resultRole: "Bentiska bakterier remineraliserar organiskt kol till löst CO₂ (aq) i djuphavet.",
+        resultEq: "Dött marint organiskt C + O₂ → CO₂ (aq) + H₂O + Näringssalter",
+        resultDesc: "De bentiska bakterierna på havsbotten bryter ner det organiska materialet via mikrobiell cellandning. Kolatomerna blir åter löst CO₂ (aq) – först i det kalla djuphavsvattnet. Havsströmmar för så småningom upp djupvattnet till ytan igen (uppvällning), vilket kan ta flera hundra upp till tusen år.",
+        resultTrivia: "Eftersom djuphavsvatten är mycket kallt kan det hålla extremt höga koncentrationer av löst CO₂ utan att gasen bubblar upp."
+      },
+      {
+        id: "marineDecomposer_to_fossil",
+        from: "marineDecomposer",
+        to: "fossilFuel",
+        btnLabel: "🛢️ Begravs innan nedbrytarna hinner (oljebildning)",
+        bannerText: "Om dött plankton begravs i syrefri miljö hinner nedbrytarna inte bryta ner det – det blir råolja och fossilgas!",
+        startChem: "ORGANIC",
+        endChem: "HYDROCARBON",
+        resultBadge: "Marin oljebildning",
+        resultTitle: "Fossila bränslen: Råolja & Fossilgas (Forntida plankton)",
+        resultRole: "Forntida marint plankton omvandlat till flytande och gasformiga kolväten.",
+        resultEq: "Marint planktonsediment + Anoxisk miljö + Värme (årmiljoner) → Råolja & Fossilgas",
+        resultDesc: "I syrefria (anoxiska) djuphavssänkor kunde nedbrytarna inte bryta ned planktonresterna. Under tiotals miljoner år begravdes slammet under kilometerstjocka sedimentlager. Under temperaturer på 60-120 °C (det så kallade 'oljefönstret') omvandlades planktonets lipider till råolja och fossilgas.",
+        resultTrivia: "Till skillnad från stenkol (som främst härstammar från forntida landväxter) härstammar merparten av jordens råolja från forntida marina växt- och djurplankton."
+      },
+      {
+        id: "ocean_to_carbonicAcid",
+        from: "oceanDissolved",
+        to: "oceanCarbonicAcid",
+        btnLabel: "⚗️ Hydratisering till kolsyra (H₂CO₃)",
+        bannerText: "Reversibel jämvikt: Löst koldioxid reagerar med vatten och bildar kolsyra: CO₂ (aq) + H₂O ⇌ H₂CO₃.",
+        startChem: "CO2",
+        endChem: "CARBONIC_ACID",
+        resultBadge: "Kemisk hydratisering",
+        resultTitle: "Kolsyra (H₂CO₃) bildas ur löst CO₂",
+        resultRole: "Löst koldioxid reagerar med vattenmolekyler och bildar kolsyra.",
+        resultEq: "CO₂ (aq) + H₂O ⇌ H₂CO₃ (Reversibel hydratisering)",
+        resultDesc: "En del av den lösta koldioxiden reagerar kemiskt med vatten och hydratiseras till kolsyra (H₂CO₃). Reaktionen är fullt reversibel och befinner sig i ständig kemisk jämvikt: kolsyra kan spjälkas tillbaka eller protolyseras vidare.",
+        resultTrivia: "Endast en bråkdel (ca 0,1-0,2 %) av den lösta koldioxiden i havsvatten föreligger som fri kolsyra vid jämvikt, men den utgör länken till havets jonsystem."
+      },
+      {
+        id: "carbonicAcid_to_ocean",
+        from: "oceanCarbonicAcid",
+        to: "oceanDissolved",
+        btnLabel: "🔄 Spjälkning tillbaka till löst CO₂",
+        bannerText: "Reversibel jämvikt: Kolsyran spjälkas tillbaka till löst koldioxid och vatten: H₂CO₃ ⇌ CO₂ (aq) + H₂O.",
+        startChem: "CARBONIC_ACID",
+        endChem: "CO2",
+        resultBadge: "Kemisk spjälkning",
+        resultTitle: "Havsvatten: Löst CO₂ (återbildat ur kolsyra)",
+        resultRole: "Kolsyramolekylen spjälkas tillbaka till löst koldioxid och vatten.",
+        resultEq: "H₂CO₃ ⇌ CO₂ (aq) + H₂O (Reversibel jämvikt)",
+        resultDesc: "Kolsyran spjälkas reversibelt tillbaka till vatten och löst koldioxid. Om halten av löst gas minskar vid ytan (t.ex. genom uppvärmning eller marin fotosyntes) förskjuts jämvikten åt vänster så att kolsyra omvandlas tillbaka till löst gas.",
+        resultTrivia: "Reaktionen mellan CO₂ och vatten är förvånansvärt långsam (sekunder till minuter), medan kolsyrans protolys till vätekarbonat sker nästan ögonblickligen."
+      },
+      {
+        id: "carbonicAcid_to_bicarbonate",
+        from: "oceanCarbonicAcid",
+        to: "oceanBicarbonate",
+        btnLabel: "⚗️ Protolys till vätekarbonat (HCO₃⁻)",
+        bannerText: "Reversibel jämvikt: Kolsyran avger en proton och bildar vätekarbonat: H₂CO₃ ⇌ H⁺ + HCO₃⁻.",
+        startChem: "CARBONIC_ACID",
+        endChem: "BICARBONATE",
+        resultBadge: "Kemisk protolys",
+        resultTitle: "Vätekarbonat (HCO₃⁻) bildas ur kolsyra",
+        resultRole: "Kolsyran avger en vätejon (H⁺) och bildar vätekarbonat.",
+        resultEq: "H₂CO₃ ⇌ H⁺ + HCO₃⁻ (Reversibel protolys)",
+        resultDesc: "Kolsyran avger en vätejon (proton) till vattnet och bildar vätekarbonat (HCO₃⁻). Detta är havets viktigaste kemiska buffertreaktion. Över 90 % av allt löst oorganiskt kol i haven finns lagrat i just denna jonform.",
+        resultTrivia: "När mer kolsyra bildas frigörs fler vätejoner (H⁺), vilket gör havet surare (sänker pH) – detta är kärnan i havsförsurningen."
+      },
+      {
+        id: "bicarbonate_to_carbonicAcid",
+        from: "oceanBicarbonate",
+        to: "oceanCarbonicAcid",
+        btnLabel: "🔄 Återbilda kolsyra (H₂CO₃)",
+        bannerText: "Reversibel jämvikt: Vätekarbonat kan fungera som en bas och ta upp en proton: HCO₃⁻ + H⁺ ⇌ H₂CO₃.",
+        startChem: "BICARBONATE",
+        endChem: "CARBONIC_ACID",
+        resultBadge: "Kemisk protonering",
+        resultTitle: "Kolsyra (H₂CO₃) återbildas ur vätekarbonat",
+        resultRole: "Vätekarbonatjonen kan ta upp en proton (H⁺) och återbilda kolsyra.",
+        resultEq: "HCO₃⁻ + H⁺ ⇌ H₂CO₃ (Reversibel buffert)",
+        resultDesc: "Vätekarbonat kan fungera som en bas och ta upp en fri vätejon (H⁺) för att återbilda kolsyra. Detta visar havets reversibla buffertförmåga: bufferten motverkar kraftiga svängningar i pH genom att binda eller avge protoner.",
+        resultTrivia: "Havets naturliga buffertkapacitet skyddar marint liv, men den kan överbelastas om tillförseln av CO₂ sker snabbare än berggrundens vittring kan tillföra nya baskatjoner."
+      },
+      {
+        id: "bicarbonate_to_carbonate",
+        from: "oceanBicarbonate",
+        to: "oceanCarbonate",
+        btnLabel: "🐚 Karbonatbildning & Kalkskal (CaCO₃)",
+        bannerText: "Reversibel jämvikt: Vätekarbonat bildar karbonat (CO₃²⁻) som reagerar med Ca²⁺ till kalkskal (CaCO₃)!",
+        startChem: "BICARBONATE",
+        endChem: "CARBONATE",
+        resultBadge: "Biomineralisering & Utfällning",
+        resultTitle: "Karbonat & Kalkskal (CaCO₃) bildas ur HCO₃⁻",
+        resultRole: "Vätekarbonat avger proton till karbonatjon som fälls ut med Ca²⁺ till fast kalk.",
+        resultEq: "HCO₃⁻ ⇌ H⁺ + CO₃²⁻\nCa²⁺ + CO₃²⁻ ⇌ CaCO₃ (s)",
+        resultDesc: "Vätekarbonat avger ytterligare en proton så att fria karbonatjoner (CO₃²⁻) bildas. Skalbyggande organismer som koraller, musslor, snäckor och mikroskopiska foraminiferer reagerar dessa med kalciumjoner (Ca²⁺) för att bygga fast kalciumkarbonat (CaCO₃). Obs! Räknar man på hela processen blir nettoreaktionen Ca²⁺ + 2HCO₃⁻ → CaCO₃ + CO₂ + H₂O. På kort sikt frigörs alltså CO₂ till vattnet – men kolet i själva skalet kan lagras i kalksten i miljontals år.",
+        resultTrivia: "När dessa organismer dör sjunker skalen till botten och bildar under geologiska årmiljoner den sedimentära bergarten kalksten. Om kalksten senare utsätts för högt tryck och hög temperatur omvandlas den till marmor, som är en metamorf bergart."
+      },
+      {
+        id: "carbonate_to_bicarbonate",
+        from: "oceanCarbonate",
+        to: "oceanBicarbonate",
+        btnLabel: "🔄 Upplösning av kalkskal till HCO₃⁻",
+        bannerText: "Reversibel jämvikt: Kalkskal och sediment löses upp och återbildar vätekarbonat: CaCO₃ + H⁺ ⇌ Ca²⁺ + HCO₃⁻.",
+        startChem: "CARBONATE",
+        endChem: "BICARBONATE",
+        resultBadge: "Kemisk skalupplösning",
+        resultTitle: "Vätekarbonat (HCO₃⁻) från upplöst kalk",
+        resultRole: "Fast kalciumkarbonat och fria karbonatjoner kan reagera med H⁺ och bilda vätekarbonat.",
+        resultEq: "CaCO₃ (s) + H⁺ ⇌ Ca²⁺ + HCO₃⁻ (Reversibel upplösning)",
+        resultDesc: "Om havsvattnet blir surare (fler fria H⁺-joner) kan vätejonerna reagera med kalkskalen och karbonatjonerna. Kalciumkarbonatet kan då lösas upp och bilda fria vätekarbonatjoner. Processen är reversibel och belyser hur försurat vatten kan skada koraller och skalbyggare.",
+        resultTrivia: "I djuphavet finns ett djup (karbonatkompensationsdjupet, CCD) under vilket kalkskal löses upp helt på grund av det höga trycket och kalla, CO₂-rika vattnet."
+      }
+    ];
+
+    // Andel av bilden som är himmel (uppifrån) och land (från vänster).
+    // Mindre himmel och smalare land ger havet mer plats.
+    const SKY_FRAC = 0.34;
+    const LAND_FRAC = 0.36;
+
+    function getNodeCoords(nodeKey, w, h) {
+      const nodes = {
+        atmosphere:        { x: w * 0.30, y: h * 0.09, label: "Atmosfären · CO₂", color: "#00d2ff" },
+        plant:             { x: w * 0.08, y: h * 0.26, label: "Växter", color: "#10b981" },
+        animal:            { x: w * 0.21, y: h * 0.30, label: "Djur", color: "#f48fb1" },
+        decomposer:        { x: w * 0.10, y: h * 0.58, label: "Dött material &\nnedbrytare (mark)", color: "#ff8a65" },
+        fossilFuel:        { x: w * 0.24, y: h * 0.84, label: "Fossila bränslen\n(stenkol, olja, gas)", color: "#9e9e9e" },
+        // Havet: översta raden = havskemi, mellersta = liv, nederst = botten
+        oceanDissolved:    { x: w * 0.46, y: h * 0.43, label: "Löst CO₂ (aq)", color: "#38bdf8" },
+        oceanCarbonicAcid: { x: w * 0.66, y: h * 0.43, label: "Kolsyra\nH₂CO₃", color: "#67e8f9" },
+        oceanBicarbonate:  { x: w * 0.87, y: h * 0.43, label: "Vätekarbonat\nHCO₃⁻", color: "#00b4d8" },
+        phytoplankton:     { x: w * 0.47, y: h * 0.65, label: "Växtplankton", color: "#00e676" },
+        marineAnimal:      { x: w * 0.68, y: h * 0.65, label: "Marina djur", color: "#f48fb1" },
+        oceanCarbonate:    { x: w * 0.88, y: h * 0.73, label: "Karbonat & kalk\nCO₃²⁻ / CaCO₃", color: "#e0f2fe" },
+        marineDecomposer:  { x: w * 0.60, y: h * 0.87, label: "Dött material &\nnedbrytare (botten)", color: "#ffa726" }
+      };
+      return nodes[nodeKey] || { x: w * 0.5, y: h * 0.5, label: "", color: "#fff" };
+    }
+
+    // Kurvorna räknas ut automatiskt: en båge åt sidan av den raka linjen.
+    // Eftersom bågen beror på riktningen hamnar A→B och B→A på var sin sida.
+    const PATH_BEND = {
+      decomposer_to_atm: -0.28,          // böj ut åt vänster, förbi djuret
+      fossil_to_atm: 0.12,               // förbi fabriken
+      marineDecomposer_to_fossil: -0.15, // längs botten
+      decomposer_to_fossil: 0.2
+    };
+
+    function getTransitionPath(transId, w, h) {
+      const tr = TRANSITIONS.find(t => t.id === transId);
+      const p0 = getNodeCoords(tr ? tr.from : "atmosphere", w, h);
+      const p1 = getNodeCoords(tr ? tr.to : "atmosphere", w, h);
+      const dx = p1.x - p0.x, dy = p1.y - p0.y;
+      const bend = PATH_BEND[transId] !== undefined ? PATH_BEND[transId] : 0.2;
+      const nx = -dy * bend, ny = dx * bend;
+      return {
+        p0,
+        cp1: { x: p0.x + dx * 0.3 + nx, y: p0.y + dy * 0.3 + ny },
+        cp2: { x: p0.x + dx * 0.7 + nx, y: p0.y + dy * 0.7 + ny },
+        p1
+      };
+    }
+
+    function evaluateBezier(p0, cp1, cp2, p1, t) {
+      const u = 1 - t;
+      const tt = t * t;
+      const uu = u * u;
+      const uuu = uu * u;
+      const ttt = tt * t;
+
+      return {
+        x: uuu * p0.x + 3 * uu * t * cp1.x + 3 * u * tt * cp2.x + ttt * p1.x,
+        y: uuu * p0.y + 3 * uu * t * cp1.y + 3 * u * tt * cp2.y + ttt * p1.y
+      };
+    }
+
+    function initBgParticles() {
+      bgParticles.length = 0;
+      for (let i = 0; i < NUM_BG_PARTICLES; i++) {
+        bgParticles.push({
+          x: Math.random(),
+          y: Math.random(),
+          vx: (Math.random() - 0.5) * 0.0006,
+          vy: (Math.random() - 0.5) * 0.0005,
+          radius: Math.random() * 2 + 1
+        });
+      }
+    }
+
+    function resizeCanvas() {
+      const rect = canvasWrap.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener("resize", resizeCanvas);
+
+    function drawScenery(w, h) {
+      const soilY = h * SKY_FRAC;
+      const oceanStartX = w * LAND_FRAC;
+      const N = (k) => getNodeCoords(k, w, h);
+
+      // Sky Gradient
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, soilY);
+      skyGrad.addColorStop(0, "#081320");
+      skyGrad.addColorStop(0.6, "#122a42");
+      skyGrad.addColorStop(1, "#275073");
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, w, soilY);
+
+      // Clouds
+      ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+      ctx.beginPath();
+      ctx.arc(w * 0.18, h * 0.12, 50, 0, Math.PI * 2);
+      ctx.arc(w * 0.24, h * 0.11, 70, 0, Math.PI * 2);
+      ctx.arc(w * 0.31, h * 0.13, 45, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Land Soil Gradient (Left side)
+      const soilGrad = ctx.createLinearGradient(0, soilY, 0, h);
+      soilGrad.addColorStop(0, "#3a2214");
+      soilGrad.addColorStop(0.25, "#26150b");
+      soilGrad.addColorStop(0.7, "#170b05");
+      soilGrad.addColorStop(1, "#0a0401");
+      ctx.fillStyle = soilGrad;
+      ctx.fillRect(0, soilY, oceanStartX, h - soilY);
+
+      // Land grass turf
+      ctx.fillStyle = "#2e7d32";
+      ctx.fillRect(0, soilY - 4, oceanStartX, 6);
+      ctx.fillStyle = "#43a047";
+      for (let x = 4; x < oceanStartX; x += 10) {
+        ctx.beginPath();
+        ctx.moveTo(x, soilY - 3);
+        ctx.lineTo(x + 3, soilY - 11 - (x % 3));
+        ctx.lineTo(x + 5, soilY - 3);
+        ctx.fill();
+      }
+
+      // Ocean Cutaway (Right side - 52% of canvas)
+      const oceanGrad = ctx.createLinearGradient(oceanStartX, soilY, w, h);
+      oceanGrad.addColorStop(0, "#0369a1");
+      oceanGrad.addColorStop(0.25, "#024a73");
+      oceanGrad.addColorStop(0.6, "#022942");
+      oceanGrad.addColorStop(1, "#011424");
+      ctx.fillStyle = oceanGrad;
+      ctx.fillRect(oceanStartX, soilY, w - oceanStartX, h - soilY);
+
+      // Ocean surface water wave
+      ctx.fillStyle = "rgba(56, 189, 248, 0.4)";
+      ctx.fillRect(oceanStartX, soilY - 3, w - oceanStartX, 5);
+
+      // Coastal cliff separator
+      ctx.fillStyle = "#2d1a0e";
+      ctx.beginPath();
+      ctx.moveTo(oceanStartX, soilY - 4);
+      ctx.lineTo(oceanStartX + 8, soilY + 30);
+      ctx.lineTo(oceanStartX - 5, h);
+      ctx.lineTo(oceanStartX - 14, h);
+      ctx.lineTo(oceanStartX - 14, soilY - 4);
+      ctx.closePath();
+      ctx.fill();
+
+      // Draw landscape elements
+      // Figurerna skalas med bildens storlek så att de hamnar rätt mot noderna
+      const sc = Math.max(0.4, Math.min(1.1, w / 1000, soilY / 200));
+      const drawScaled = (x, y, fn) => {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(sc, sc);
+        fn(0, 0);
+        ctx.restore();
+      };
+      drawScaled(N("plant").x, soilY, drawForestTree);
+      drawScaled(N("animal").x, soilY - 6, drawHerbivore);
+      drawScaled(N("decomposer").x, N("decomposer").y, drawDecomposersLayer);
+      drawScaled(N("fossilFuel").x, N("fossilFuel").y, drawFossilRockBed);
+      drawScaled(w * 0.31, soilY - 1, drawFactoryRig);
+      drawOceanBiota(w, h, oceanStartX, soilY);
+
+      // Combustion fire flare
+      if (combustionFlameEffect > 0) {
+        drawScaled(w * 0.31, soilY - 48, drawCombustionFlames);
+        combustionFlameEffect -= 0.035;
+      }
+    }
+
+    function drawForestTree(x, groundY) {
+      ctx.save();
+      ctx.fillStyle = "#5d4037";
+      ctx.beginPath();
+      ctx.moveTo(x - 12, groundY);
+      ctx.quadraticCurveTo(x - 8, groundY - 60, x - 6, groundY - 110);
+      ctx.lineTo(x + 6, groundY - 110);
+      ctx.quadraticCurveTo(x + 8, groundY - 60, x + 12, groundY);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = "#4e342e";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x, groundY);
+      ctx.quadraticCurveTo(x - 25, groundY + 40, x - 35, groundY + 70);
+      ctx.moveTo(x, groundY);
+      ctx.quadraticCurveTo(x + 20, groundY + 35, x + 30, groundY + 65);
+      ctx.stroke();
+
+      ctx.fillStyle = "#1b5e20";
+      ctx.beginPath();
+      ctx.arc(x, groundY - 120, 48, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#2e7d32";
+      ctx.beginPath();
+      ctx.arc(x - 22, groundY - 110, 34, 0, Math.PI * 2);
+      ctx.arc(x + 22, groundY - 110, 34, 0, Math.PI * 2);
+      ctx.arc(x, groundY - 145, 36, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#43a047";
+      ctx.beginPath();
+      ctx.arc(x - 10, groundY - 130, 24, 0, Math.PI * 2);
+      ctx.arc(x + 10, groundY - 125, 22, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawHerbivore(x, y) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = "#cfd8dc";
+      ctx.beginPath();
+      ctx.ellipse(0, -14, 18, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(-14, -22, 10, 8, -Math.PI / 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(-16, -34, 3, 9, -0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(16, -18, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#263238";
+      ctx.beginPath();
+      ctx.arc(-18, -24, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawDecomposersLayer(x, y) {
+      ctx.save();
+      ctx.fillStyle = "rgba(255, 138, 101, 0.15)";
+      ctx.beginPath();
+      ctx.ellipse(x, y, 42, 24, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255, 138, 101, 0.5)";
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = "#ff7043";
+      ctx.beginPath();
+      ctx.arc(x - 10, y - 4, 8, Math.PI, 0);
+      ctx.fill();
+      ctx.fillStyle = "#eceff1";
+      ctx.fillRect(x - 12, y - 4, 4, 8);
+
+      ctx.fillStyle = "#ffa726";
+      ctx.beginPath();
+      ctx.arc(x + 10, y - 2, 6, Math.PI, 0);
+      ctx.fill();
+      ctx.fillStyle = "#eceff1";
+      ctx.fillRect(x + 8.5, y - 2, 3, 7);
+
+      ctx.restore();
+    }
+
+    function drawFossilRockBed(x, y) {
+      ctx.save();
+      ctx.fillStyle = "rgba(30, 41, 59, 0.9)";
+      ctx.beginPath();
+      ctx.ellipse(x, y, 54, 26, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.4)";
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x - 38, y - 6);
+      ctx.lineTo(x + 38, y - 6);
+      ctx.moveTo(x - 44, y + 4);
+      ctx.lineTo(x + 44, y + 4);
+      ctx.stroke();
+
+      ctx.fillStyle = "#f59e0b";
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawFactoryRig(x, y) {
+      ctx.save();
+      ctx.fillStyle = "#475569";
+      ctx.fillRect(x - 22, y - 26, 44, 26);
+      ctx.fillStyle = "#334155";
+      ctx.fillRect(x - 16, y - 40, 10, 14);
+      ctx.fillRect(x + 6, y - 48, 8, 22);
+
+      ctx.fillStyle = "#fef08a";
+      ctx.fillRect(x - 16, y - 18, 6, 6);
+      ctx.fillRect(x + 8, y - 18, 6, 6);
+
+      const smokeTime = Date.now() / 400;
+      ctx.fillStyle = "rgba(148, 163, 184, 0.35)";
+      for (let s = 0; s < 3; s++) {
+        const sy = (y - 52) - ((smokeTime * 14 + s * 12) % 36);
+        const sx = (x + 10) + Math.sin(smokeTime + s) * 5;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 5 + s * 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "bold 12px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText("🏭 Förbränning", x, y + 14);
+      ctx.restore();
+    }
+
+    function drawCombustionFlames(x, y) {
+      ctx.save();
+      ctx.fillStyle = "rgba(255, 87, 34, 0.85)";
+      ctx.beginPath();
+      ctx.arc(x + 10, y, 16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ffeb3b";
+      ctx.beginPath();
+      ctx.arc(x + 10, y, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawOceanBiota(w, h, oceanStartX, soilY) {
+      ctx.save();
+      const N = (k) => getNodeCoords(k, w, h);
+      const { x: surfX, y: surfY } = N("oceanDissolved");
+      const { x: carbAcidX, y: carbAcidY } = N("oceanCarbonicAcid");
+      const { x: bicarbX, y: bicarbY } = N("oceanBicarbonate");
+      const { x: px, y: py } = N("phytoplankton");
+      const { x: mx, y: my } = N("marineAnimal");
+      const { x: decX, y: decY } = N("marineDecomposer");
+      const { x: deepX, y: deepY } = N("oceanCarbonate");
+
+      // Sun rays penetrating upper photic layer
+      ctx.fillStyle = "rgba(255, 255, 200, 0.08)";
+      ctx.beginPath();
+      ctx.moveTo(oceanStartX + 20, soilY);
+      ctx.lineTo(px - w * 0.05, py + 15);
+      ctx.lineTo(px + w * 0.06, py + 15);
+      ctx.lineTo(px + w * 0.10, soilY);
+      ctx.closePath();
+      ctx.fill();
+
+      // Surface zone - Dissolved CO2 (CO2 aq)
+      ctx.fillStyle = "rgba(56, 189, 248, 0.16)";
+      ctx.beginPath();
+      ctx.ellipse(surfX, surfY, 32, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.55)";
+      ctx.setLineDash([2, 2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = "#bae6fd";
+      ctx.font = "bold 9px system-ui";
+      ctx.textAlign = "center";
+      
+
+      // Carbonic acid zone (H2CO3)
+      ctx.fillStyle = "rgba(103, 232, 249, 0.16)";
+      ctx.beginPath();
+      ctx.ellipse(carbAcidX, carbAcidY, 32, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(103, 232, 249, 0.55)";
+      ctx.setLineDash([2, 2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = "#a5f3fc";
+      ctx.font = "bold 9px system-ui";
+      ctx.textAlign = "center";
+      
+
+      // Bicarbonate zone (HCO3-)
+      ctx.fillStyle = "rgba(0, 180, 216, 0.16)";
+      ctx.beginPath();
+      ctx.ellipse(bicarbX, bicarbY, 32, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0, 180, 216, 0.55)";
+      ctx.setLineDash([2, 2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = "#7dd3fc";
+      ctx.font = "bold 9px system-ui";
+      ctx.textAlign = "center";
+      
+
+      // Photic zone - Phytoplankton colony
+      ctx.fillStyle = "rgba(0, 230, 118, 0.18)";
+      ctx.beginPath();
+      ctx.ellipse(px, py, 28, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0, 230, 118, 0.65)";
+      ctx.setLineDash([2, 2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      const diatoms = [
+        { ox: -10, oy: -4, r: 4.5 },
+        { ox: 2, oy: 2, r: 5 },
+        { ox: 10, oy: -3, r: 4 },
+        { ox: -3, oy: -6, r: 3 }
+      ];
+      diatoms.forEach(d => {
+        ctx.fillStyle = "#00e676";
+        ctx.beginPath();
+        ctx.arc(px + d.ox, py + d.oy, d.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#b9f6ca";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.fillStyle = "#1b5e20";
+        ctx.beginPath();
+        ctx.arc(px + d.ox, py + d.oy, d.r * 0.45, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Marine Animal (Larger, detailed fish)
+      ctx.fillStyle = "rgba(244, 143, 177, 0.18)";
+      ctx.beginPath();
+      ctx.ellipse(mx, my, 34, 18, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(244, 143, 177, 0.65)";
+      ctx.setLineDash([2, 2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.save();
+      ctx.translate(mx - 4, my - 2);
+
+      const fishGrad = ctx.createLinearGradient(-14, 0, 16, 0);
+      fishGrad.addColorStop(0, "#f472b6");
+      fishGrad.addColorStop(0.6, "#fb7185");
+      fishGrad.addColorStop(1, "#fda4af");
+      ctx.fillStyle = fishGrad;
+
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 14, 7.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#f43f5e";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Tail fin
+      ctx.fillStyle = "#fb7185";
+      ctx.beginPath();
+      ctx.moveTo(11, 0);
+      ctx.lineTo(21, -8);
+      ctx.quadraticCurveTo(17, 0, 21, 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Dorsal fin
+      ctx.fillStyle = "#f472b6";
+      ctx.beginPath();
+      ctx.moveTo(-4, -7);
+      ctx.quadraticCurveTo(2, -12, 6, -6);
+      ctx.closePath();
+      ctx.fill();
+
+      // Pectoral fin
+      ctx.fillStyle = "#fda4af";
+      ctx.beginPath();
+      ctx.ellipse(-2, 2, 4.5, 2.5, Math.PI / 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Eye
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(-8, -2, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#0f172a";
+      ctx.beginPath();
+      ctx.arc(-8.5, -2, 1.3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Gill line
+      ctx.strokeStyle = "rgba(190, 18, 60, 0.6)";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(-4, 0, 4.5, -Math.PI / 3, Math.PI / 3);
+      ctx.stroke();
+      ctx.restore();
+
+      // Marine Decomposers (bacteria on seafloor)
+      ctx.fillStyle = "rgba(255, 167, 38, 0.16)";
+      ctx.beginPath();
+      ctx.ellipse(decX, decY, 34, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255, 167, 38, 0.55)";
+      ctx.setLineDash([2, 2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      const bRods = [
+        { ox: -10, oy: 0, a: 0.2 },
+        { ox: 0, oy: 2, a: -0.4 },
+        { ox: 10, oy: -2, a: 0.3 }
+      ];
+      bRods.forEach(b => {
+        ctx.save();
+        ctx.translate(decX + b.ox, decY + b.oy);
+        ctx.rotate(b.a);
+        ctx.fillStyle = "#ffa726";
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 5, 2.2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Deep marine zone - Carbonate (CO3^2- & CaCO3 shells/limestone)
+      ctx.fillStyle = "rgba(224, 242, 254, 0.14)";
+      ctx.beginPath();
+      ctx.ellipse(deepX, deepY, 36, 18, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(224, 242, 254, 0.55)";
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Shell icon (CaCO3)
+      ctx.fillStyle = "#e0f7fa";
+      ctx.beginPath();
+      ctx.arc(deepX - 8, deepY, 6.5, 0, Math.PI);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#80deea";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Limestone layer strata
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(deepX - 22, deepY + 8);
+      ctx.lineTo(deepX + 22, deepY + 8);
+      ctx.stroke();
+
+      // Sinking marine snow
+      const snowTime = Date.now() / 400;
+      ctx.fillStyle = "rgba(255, 255, 255, 0.65)";
+      for (let s = 0; s < 4; s++) {
+        const sy = (py + 6) + ((snowTime * 12 + s * 14) % 36);
+        const sx = px + 2 + s * 8 + Math.sin(snowTime + s) * 2;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 1.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    // Pilcirklar och processnamn ritas sist (överst), och etiketterna placeras
+    // där de krockar minst med noder, kolatomen och varandra.
+    let pendingArrows = [];
+    let nodeLabelBoxes = [];
+
+    function overlapArea(a, b) {
+      const x = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
+      const y = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+      return x * y;
+    }
+
+    function drawArrowOverlays(w, h, atomPos) {
+      const R = ARROW_CIRCLE_RADIUS;
+      const obstacles = nodeLabelBoxes.slice();
+      if (atomPos) obstacles.push({ x: atomPos.x - 42, y: atomPos.y - 52, w: 84, h: 80 });
+
+      // 0. Flytta pilcirkeln längs kurvan om mitten krockar med kolatomen eller en nodetikett
+      pendingArrows.forEach(a => {
+        const { p0, cp1, cp2, p1 } = a.path;
+        let bestT = 0.5, bestScore = Infinity;
+        [0.5, 0.42, 0.58, 0.35, 0.65, 0.72].forEach(tt => {
+          const m = evaluateBezier(p0, cp1, cp2, p1, tt);
+          const box = { x: m.x - R, y: m.y - R, w: 2 * R, h: 2 * R };
+          let score = Math.abs(tt - 0.5) * 200;
+          obstacles.forEach(o => { score += overlapArea(box, o); });
+          if (score < bestScore) { bestScore = score; bestT = tt; }
+        });
+        a.mid = evaluateBezier(p0, cp1, cp2, p1, bestT);
+        const pb = evaluateBezier(p0, cp1, cp2, p1, Math.max(0, bestT - 0.02));
+        const pa = evaluateBezier(p0, cp1, cp2, p1, Math.min(1, bestT + 0.02));
+        a.tangentAngle = Math.atan2(pa.y - pb.y, pa.x - pb.x);
+        a.t.renderX = a.mid.x;
+        a.t.renderY = a.mid.y;
+        obstacles.push({ x: a.mid.x - R, y: a.mid.y - R, w: 2 * R, h: 2 * R });
+      });
+
+      // 1. Cirklar med pil
+      pendingArrows.forEach(({ mid, tangentAngle, tierColor, isHovered }) => {
+        ctx.save();
+        ctx.translate(mid.x, mid.y);
+        ctx.fillStyle = isHovered ? tierColor : "rgba(11, 19, 30, 0.95)";
+        ctx.shadowColor = hexToRgba(tierColor, isHovered ? 0.95 : 0.5);
+        ctx.shadowBlur = isHovered ? 12 : 6;
+        ctx.beginPath();
+        ctx.arc(0, 0, R, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = isHovered ? "#ffffff" : tierColor;
+        ctx.lineWidth = isHovered ? 2.5 : 2;
+        ctx.setLineDash([3, 2.5]);
+        ctx.lineDashOffset = reduceMotion ? 0 : -Date.now() / 45;
+        ctx.beginPath();
+        ctx.arc(0, 0, R, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.rotate(tangentAngle);
+        ctx.fillStyle = isHovered ? "#080f18" : "#ffffff";
+        ctx.beginPath();
+        ctx.moveTo(6, 0);
+        ctx.lineTo(-4.5, -5);
+        ctx.lineTo(-2, 0);
+        ctx.lineTo(-4.5, 5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // 2. Processnamn – välj den sida av cirkeln där etiketten krockar minst
+      const fs = labelFont(w) - 1;
+      ctx.font = `bold ${fs}px system-ui`;
+      pendingArrows.forEach(({ t, mid, tierColor, isHovered, ts }) => {
+        const text = PROCESS_NAMES[t.id];
+        const bw = ctx.measureText(text).width + 14;
+        const bh = fs + 8;
+        const gap = 3;
+        const candidates = [
+          { x: mid.x - bw / 2, y: mid.y + R + gap },           // under
+          { x: mid.x - bw / 2, y: mid.y - R - gap - bh },      // över
+          { x: mid.x + R + gap, y: mid.y - bh / 2 },           // höger
+          { x: mid.x - R - gap - bw, y: mid.y - bh / 2 }       // vänster
+        ];
+        let best = null, bestScore = Infinity;
+        candidates.forEach((c, i) => {
+          const box = {
+            x: Math.max(4, Math.min(w - bw - 4, c.x)),
+            y: Math.max(4, Math.min(h - bh - 4, c.y)),
+            w: bw, h: bh
+          };
+          let score = i * 0.5; // liten preferens för "under"
+          obstacles.forEach(o => { score += overlapArea(box, o); });
+          if (score < bestScore) { bestScore = score; best = box; }
+        });
+        obstacles.push(best);
+
+        ctx.fillStyle = isHovered ? tierColor : "rgba(8, 14, 24, 0.95)";
+        ctx.strokeStyle = tierColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(best.x, best.y, bw, bh, 7);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = isHovered ? "#0b1220" : "#ffffff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(text, best.x + bw / 2, best.y + bh / 2 + 0.5);
+      });
+    }
+
+    function drawClickableRoutesAndNodes(w, h) {
+      pendingArrows = [];
+      nodeLabelBoxes = [];
+      const availableTrans = TRANSITIONS.filter(t => t.from === currentLocation);
+
+      // Render pathway curves
+      TRANSITIONS.forEach(t => {
+        const isAvailable = !isTraveling && t.from === currentLocation;
+        const isActiveMoving = isTraveling && activeTransition && activeTransition.id === t.id;
+        const path = getTransitionPath(t.id, w, h);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(path.p0.x, path.p0.y);
+        ctx.bezierCurveTo(path.cp1.x, path.cp1.y, path.cp2.x, path.cp2.y, path.p1.x, path.p1.y);
+
+        if (isActiveMoving) {
+          ctx.strokeStyle = "rgba(0, 210, 255, 0.95)";
+          ctx.lineWidth = 4.5;
+          ctx.setLineDash([8, 6]);
+          ctx.lineDashOffset = -Date.now() / 20;
+          ctx.stroke();
+        } else if (isAvailable) {
+          const ts = TIMESCALES[t.id];
+          const tierColor = "#00d2ff"; // enhetlig färg – tidsskalan visas bara i inforutan
+          const pulseAlpha = reduceMotion ? 0.85 : 0.55 + 0.35 * Math.sin(Date.now() / 220);
+          ctx.strokeStyle = hexToRgba(tierColor, pulseAlpha);
+          ctx.lineWidth = 3.5;
+          ctx.setLineDash([6, 6]);
+          ctx.lineDashOffset = -Date.now() / 35;
+          ctx.stroke();
+
+          // Calculate precise midpoint
+          const mid = evaluateBezier(path.p0, path.cp1, path.cp2, path.p1, 0.5);
+          t.renderX = mid.x;
+          t.renderY = mid.y;
+
+          // Tangent angle for exact arrow rotation
+          const pBefore = evaluateBezier(path.p0, path.cp1, path.cp2, path.p1, 0.48);
+          const pAfter = evaluateBezier(path.p0, path.cp1, path.cp2, path.p1, 0.52);
+          const tangentAngle = Math.atan2(pAfter.y - pBefore.y, pAfter.x - pBefore.x);
+
+          const isHovered = hoveredClickable && hoveredClickable.type === "transition" && hoveredClickable.item.id === t.id;
+
+          pendingArrows.push({ t, path, mid, tangentAngle, tierColor, isHovered, ts });
+        } else {
+          t.renderX = null;
+          t.renderY = null;
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+          ctx.lineWidth = 1.4;
+          ctx.setLineDash([4, 4]);
+          ctx.stroke();
+        }
+        ctx.restore();
+      });
+
+      // Render location nodes (visual anchors only, not clickable)
+      const allNodeKeys = Object.keys(STAGES_DATA);
+      allNodeKeys.forEach(k => {
+        const n = getNodeCoords(k, w, h);
+        const isCurrent = (currentLocation === k) && !isTraveling;
+
+        ctx.save();
+        ctx.fillStyle = n.color;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, isCurrent ? 7.5 : 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = isCurrent ? "#ffea00" : "#ffffff";
+        ctx.lineWidth = isCurrent ? 3 : 1.5;
+        ctx.stroke();
+
+        const fs = labelFont(w);
+        ctx.font = `${isCurrent ? "bold" : "600"} ${fs}px system-ui`;
+        const lines = n.label.split("\n");
+        const lineH = fs * 1.25;
+        const textWidth = Math.max(...lines.map(l => ctx.measureText(l).width));
+        const boxW = textWidth + 14;
+        const boxH = lines.length * lineH + 6;
+
+        ctx.fillStyle = isCurrent ? "rgba(22, 33, 49, 0.96)" : "rgba(11, 19, 30, 0.88)";
+        ctx.strokeStyle = isCurrent ? "#ffea00" : "rgba(255, 255, 255, 0.25)";
+        ctx.lineWidth = isCurrent ? 2 : 1;
+
+        const pillX = Math.max(4, Math.min(w - boxW - 4, n.x - boxW / 2));
+        const pillY = n.y + (isCurrent ? 30 : 11);
+        ctx.beginPath();
+        ctx.roundRect(pillX, pillY, boxW, boxH, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = isCurrent ? "#fde047" : "#f0f4f8";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        lines.forEach((l, i) => ctx.fillText(l, pillX + boxW / 2, pillY + 3 + lineH * (i + 0.5)));
+        nodeLabelBoxes.push({ x: pillX, y: pillY, w: boxW, h: boxH });
+
+        ctx.restore();
+      });
+    }
+
+    function drawMolecule(w, h) {
+      let pos;
+      let chemType = STAGES_DATA[currentLocation].chemType;
+      let displayFormula = SHORT_FORMULA[currentLocation];
+
+      if (isTraveling && activeTransition) {
+        const path = getTransitionPath(activeTransition.id, w, h);
+        pos = evaluateBezier(path.p0, path.cp1, path.cp2, path.p1, travelProgress);
+
+        if (travelProgress > 0.5) {
+          chemType = activeTransition.endChem;
+          displayFormula = SHORT_FORMULA[activeTransition.to];
+        } else {
+          chemType = activeTransition.startChem;
+          displayFormula = SHORT_FORMULA[activeTransition.from];
+        }
+      } else {
+        pos = getNodeCoords(currentLocation, w, h);
+      }
+
+      ctx.save();
+      ctx.translate(pos.x, pos.y);
+
+      // Pulsing glow around carbon atom
+      const pulse = Math.sin(Date.now() / 140) * 4;
+      const glowGrad = ctx.createRadialGradient(0, 0, 7, 0, 0, 24 + pulse);
+      glowGrad.addColorStop(0, "rgba(0, 210, 255, 0.95)");
+      glowGrad.addColorStop(0.5, "rgba(0, 210, 255, 0.3)");
+      glowGrad.addColorStop(1, "rgba(0, 210, 255, 0)");
+      ctx.fillStyle = glowGrad;
+      ctx.beginPath();
+      ctx.arc(0, 0, 24 + pulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Carbon nucleus sphere
+      const cAtomGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 13);
+      cAtomGrad.addColorStop(0, "#90a4ae");
+      cAtomGrad.addColorStop(0.7, "#374151");
+      cAtomGrad.addColorStop(1, "#111827");
+      ctx.fillStyle = cAtomGrad;
+      ctx.beginPath();
+      ctx.arc(0, 0, 13, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 12px system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("C", 0, 1);
+
+      const time = Date.now() / 320;
+      if (chemType === "CO2") {
+        const px1 = 18 * Math.cos(time);
+        const py1 = 18 * Math.sin(time);
+        const px2 = -px1;
+        const py2 = -py1;
+        drawSmallAtom(px1, py1, "#ef4444", "O", 7.5, "#fff");
+        drawSmallAtom(px2, py2, "#ef4444", "O", 7.5, "#fff");
+      } else if (chemType === "CARBONIC_ACID") {
+        drawSmallAtom(18 * Math.cos(time), 18 * Math.sin(time), "#ef4444", "O", 7, "#fff");
+        drawSmallAtom(18 * Math.cos(time + (2 * Math.PI) / 3), 18 * Math.sin(time + (2 * Math.PI) / 3), "#ef4444", "OH", 7, "#fff");
+        drawSmallAtom(18 * Math.cos(time + (4 * Math.PI) / 3), 18 * Math.sin(time + (4 * Math.PI) / 3), "#ef4444", "OH", 7, "#fff");
+      } else if (chemType === "ORGANIC") {
+        drawSmallAtom(18 * Math.cos(time), 18 * Math.sin(time), "#ef4444", "O", 7, "#fff");
+        drawSmallAtom(18 * Math.cos(time + Math.PI), 18 * Math.sin(time + Math.PI), "#ffffff", "H", 5.5, "#222");
+        drawSmallAtom(18 * Math.cos(time + Math.PI / 2), 18 * Math.sin(time + Math.PI / 2), "#90a4ae", "C", 7, "#fff");
+      } else if (chemType === "HYDROCARBON") {
+        drawSmallAtom(18 * Math.cos(time), 18 * Math.sin(time), "#ffffff", "H", 5.5, "#222");
+        drawSmallAtom(18 * Math.cos(time + Math.PI), 18 * Math.sin(time + Math.PI), "#ffffff", "H", 5.5, "#222");
+        drawSmallAtom(18 * Math.cos(time + Math.PI / 2), 18 * Math.sin(time + Math.PI / 2), "#475569", "C", 7, "#fff");
+      } else if (chemType === "BICARBONATE") {
+        drawSmallAtom(18 * Math.cos(time), 18 * Math.sin(time), "#ef4444", "O", 7, "#fff");
+        drawSmallAtom(18 * Math.cos(time + (2 * Math.PI) / 3), 18 * Math.sin(time + (2 * Math.PI) / 3), "#ef4444", "O", 7, "#fff");
+        drawSmallAtom(18 * Math.cos(time + (4 * Math.PI) / 3), 18 * Math.sin(time + (4 * Math.PI) / 3), "#ef4444", "OH", 7, "#fff");
+      } else if (chemType === "CARBONATE") {
+        for (let i = 0; i < 3; i++) {
+          const ang = time + (i * 2 * Math.PI) / 3;
+          drawSmallAtom(19 * Math.cos(ang), 19 * Math.sin(ang), "#ef4444", "O", 7, "#fff");
+        }
+      }
+
+      const ffs = labelFont(w);
+      ctx.font = `bold ${ffs}px system-ui`;
+      const fW = ctx.measureText(displayFormula).width + 14;
+      ctx.fillStyle = "rgba(0, 0, 0, 0.9)";
+      ctx.beginPath();
+      ctx.roundRect(-fW / 2, -32 - ffs, fW, ffs + 8, 5);
+      ctx.fill();
+      ctx.strokeStyle = "#00d2ff";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      ctx.fillStyle = "#00d2ff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(displayFormula, 0, -28 - ffs / 2);
+
+      ctx.restore();
+      return pos;
+    }
+
+    function drawSmallAtom(x, y, color, symbol, radius, textColor = "#fff") {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.5)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = textColor;
+      ctx.font = `bold ${radius + 1}px system-ui`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(symbol, x, y + 0.5);
+    }
+
+    function updateAndDrawParticles(w, h) {
+      ctx.save();
+      bgParticles.forEach(p => {
+        p.x += p.vx * animSpeed;
+        p.y += p.vy * animSpeed;
+
+        if (p.x < 0) p.x = 1;
+        if (p.x > 1) p.x = 0;
+        if (p.y < 0) p.y = 1;
+        if (p.y > 1) p.y = 0;
+
+        const screenX = p.x * w;
+        const screenY = p.y * h;
+
+        if (screenY < h * SKY_FRAC) {
+          ctx.fillStyle = "rgba(144, 202, 249, 0.35)";
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, p.radius, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = "rgba(255, 213, 79, 0.2)";
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, p.radius * 0.8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+      ctx.restore();
+    }
+
+    function updateChemicalViewer(chemType) {
+      molSvg.innerHTML = "";
+      const createSvgEl = (tag, attrs) => {
+        const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        for (const k in attrs) el.setAttribute(k, attrs[k]);
+        return el;
+      };
+
+      const defs = createSvgEl("defs", {});
+      defs.innerHTML = `
+        <filter id="molShadow" x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="1" dy="2" stdDeviation="1.8" flood-color="#000" flood-opacity="0.6"/>
+        </filter>
+        <radialGradient id="sphereC" cx="38%" cy="36%" r="65%">
+          <stop offset="0%" stop-color="#4b5563"/>
+          <stop offset="60%" stop-color="#1f2937"/>
+          <stop offset="100%" stop-color="#111827"/>
+        </radialGradient>
+        <radialGradient id="sphereO" cx="38%" cy="36%" r="65%">
+          <stop offset="0%" stop-color="#f87171"/>
+          <stop offset="60%" stop-color="#dc2626"/>
+          <stop offset="100%" stop-color="#7f1d1d"/>
+        </radialGradient>
+        <radialGradient id="sphereH" cx="38%" cy="36%" r="65%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="65%" stop-color="#cbd5e1"/>
+          <stop offset="100%" stop-color="#94a3b8"/>
+        </radialGradient>
+      `;
+      molSvg.appendChild(defs);
+
+      function drawBond(x1, y1, x2, y2, width = 3.5, color = "#94a3b8") {
+        const line = createSvgEl("line", {
+          x1, y1, x2, y2,
+          stroke: color,
+          "stroke-width": width,
+          "stroke-linecap": "round",
+          filter: "url(#molShadow)"
+        });
+        molSvg.appendChild(line);
+      }
+
+      function drawSphere(x, y, r, gradId, label = "", textColor = "#fff", strokeColor = "rgba(255,255,255,0.3)") {
+        const group = createSvgEl("g", { filter: "url(#molShadow)" });
+
+        const circle = createSvgEl("circle", {
+          cx: x, cy: y, r: r,
+          fill: `url(#${gradId})`,
+          stroke: strokeColor,
+          "stroke-width": 1.2
+        });
+        group.appendChild(circle);
+
+        if (label) {
+          const isSmall = label.length > 1;
+          const txt = createSvgEl("text", {
+            x: x,
+            y: y + (isSmall ? 3 : 4),
+            "text-anchor": "middle",
+            fill: textColor,
+            "font-size": isSmall ? (r > 8 ? 9 : 7.5) : (r > 9 ? 11 : 8.5),
+            "font-weight": "800",
+            "font-family": "system-ui, -apple-system, sans-serif"
+          });
+          txt.textContent = label;
+          group.appendChild(txt);
+        }
+
+        molSvg.appendChild(group);
+      }
+
+      if (chemType === "CO2") {
+        drawBond(-25, -4, 0, -4, 2.6, "#cbd5e1");
+        drawBond(-25, 4, 0, 4, 2.6, "#cbd5e1");
+        drawBond(0, -4, 25, -4, 2.6, "#cbd5e1");
+        drawBond(0, 4, 25, 4, 2.6, "#cbd5e1");
+
+        drawSphere(0, 0, 13, "sphereC", "C", "#ffffff", "rgba(255,255,255,0.4)");
+        drawSphere(-25, 0, 10, "sphereO", "O", "#ffffff");
+        drawSphere(25, 0, 10, "sphereO", "O", "#ffffff");
+      } else if (chemType === "CARBONIC_ACID") {
+        drawBond(-3.5, 0, -3.5, -23, 2.4, "#cbd5e1");
+        drawBond(3.5, 0, 3.5, -23, 2.4, "#cbd5e1");
+        drawBond(0, 0, -22, 14, 3.2, "#cbd5e1");
+        drawBond(0, 0, 22, 14, 3.2, "#cbd5e1");
+        drawBond(-22, 14, -34, 20, 2.4, "#94a3b8");
+        drawBond(22, 14, 34, 20, 2.4, "#94a3b8");
+
+        drawSphere(0, 0, 13, "sphereC", "C", "#ffffff", "rgba(255,255,255,0.4)");
+        drawSphere(0, -23, 10, "sphereO", "O", "#ffffff");
+        drawSphere(-22, 14, 9.5, "sphereO", "O", "#ffffff");
+        drawSphere(22, 14, 9.5, "sphereO", "O", "#ffffff");
+        drawSphere(-34, 20, 6.5, "sphereH", "H", "#0f172a", "#64748b");
+        drawSphere(34, 20, 6.5, "sphereH", "H", "#0f172a", "#64748b");
+      } else if (chemType === "ORGANIC") {
+        drawBond(0, 0, -22, -14, 3.2, "#cbd5e1");
+        drawBond(0, 0, 22, -14, 3.2, "#cbd5e1");
+        drawBond(0, 0, 0, 23, 3.2, "#cbd5e1");
+        drawBond(-22, -14, -34, -22, 2.4, "#94a3b8");
+
+        drawSphere(0, 0, 13, "sphereC", "C", "#ffffff", "rgba(255,255,255,0.4)");
+        drawSphere(-22, -14, 9.5, "sphereO", "O", "#ffffff");
+        drawSphere(-34, -22, 6.5, "sphereH", "H", "#0f172a", "#64748b");
+        drawSphere(22, -14, 7, "sphereH", "H", "#0f172a", "#64748b");
+        drawSphere(0, 23, 10, "sphereC", "C", "#ffffff");
+      } else if (chemType === "HYDROCARBON") {
+        drawBond(-18, 0, 18, 0, 4, "#38bdf8");
+        drawBond(-18, 0, -28, -18, 2.4, "#cbd5e1");
+        drawBond(-18, 0, -28, 18, 2.4, "#cbd5e1");
+        drawBond(-18, 0, -35, 0, 2.4, "#cbd5e1");
+        drawBond(18, 0, 28, -18, 2.4, "#cbd5e1");
+        drawBond(18, 0, 28, 18, 2.4, "#cbd5e1");
+        drawBond(18, 0, 35, 0, 2.4, "#cbd5e1");
+
+        drawSphere(-18, 0, 10.5, "sphereC", "C", "#ffffff", "rgba(255,255,255,0.4)");
+        drawSphere(18, 0, 10.5, "sphereC", "C", "#ffffff", "rgba(255,255,255,0.4)");
+        drawSphere(-28, -18, 6.5, "sphereH", "H", "#0f172a", "#64748b");
+        drawSphere(-28, 18, 6.5, "sphereH", "H", "#0f172a", "#64748b");
+        drawSphere(-35, 0, 6, "sphereH", "H", "#0f172a", "#64748b");
+        drawSphere(28, -18, 6.5, "sphereH", "H", "#0f172a", "#64748b");
+        drawSphere(28, 18, 6.5, "sphereH", "H", "#0f172a", "#64748b");
+        drawSphere(35, 0, 6, "sphereH", "H", "#0f172a", "#64748b");
+      } else if (chemType === "BICARBONATE") {
+        drawBond(-3.5, 0, -3.5, -22, 2.4, "#cbd5e1");
+        drawBond(3.5, 0, 3.5, -22, 2.4, "#cbd5e1");
+        drawBond(0, 0, -23, 13, 3.2, "#cbd5e1");
+        drawBond(0, 0, 23, 13, 3.2, "#cbd5e1");
+        drawBond(23, 13, 35, 19, 2.4, "#94a3b8");
+
+        drawSphere(0, 0, 13, "sphereC", "C", "#ffffff", "rgba(255,255,255,0.4)");
+        drawSphere(0, -22, 10, "sphereO", "O", "#ffffff");
+        drawSphere(-23, 13, 10, "sphereO", "O⁻", "#ffffff");
+        drawSphere(23, 13, 9.5, "sphereO", "O", "#ffffff");
+        drawSphere(35, 19, 6.5, "sphereH", "H", "#0f172a", "#64748b");
+      } else if (chemType === "CARBONATE") {
+        drawBond(-3.5, 0, -3.5, -22, 2.4, "#cbd5e1");
+        drawBond(3.5, 0, 3.5, -22, 2.4, "#cbd5e1");
+        drawBond(0, 0, -23, 14, 3.4, "#cbd5e1");
+        drawBond(0, 0, 23, 14, 3.4, "#cbd5e1");
+
+        drawSphere(0, 0, 13, "sphereC", "C", "#ffffff", "rgba(255,255,255,0.4)");
+        drawSphere(0, -22, 10, "sphereO", "O", "#ffffff");
+        drawSphere(-23, 14, 10, "sphereO", "O⁻", "#ffffff");
+        drawSphere(23, 14, 10, "sphereO", "O⁻", "#ffffff");
+      }
+    }
+
+    function updateSidebarAndUI(locKey, transition = null) {
+      const fallback = STAGES_DATA[locKey];
+
+      const badge = (transition && transition.resultBadge) ? transition.resultBadge : fallback.badge;
+      const title = (transition && transition.resultTitle) ? transition.resultTitle : fallback.title;
+      const molRoleText = (transition && transition.resultRole) ? transition.resultRole : fallback.molRole;
+      const eqText = (transition && transition.resultEq !== undefined) ? transition.resultEq : fallback.eq;
+      const description = (transition && transition.resultDesc) ? transition.resultDesc : fallback.desc;
+      const triviaText = (transition && transition.resultTrivia) ? transition.resultTrivia : fallback.trivia;
+
+      sidebarBadge.textContent = badge;
+      sidebarTitle.textContent = title;
+      molFormula.textContent = fallback.formula;
+      molName.textContent = fallback.molName;
+      molRole.textContent = molRoleText;
+
+      if (eqText) {
+        chemEqSection.style.display = "block";
+        chemEquation.textContent = eqText;
+      } else {
+        chemEqSection.style.display = "none";
+      }
+
+      descText.innerHTML = description;
+      didYouKnowBox.innerHTML = `<strong>Biologiskt & Geologiskt sammanhang</strong> ${triviaText}`;
+
+      updateTimeSection(transition);
+      updateChemicalViewer(fallback.chemType);
+      renderQuickChoices();
+    }
+
+    function updateTimeSection(transition) {
+      const sec = document.getElementById("timeSection");
+      if (!transition || !TIMESCALES[transition.id]) {
+        sec.style.display = "none";
+        return;
+      }
+      const ts = TIMESCALES[transition.id];
+      const tier = TIERS[ts.tier];
+      sec.style.display = "block";
+      document.getElementById("timeScale").innerHTML = TIERS.map((t, i) =>
+        `<div class="ts-seg${i === ts.tier ? " active" : ""}" style="${i === ts.tier ? `background:${t.color};border-color:${t.color}` : ""}">${t.name}<br>${t.range}</div>`
+      ).join("");
+      document.getElementById("timeText").innerHTML =
+        `Detta steg tar ungefär <strong style="color:${tier.color}">${ts.label.toLowerCase()}</strong>.` +
+        (ts.note ? ` ${ts.note}` : "");
+    }
+
+    function renderLegend() {
+      document.getElementById("timeLegend").innerHTML =
+        `<strong>⏱ Pilens färg:</strong>` +
+        TIERS.map(t => `<div class="lg-row" title="${t.range}"><span class="lg-dot" style="background:${t.color}"></span>${t.name}</div>`).join("");
+    }
+
+    function renderQuickChoices() {
+      quickChoicesBar.innerHTML = "";
+      if (isTraveling) {
+        guideText.textContent = `Molekylen färdas och genomgår kemisk omvandling...`;
+        return;
+      }
+
+      const availableTrans = TRANSITIONS.filter(t => t.from === currentLocation);
+      if (availableTrans.length > 0) {
+        guideText.textContent = `📍 Nu i: ${STAGES_DATA[currentLocation].title}. Klicka på en pilcirkel eller en knapp nedanför!`;
+
+        availableTrans.forEach(trans => {
+          const btn = document.createElement("button");
+          btn.className = "choice-btn";
+          const ts = TIMESCALES[trans.id];
+          const col = "#00d2ff";
+          btn.innerHTML = `${trans.btnLabel} <span class="time-tag" style="background:${col}">${PROCESS_NAMES[trans.id]}</span>`;
+          btn.addEventListener("click", () => triggerTransition(trans));
+          quickChoicesBar.appendChild(btn);
+        });
+      } else {
+        guideText.textContent = `Kretsloppet har nått en nod. Klicka på återställ för att börja om.`;
+      }
+    }
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 3500);
+    }
+
+    function triggerTransition(trans) {
+      if (isTraveling) return;
+
+      if (trans.id === "fossil_to_atm") {
+        combustionFlameEffect = 1.2;
+      }
+
+      activeTransition = trans;
+      isTraveling = true;
+      travelProgress = 0;
+
+      renderQuickChoices();
+      guideText.textContent = `Färdas: ${trans.bannerText}`;
+      const targetTitle = trans.resultTitle || STAGES_DATA[trans.to].title;
+      showToast(`Molekylen startar resan mot ${targetTitle}!`);
+    }
+
+    function resetToAtmosphere() {
+      if (isTraveling) return;
+      currentLocation = "atmosphere";
+      activeTransition = null;
+      lastTransition = null;
+      updateSidebarAndUI(currentLocation, null);
+      showToast("Kolmolekylen är åter i atmosfären som koldioxid (CO₂).");
+    }
+
+    resetBtn.addEventListener("click", resetToAtmosphere);
+
+    speedSlider.addEventListener("input", (e) => {
+      animSpeed = parseFloat(e.target.value);
+    });
+
+    function getHitElement(clientX, clientY) {
+      if (isTraveling) return null;
+
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+
+      // Precision coordinate transformation matching CSS scale to Canvas coordinates
+      const scaleX = rect.width > 0 ? (canvas.width / dpr) / rect.width : 1;
+      const scaleY = rect.height > 0 ? (canvas.height / dpr) / rect.height : 1;
+      const x = (clientX - rect.left) * scaleX;
+      const y = (clientY - rect.top) * scaleY;
+
+      const availableTrans = TRANSITIONS.filter(t => t.from === currentLocation);
+
+      // STRICT CLICK RADIUS: Exactly equal to the dashed circle boundary!
+      const hitRadius = ARROW_CIRCLE_RADIUS + HIT_PADDING;
+
+      let closestTrans = null;
+      let minDistance = Infinity;
+
+      for (const trans of availableTrans) {
+        if (typeof trans.renderX !== "number" || typeof trans.renderY !== "number") continue;
+        const dist = Math.hypot(x - trans.renderX, y - trans.renderY);
+        // Only valid if clicked STRICTLY within the dashed circle
+        if (dist <= hitRadius && dist < minDistance) {
+          minDistance = dist;
+          closestTrans = trans;
+        }
+      }
+
+      if (closestTrans) {
+        return { type: "transition", item: closestTrans };
+      }
+
+      return null;
+    }
+
+    canvas.addEventListener("mousemove", (e) => {
+      const hit = getHitElement(e.clientX, e.clientY);
+      hoveredClickable = hit;
+      canvas.style.cursor = hit ? "pointer" : "default";
+    });
+
+    canvas.addEventListener("click", (e) => {
+      const hit = getHitElement(e.clientX, e.clientY);
+      if (hit && hit.type === "transition") {
+        triggerTransition(hit.item);
+      }
+    });
+
+    let lastTimestamp = 0;
+    function mainLoop(timestamp) {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.1);
+      lastTimestamp = timestamp;
+
+      const rect = canvasWrap.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const expectedW = Math.round(rect.width * dpr);
+      const expectedH = Math.round(rect.height * dpr);
+
+      // Auto-sync canvas resolution every frame to prevent stretching or offset
+      if (canvas.width !== expectedW || canvas.height !== expectedH) {
+        canvas.width = expectedW;
+        canvas.height = expectedH;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      const w = rect.width;
+      const h = rect.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      drawScenery(w, h);
+      updateAndDrawParticles(w, h);
+      drawClickableRoutesAndNodes(w, h);
+
+      if (isTraveling && activeTransition) {
+        travelProgress += (dt / 2.8) * animSpeed;
+        if (travelProgress >= 1.0) {
+          travelProgress = 1.0;
+          currentLocation = activeTransition.to;
+          lastTransition = activeTransition;
+          isTraveling = false;
+
+          const finishedTitle = lastTransition.resultTitle || STAGES_DATA[currentLocation].title;
+          showToast(`Anlänt till: ${finishedTitle}`);
+          updateSidebarAndUI(currentLocation, lastTransition);
+          activeTransition = null;
+        }
+      }
+
+      const atomPos = drawMolecule(w, h);
+      drawArrowOverlays(w, h, atomPos);
+      requestAnimationFrame(mainLoop);
+    }
+
+    window.addEventListener("load", () => {
+      resizeCanvas();
+      initBgParticles();
+      updateSidebarAndUI(currentLocation, null);
+      requestAnimationFrame(mainLoop);
+    });
+  </script>
+
+
+</body></html>
