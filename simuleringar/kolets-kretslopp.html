@@ -78,6 +78,27 @@
       font-weight: 600;
     }
 
+    /* Språkväljare (samma utseende som i Kvävets kretslopp) */
+    .lang-switch {
+      display: inline-flex;
+      border: 1px solid var(--panel-border);
+      border-radius: 999px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .lang-switch button {
+      background: transparent;
+      color: var(--text-muted);
+      border: 0;
+      padding: 5px 12px;
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .lang-switch button[aria-pressed="true"] { background: var(--accent-cyan); color: #0b111a; }
+    .lang-switch button:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
+
     .app-main {
       flex: 1;
       display: grid;
@@ -479,10 +500,14 @@
   <header>
     <div class="title-group">
       <h1>
-        <span>🌍</span> Kolets kretslopp
-        <span class="badge-pill">Interaktiv flödessimulering</span>
+        <span>🌍</span> <span id="appTitle">Kolets kretslopp</span>
+        <span class="badge-pill" id="appBadge">Interaktiv flödessimulering</span>
       </h1>
-      <p>Följ kolatomen genom fotosyntes, cellandning, marin kemi, biologiska pumpen och geologiska kollager</p>
+      <p id="appSubtitle">Följ kolatomen genom fotosyntes, cellandning, marin kemi, biologiska pumpen och geologiska kollager</p>
+    </div>
+    <div class="lang-switch" role="group" id="langGroup" aria-label="Språk">
+      <button type="button" id="langSv" data-lang="sv" aria-pressed="true">SV</button>
+      <button type="button" id="langEn" data-lang="en" aria-pressed="false">EN</button>
     </div>
   </header>
 
@@ -497,7 +522,7 @@
       <div class="canvas-container" id="canvasWrap">
 
         <!-- Toast notifications -->
-        <div class="hud-toast" id="hudToast">Klicka på en pilcirkel för att omvandla kolatomen!</div>
+        <div class="hud-toast" id="hudToast"></div>
 
         <!-- Canvas -->
         <canvas id="cycleCanvas"></canvas>
@@ -510,7 +535,7 @@
         <div class="next-options-bar" id="quickChoicesBar"></div>
 
         <div class="speed-slider-wrap">
-          <span>Fart</span>
+          <span id="speedLabel">Fart</span>
           <input type="range" id="speedSlider" min="0.6" max="2.5" step="0.2" value="1.2">
         </div>
       </div>
@@ -536,14 +561,14 @@
 
         <div class="section-box" id="chemEqSection">
           <div class="section-title">
-            <span>⚗️</span> Kemisk reaktion & process
+            <span>⚗️</span> <span id="eqHeading">Kemisk reaktion & process</span>
           </div>
           <div class="chem-eq" id="chemEquation"></div>
         </div>
 
         <div class="section-box" id="timeSection" style="display:none">
           <div class="section-title">
-            <span>⏱️</span> Hur lång tid tar steget?
+            <span>⏱️</span> <span id="timeHeading">Hur lång tid tar steget?</span>
           </div>
           <div class="time-scale" id="timeScale"></div>
           <p class="section-text" id="timeText"></p>
@@ -551,20 +576,515 @@
 
         <div class="section-box">
           <div class="section-title">
-            <span>🔬</span> Vad sker i detta skede?
+            <span>🔬</span> <span id="descHeading">Vad sker i detta skede?</span>
           </div>
-          <p class="section-text" id="descText">
-            Kolatomen befinner sig i atmosfären bunden till två syreatomer. Här utgör koldioxid en central växthusgas som reglerar jordens medeltemperatur. Den tas upp av växter och växtplankton genom fotosyntes.
-          </p>
+          <p class="section-text" id="descText"></p>
         </div>
 
-        <div class="did-you-know-card" id="didYouKnowBox">
-          <strong>Biologiskt & Geologiskt sammanhang</strong>
-          Atmosfärens koldioxidhalt mäts i ppm (parts per million). Den har ökat från ca 280 ppm före industrialiseringen till över 420 ppm idag till följd av förbränning av fossila bränslen.
-        </div>
+        <div class="did-you-know-card" id="didYouKnowBox"></div>
       </div>
     </aside>
   </main>
+
+  <script>
+    // ============================================================
+    // ENGELSKA TEXTER
+    // De svenska texterna finns i datan längre ner. Här ligger bara
+    // de engelska översättningarna, som läggs ovanpå när EN är valt.
+    // ============================================================
+    const UI = {
+      sv: {
+        docTitle: "Kolets kretslopp",
+        title: "Kolets kretslopp",
+        badge: "Interaktiv flödessimulering",
+        subtitle: "Följ kolatomen genom fotosyntes, cellandning, marin kemi, biologiska pumpen och geologiska kollager",
+        lang: "Språk",
+        reset: "🔄 Återställ CO₂",
+        resetTitle: "Återställ kolmolekylen till atmosfären",
+        speed: "Fart",
+        eqHeading: "Kemisk reaktion & process",
+        timeHeading: "Hur lång tid tar steget?",
+        descHeading: "Vad sker i detta skede?",
+        context: "Biologiskt & Geologiskt sammanhang",
+        factory: "🏭 Förbränning",
+        traveling: "Molekylen färdas och genomgår kemisk omvandling...",
+        nowIn: (t) => `📍 Nu i: ${t}. Klicka på en pilcirkel eller en knapp nedanför!`,
+        deadEnd: "Kretsloppet har nått en nod. Klicka på återställ för att börja om.",
+        travelBanner: (b) => `Färdas: ${b}`,
+        startToast: (t) => `Molekylen startar resan mot ${t}!`,
+        arrived: (t) => `Anlänt till: ${t}`,
+        resetToast: "Kolmolekylen är åter i atmosfären som koldioxid (CO₂).",
+        timeText: (label) => `Detta steg tar ungefär ${label}.`
+      },
+      en: {
+        docTitle: "The Carbon Cycle",
+        title: "The Carbon Cycle",
+        badge: "Interactive flow simulation",
+        subtitle: "Follow the carbon atom through photosynthesis, cellular respiration, ocean chemistry, the biological pump and geological carbon stores",
+        lang: "Language",
+        reset: "🔄 Reset CO₂",
+        resetTitle: "Return the carbon molecule to the atmosphere",
+        speed: "Speed",
+        eqHeading: "Chemical reaction & process",
+        timeHeading: "How long does this step take?",
+        descHeading: "What happens at this stage?",
+        context: "Biological & geological context",
+        factory: "🏭 Combustion",
+        traveling: "The molecule is travelling and undergoing a chemical change...",
+        nowIn: (t) => `📍 Now in: ${t}. Click an arrow circle or a button below!`,
+        deadEnd: "The cycle has reached a dead end. Click reset to start over.",
+        travelBanner: (b) => `Travelling: ${b}`,
+        startToast: (t) => `The molecule sets off towards ${t}!`,
+        arrived: (t) => `Arrived at: ${t}`,
+        resetToast: "The carbon molecule is back in the atmosphere as carbon dioxide (CO₂).",
+        timeText: (label) => `This step takes roughly ${label}.`
+      }
+    };
+
+    const EN = {
+      tiers: [
+        { name: "Fast",       range: "seconds–days" },
+        { name: "Medium",     range: "months–centuries" },
+        { name: "Slow",       range: "millennia" },
+        { name: "Geological", range: "millions of years" }
+      ],
+      timeLabels: {
+        "Sekunder–timmar": "Seconds–hours",
+        "Timmar–dagar": "Hours–days",
+        "Dagar–år": "Days–years",
+        "Minuter–dagar": "Minutes–days",
+        "Månader–århundraden": "Months–centuries",
+        "Miljontals år": "Millions of years",
+        "Sekunder": "Seconds",
+        "Månader–år": "Months–years",
+        "Dagar–veckor": "Days–weeks",
+        "Dagar–månader": "Days–months",
+        "Veckor–månader": "Weeks–months",
+        "Hundratals–tusen år": "Hundreds to a thousand years",
+        "Sekunder–minuter": "Seconds–minutes",
+        "Bråkdel av en sekund": "A fraction of a second",
+        "Sekunder–år": "Seconds–years",
+        "År–årtusenden": "Years–millennia"
+      },
+      timeNotes: {
+        plant_to_decomposer: "A leaf falls after a few months, but a tree can hold its carbon for several hundred years before it dies.",
+        decomposer_to_atm: "Leaves are broken down in a few years, but stable humus can store carbon for hundreds of years.",
+        fossil_to_atm: "Compare: it took millions of years to form the fossil fuels – but only seconds to burn them. That is why nature cannot keep the flow in balance.",
+        marineDecomposer_to_oceanDissolved: "Decomposition is fast, but the deep water only reaches the surface again after hundreds to a thousand years.",
+        bicarbonate_to_carbonate: "The ionic reaction is instant, while a shell is built up over days to years."
+      },
+      processNames: {
+        atm_to_plant: "Photosynthesis",
+        plant_to_atm: "Cellular respiration",
+        plant_to_animal: "Consumption",
+        animal_to_atm: "Cellular respiration",
+        animal_to_decomposer: "Death & droppings",
+        plant_to_decomposer: "Litter formation",
+        decomposer_to_atm: "Decomposition",
+        decomposer_to_fossil: "Fossilisation",
+        fossil_to_atm: "Combustion",
+        atm_to_ocean: "Dissolving (gas exchange)",
+        ocean_to_atm: "Outgassing",
+        ocean_to_phytoplankton: "Photosynthesis",
+        phytoplankton_to_ocean: "Cellular respiration",
+        phytoplankton_to_marineAnimal: "Consumption",
+        marineAnimal_to_ocean: "Cellular respiration",
+        marineAnimal_to_marineDecomposer: "Sedimentation",
+        phytoplankton_to_marineDecomposer: "Sedimentation",
+        marineDecomposer_to_oceanDissolved: "Decomposition",
+        marineDecomposer_to_fossil: "Fossilisation",
+        ocean_to_carbonicAcid: "Hydration",
+        carbonicAcid_to_ocean: "Carbonic acid breakdown",
+        carbonicAcid_to_bicarbonate: "Acid dissociation",
+        bicarbonate_to_carbonicAcid: "Proton uptake",
+        bicarbonate_to_carbonate: "Dissociation & precipitation",
+        carbonate_to_bicarbonate: "Shell dissolution"
+      },
+      shortFormula: {
+        animal: "Organic C", decomposer: "Organic C", marineAnimal: "Organic C", marineDecomposer: "Organic C"
+      },
+      nodeLabels: {
+        atmosphere: "Atmosphere · CO₂",
+        plant: "Plants",
+        animal: "Animals",
+        decomposer: "Dead matter &\ndecomposers (soil)",
+        fossilFuel: "Fossil fuels\n(coal, oil, gas)",
+        oceanDissolved: "Dissolved CO₂ (aq)",
+        oceanCarbonicAcid: "Carbonic acid\nH₂CO₃",
+        oceanBicarbonate: "Hydrogen carbonate\nHCO₃⁻",
+        phytoplankton: "Phytoplankton",
+        marineAnimal: "Marine animals",
+        oceanCarbonate: "Carbonate & limestone\nCO₃²⁻ / CaCO₃",
+        marineDecomposer: "Dead matter &\ndecomposers (sea floor)"
+      },
+      stages: {
+        atmosphere: {
+          title: "The atmosphere",
+          formula: "CO₂ (Carbon dioxide)",
+          badge: "Atmospheric reservoir",
+          molName: "Gaseous carbon dioxide",
+          molRole: "Linear gas molecule with two strong covalent double bonds (O=C=O).",
+          desc: "The carbon atom floats freely in the air as carbon dioxide (CO₂). It is a vital greenhouse gas that regulates the Earth's average temperature, it is the carbon source for photosynthesis on land, and it dissolves in the surface water of the ocean.",
+          trivia: "The CO₂ concentration of the atmosphere is measured in ppm (parts per million). It has risen from about 280 ppm before industrialisation to over 420 ppm today, mainly because of the burning of fossil fuels and deforestation."
+        },
+        plant: {
+          title: "Plants & forest (Photosynthesis)",
+          formula: "C₆H₁₂O₆ (Glucose & biomass)",
+          badge: "Terrestrial assimilation",
+          molName: "Carbohydrates & plant biomass",
+          molRole: "The carbon dioxide is captured and converted into glucose, which is then used to make all organic molecules.",
+          eq: "6CO₂ + 6H₂O + Light energy → C₆H₁₂O₆ + 6O₂",
+          desc: "Plants capture solar energy and convert carbon dioxide and water into glucose (C₆H₁₂O₆). Glucose is an energy source and the basic building block for making all kinds of organic molecules in the plant, such as cellulose, starch, amino acids, proteins and lipids.",
+          trivia: "The Earth's forests store huge amounts of carbon in living trees and roots and are often called the green lungs of the biosphere."
+        },
+        animal: {
+          title: "Animals (Consumers)",
+          formula: "Organic C (Proteins & fat)",
+          badge: "The food chain",
+          molName: "Animal tissue",
+          molRole: "The carbon atom becomes part of the animal's amino acids, muscle tissue, fat cells, enzymes and genetic material (DNA).",
+          eq: "Plant glucose & cellulose → Free nutrients → Glycogen, lipids, proteins & DNA",
+          desc: "When a herbivore eats the plant, the carbohydrates are broken down. The carbon atoms are used to build the animal's own body tissues, muscles, energy stores and cell structures.",
+          trivia: "Animals are heterotrophs and must get all their carbon atoms from their food; they cannot fix carbon dioxide from the air themselves."
+        },
+        decomposer: {
+          title: "Dead matter & decomposers (soil)",
+          formula: "Organic C & Humus",
+          badge: "Humus & decay",
+          molName: "Dead organic matter & soil moisture",
+          molRole: "Fungi and bacteria break down dead plant parts and droppings.",
+          desc: "When plants shed leaves or animals die, the decomposers in the soil (fungi and bacteria) take over. Through their cellular respiration they release much of the carbon back to the air as carbon dioxide (CO₂). The rest is stored as stable humus in the soil or used to build the decomposers themselves.",
+          trivia: "Permafrost and peat bogs contain enormous amounts of organically bound carbon that may be released as the climate warms."
+        },
+        fossilFuel: {
+          title: "Fossil fuels (Coal & crude oil)",
+          formula: "C & CₙH₂ₙ₊₂ (Coal & hydrocarbons)",
+          badge: "Long-term geological sink",
+          molName: "Coal & fossil hydrocarbons",
+          molRole: "Coal consists mostly of carbon (C). Crude oil and natural gas consist of hydrocarbons, e.g. alkanes (CₙH₂ₙ₊₂).",
+          eq: "Ancient biomass + Pressure + Heat (millions of years) →\nCoal (mostly C), crude oil & natural gas (CₙH₂ₙ₊₂)",
+          desc: "Over millions of years, some dead plants, animals and plankton sank into oxygen-free swamps and onto the sea floor. There the organic material was exposed to high pressure and high temperature beneath layers of sediment, which turned it into coal, crude oil and natural gas.",
+          trivia: "It took nature over 300 million years to form the fossil reserves that humanity is now using up in just a few centuries."
+        },
+        phytoplankton: {
+          title: "Phytoplankton (Marine photosynthesis)",
+          formula: "C₆H₁₂O₆ (Marine biomass)",
+          badge: "The biological carbon pump",
+          molName: "Diatoms & microscopic marine algae",
+          molRole: "Microscopic algae fix dissolved CO₂ (aq) into marine biomass.",
+          eq: "6CO₂ (aq) + 6H₂O + Sunlight → C₆H₁₂O₆ + 6O₂",
+          desc: "Microscopic phytoplankton drift in the upper, sunlit layers of the ocean. They take up dissolved carbon dioxide directly from the water and carry out photosynthesis. They account for about 50 % of all primary production on Earth.",
+          trivia: "When phytoplankton die, some of them sink as 'marine snow' towards the bottom and carry carbon down to the deep – this is called the biological carbon pump."
+        },
+        marineAnimal: {
+          title: "Marine consumers (Zooplankton & fish)",
+          formula: "Organic C (Marine tissue)",
+          badge: "Marine food chain",
+          molName: "Proteins & fat in marine animals",
+          molRole: "The carbon atom becomes part of the proteins, lipids and DNA of zooplankton and fish.",
+          eq: "Phytoplankton → Zooplankton → Fish & marine predators",
+          desc: "Zooplankton and fish eat phytoplankton and build the carbon into their own tissues. Through marine cellular respiration some of the carbon is turned into dissolved CO₂, while droppings and dead animals sink through the water column towards the sea floor.",
+          trivia: "Zooplankton move up and down in the water column every day, actively transporting organic carbon from the surface towards the deep."
+        },
+        marineDecomposer: {
+          title: "Dead matter & decomposers (sea floor)",
+          formula: "Organic C & Dissolved CO₂",
+          badge: "Bacterial remineralisation",
+          molName: "Marine detritus & benthic bacteria",
+          molRole: "Bacteria break down marine material and release dissolved CO₂.",
+          eq: "Dead organic C + O₂ → CO₂ (aq) + H₂O + Nutrients",
+          desc: "When plankton and marine animals die, the remains sink to the bottom as marine snow. There the organic carbon is broken down by benthic bacteria through cellular respiration and returns to dissolved carbon dioxide in the water.",
+          trivia: "Organic material that escapes decomposition in oxygen-free bottom sediments can, over millions of years, give rise to crude oil and natural gas."
+        },
+        oceanDissolved: {
+          title: "Ocean surface: Dissolved CO₂",
+          formula: "CO₂ (aq) (Dissolved gas)",
+          badge: "Physical diffusion",
+          molName: "Dissolved carbon dioxide in seawater",
+          molRole: "Carbon dioxide gas dissolves physically in the seawater.",
+          eq: "CO₂ (g) ⇌ CO₂ (aq) (Reversible gas diffusion)",
+          desc: "Carbon dioxide from the atmosphere dissolves in the surface water of the ocean by diffusion. The process is fully reversible: cold seawater has a higher solubility and can take up more gas, while warmed water releases CO₂ back to the air.",
+          trivia: "The oceans absorb about a quarter of human carbon dioxide emissions, acting as a carbon sink that slows the rise in the atmosphere."
+        },
+        oceanCarbonicAcid: {
+          title: "Carbonic acid (H₂CO₃)",
+          formula: "H₂CO₃ (Carbonic acid)",
+          badge: "Chemical hydration",
+          molName: "Carbonic acid molecule in water",
+          molRole: "Dissolved carbon dioxide reacts reversibly with water molecules to form carbonic acid.",
+          eq: "CO₂ (aq) + H₂O ⇌ H₂CO₃ (Reversible equilibrium)",
+          desc: "Some of the dissolved carbon dioxide reacts with water molecules to form carbonic acid (H₂CO₃). The reaction is fully reversible and in continuous chemical equilibrium: carbonic acid can split back into dissolved carbon dioxide and water, or give off a proton and become hydrogen carbonate.",
+          trivia: "Carbonic acid is a weak diprotic acid – it can give off two hydrogen ions. When more carbon dioxide dissolves, more carbonic acid forms and the ocean becomes more acidic (lower pH)."
+        },
+        oceanBicarbonate: {
+          title: "Hydrogen carbonate ions (HCO₃⁻)",
+          formula: "HCO₃⁻ (Hydrogen carbonate)",
+          badge: "The ocean's chemical buffer",
+          molName: "Hydrogen carbonate (bicarbonate) ion in seawater",
+          molRole: "Carbonic acid reversibly gives off a proton and forms hydrogen carbonate.",
+          eq: "H₂CO₃ ⇌ H⁺ + HCO₃⁻ (Reversible proton transfer)",
+          desc: "Carbonic acid reversibly gives off a hydrogen ion (proton) and forms hydrogen carbonate (HCO₃⁻). This equilibrium can go both ways and acts as the ocean's central pH buffer. Over 90 % of all dissolved inorganic carbon in the oceans is stored as hydrogen carbonate ions.",
+          trivia: "This buffer system keeps the pH of the ocean relatively stable, but higher carbon dioxide levels shift the equilibria and lower the pH (ocean acidification)."
+        },
+        oceanCarbonate: {
+          title: "Carbonate ions (Shells & limestone)",
+          badge: "Carbonate equilibrium & sedimentation",
+          molName: "Carbonate ions & calcium carbonate",
+          molRole: "Reversible precipitation and dissolution of calcium carbonate shells.",
+          eq: "HCO₃⁻ ⇌ H⁺ + CO₃²⁻\nCa²⁺ + CO₃²⁻ ⇌ CaCO₃ (s) (Reversible)",
+          desc: "Hydrogen carbonate reversibly gives off another proton and forms carbonate ions (CO₃²⁻). The carbonate ions react with calcium ions (Ca²⁺) to build shells and skeletons of calcium carbonate (CaCO₃). The process is reversible: the shells can dissolve in more acidic water, or sink to the bottom and form limestone sediments.",
+          trivia: "The Earth's limestone mountains are made of the shells of ancient organisms and are the planet's largest long-term carbon store."
+        }
+      },
+      transitions: {
+        atm_to_plant: {
+          btnLabel: "🌿 Photosynthesis (Glucose & biomass)",
+          bannerText: "Plants take up carbon dioxide and water and use solar energy to form glucose and oxygen!",
+          resultBadge: "Terrestrial photosynthesis",
+          resultTitle: "Plants & forest (Photosynthesis)",
+          resultRole: "The carbon dioxide is captured and converted into glucose, which is then used to make all organic molecules.",
+          resultEq: "6CO₂ + 6H₂O + Light energy → C₆H₁₂O₆ + 6O₂",
+          resultDesc: "Plants capture solar energy and convert carbon dioxide and water into glucose (C₆H₁₂O₆). Glucose is an energy source and the basic building block for making all kinds of organic molecules in the plant, such as cellulose, starch, amino acids, proteins and lipids.",
+          resultTrivia: "The Earth's forests store huge amounts of carbon in living trees and roots and are often called the green lungs of the biosphere."
+        },
+        plant_to_atm: {
+          btnLabel: "💨 Plant cellular respiration",
+          bannerText: "The plant breaks down glucose in its cellular respiration and releases carbon dioxide (CO₂) into the air.",
+          resultBadge: "Plant cellular respiration",
+          resultTitle: "Atmosphere: CO₂ (from plant respiration)",
+          resultRole: "Carbon dioxide gas is released through the stomata of the leaves into the air.",
+          resultEq: "C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + Energy",
+          resultDesc: "Trees and other plants carry out cellular respiration around the clock to get energy for growth, maintenance and nutrient transport. The glucose is oxidised and the carbon atom returns to the atmosphere as free carbon dioxide gas (CO₂).",
+          resultTrivia: "Over a day, a growing tree takes up considerably more CO₂ through photosynthesis than it releases through cellular respiration, giving a net storage of carbon in the trunk and roots."
+        },
+        plant_to_animal: {
+          btnLabel: "🐇 Animal grazes (Consumption)",
+          bannerText: "The herbivore eats the plant – the carbon is built into the animal's proteins, fats and muscles!",
+          resultBadge: "Herbivore consumption",
+          resultTitle: "Animals (Consumers): Herbivore",
+          resultRole: "The plant's carbohydrates have been broken down and built into the animal's tissues, muscles, fats and DNA.",
+          resultEq: "Plant carbohydrates → Glucose & amino acids → Glycogen, lipids & proteins",
+          resultDesc: "The herbivore eats leaves and fruits. During digestion the plant's macromolecules are broken down, and the carbon atoms are taken up by the cells and built into the animal's own body tissues, muscles and energy reserves.",
+          resultTrivia: "Only about 10 % of the energy and biomass is passed on to the next trophic level in the food chain; the rest is used in cellular respiration or lost as droppings."
+        },
+        animal_to_atm: {
+          btnLabel: "💨 Animal cellular respiration",
+          bannerText: "The animal breaks down carbohydrates in cellular respiration and breathes out carbon dioxide (CO₂).",
+          resultBadge: "Animal cellular respiration",
+          resultTitle: "Atmosphere: CO₂ (exhaled by animals)",
+          resultRole: "Carbon dioxide gas is carried by the blood to the lungs and breathed out.",
+          resultEq: "C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + Kinetic energy & heat",
+          resultDesc: "The animal oxidises organic molecules (glucose, fat) with inhaled oxygen in the mitochondria of its cells. The carbon dioxide is carried by the circulatory system to the lungs and breathed out into the atmosphere.",
+          resultTrivia: "Every time a warm-blooded animal moves or keeps up its body temperature, carbon compounds are oxidised and the carbon atoms go straight back to the atmosphere."
+        },
+        animal_to_decomposer: {
+          btnLabel: "🍄 Droppings & dead biomass",
+          bannerText: "Animal remains and droppings end up in the soil and are taken care of by decomposers.",
+          resultBadge: "Animal decay",
+          resultTitle: "Soil decomposers (Droppings & carcasses)",
+          resultRole: "Fungi and bacteria break down proteins, fats and organic waste from animals.",
+          resultDesc: "When animals leave droppings or die, the saprotrophs in the soil (fungi and bacteria) take over and break down the animal remains. Some of the carbon is released through the decomposers' cellular respiration, while the rest is stored as stable humus in the soil or builds up the decomposers' own bodies.",
+          resultTrivia: "Droppings and carcasses add easily available nutrients to the soil and stimulate microbial activity faster than tough, woody plant litter."
+        },
+        plant_to_decomposer: {
+          btnLabel: "🍂 Withered leaves fall to the ground",
+          bannerText: "Dead plant parts form litter that is broken down by fungi and bacteria in the soil.",
+          resultBadge: "Plant litter",
+          resultTitle: "Soil decomposers (Withered leaves & litter)",
+          resultRole: "Soil fungi and bacteria break down cellulose and lignin from dead plant parts.",
+          resultDesc: "When trees and plants shed leaves and branches or die, a layer of litter forms on the ground. The decomposers in the soil break down the tough cellulose and lignin. Some of the carbon is released in cellular respiration and the rest is stored as long-term humus in the soil.",
+          resultTrivia: "Conifer needles decompose more slowly than broadleaf litter, which creates different soil types (podzol and brown earth) with different carbon stores."
+        },
+        decomposer_to_atm: {
+          btnLabel: "💨 Decomposer respiration",
+          bannerText: "The decomposers' cellular respiration releases carbon dioxide (CO₂) that rises into the atmosphere.",
+          resultBadge: "Soil respiration",
+          resultTitle: "Atmosphere: CO₂ (from decomposer respiration)",
+          resultRole: "Carbon dioxide gas diffuses up through the pores in the soil into the open air.",
+          resultEq: "Organic C + O₂ → CO₂ + H₂O + Microbial heat",
+          resultDesc: "Billions of microorganisms in the soil carry out cellular respiration as they break down dead material. The carbon dioxide formed rises out of the soil and returns to the atmosphere as free carbon dioxide gas.",
+          resultTrivia: "Globally, soil respiration releases about ten times more CO₂ to the atmosphere than all human fossil emissions, but it is naturally balanced by plant photosynthesis."
+        },
+        decomposer_to_fossil: {
+          btnLabel: "⏳ Buried before decomposers can act (fossilisation)",
+          bannerText: "If dead material is buried in an oxygen-free environment, the decomposers cannot break it down – it is compressed into coal!",
+          resultBadge: "Terrestrial fossilisation",
+          resultTitle: "Fossil fuels: Coal & peat (Ancient land biomass)",
+          resultRole: "Ancient plants and trees that were buried in oxygen-free swamps and turned into coal.",
+          resultEq: "Ancient land plants + Pressure + High temperature (millions of years) → Coal (carbon-rich rock)",
+          resultDesc: "Over geological time, some dead plants and trees sank into oxygen-free swamps and wetlands where decomposers could not live. Over millions of years the material was covered by sediment, compressed under enormous pressure and heat, and turned into thick layers of coal.",
+          resultTrivia: "One hypothesis is that during the Carboniferous period (about 300–360 million years ago) there were not yet any fungi that could efficiently break down lignin. Other researchers argue that the climate and the vast swamps were more important – the question is still debated."
+        },
+        fossil_to_atm: {
+          btnLabel: "🏭 Burning fossil fuels",
+          bannerText: "Industries and vehicles burn fossil hydrocarbons – a rapid release of CO₂ into the air!",
+          resultBadge: "Fossil combustion (Human-caused)",
+          resultTitle: "Atmosphere: CO₂ (from industry & combustion)",
+          resultRole: "Rapid oxidation of geologically stored carbon into an atmospheric greenhouse gas.",
+          resultEq: "Coal:  C + O₂ → CO₂ + heat\nAlkanes:  CₙH₂ₙ₊₂ + (1.5n + 0.5)O₂ → nCO₂ + (n + 1)H₂O\nE.g. methane:  CH₄ + 2O₂ → CO₂ + 2H₂O",
+          resultDesc: "Humans extract and burn fossil hydrocarbons (coal, crude oil, natural gas) in power plants, factories and vehicles. Carbon that has been locked in the bedrock for millions of years is released in just seconds and adds to the greenhouse gases in the atmosphere.",
+          resultTrivia: "This one-way process upsets the cycle: nature needs millions of years to form fossil fuels, but humanity burns them millions of times faster."
+        },
+        atm_to_ocean: {
+          btnLabel: "🌊 Carbon dioxide dissolves in seawater",
+          bannerText: "Carbon dioxide gas dissolves in the seawater: CO₂ (g) ⇌ CO₂ (aq).",
+          resultBadge: "Physical diffusion",
+          resultTitle: "Ocean surface: Dissolved CO₂ (from the air)",
+          resultRole: "Carbon dioxide gas from the air dissolves physically in the seawater.",
+          resultEq: "CO₂ (g) ⇌ CO₂ (aq) (Physical diffusion)",
+          resultDesc: "Carbon dioxide gas from the atmosphere dissolves in the surface water of the ocean through gas exchange and diffusion. The process is fully reversible: cold seawater has a higher solubility and can take up more gas, while warmed water releases CO₂ back to the air.",
+          resultTrivia: "The world's oceans absorb about 25–30 % of humanity's annual carbon dioxide emissions. This dampens the greenhouse effect but also changes the chemistry of the ocean."
+        },
+        ocean_to_atm: {
+          btnLabel: "💨 Outgassing from seawater",
+          bannerText: "Reversible process: Dissolved carbon dioxide escapes from the surface water to the atmosphere: CO₂ (aq) ⇌ CO₂ (g).",
+          resultBadge: "Marine outgassing",
+          resultTitle: "Atmosphere: CO₂ (released from seawater)",
+          resultRole: "Dissolved carbon dioxide goes from the water phase to free gas in the air.",
+          resultEq: "CO₂ (aq) ⇌ CO₂ (g) (Reversible outgassing)",
+          resultDesc: "When seawater warms up or flows towards warmer latitudes, the solubility of the gas decreases. The dissolved carbon dioxide then escapes from the water surface and returns to the atmosphere as free carbon dioxide gas.",
+          resultTrivia: "During periods of warmer sea temperatures the oceans can hold less dissolved carbon dioxide, which leads to more natural outgassing to the atmosphere."
+        },
+        ocean_to_phytoplankton: {
+          btnLabel: "🔬 Photosynthesis in phytoplankton",
+          bannerText: "Phytoplankton in the sunlit zone take up dissolved CO₂ (aq) for marine photosynthesis!",
+          resultBadge: "Marine photosynthesis",
+          resultTitle: "Phytoplankton: Marine primary production",
+          resultRole: "Microscopic algae fix dissolved CO₂ (aq) into glucose and cell structures.",
+          resultEq: "6CO₂ (aq) + 6H₂O + Sunlight → C₆H₁₂O₆ + 6O₂",
+          resultDesc: "In the upper, sunlit layers of the ocean (the photic zone), microscopic phytoplankton capture sunlight. They take up dissolved carbon dioxide directly from the water and convert it into glucose and marine biomass. They account for about 50 % of all photosynthesis on Earth.",
+          resultTrivia: "Phytoplankton such as diatoms and coccolithophores form the base of practically all food chains in the oceans."
+        },
+        phytoplankton_to_ocean: {
+          btnLabel: "💨 Marine cellular respiration",
+          bannerText: "Phytoplankton break down glucose and release carbon dioxide back into the water.",
+          resultBadge: "Plankton respiration",
+          resultTitle: "Seawater: Dissolved CO₂ (from phytoplankton)",
+          resultRole: "Phytoplankton break down glucose and release carbon dioxide directly into the surrounding water.",
+          resultEq: "C₆H₁₂O₆ + 6O₂ → 6CO₂ (aq) + 6H₂O + Energy",
+          resultDesc: "Phytoplankton carry out cellular respiration around the clock (especially at night, when there is no sunlight) to power their cell processes. The glucose is oxidised with oxygen and the carbon dioxide diffuses out into the surrounding water as dissolved CO₂ (aq).",
+          resultTrivia: "In the photic zone, the photosynthesis of phytoplankton normally exceeds their cellular respiration over a full day."
+        },
+        phytoplankton_to_marineAnimal: {
+          btnLabel: "🐟 Consumers eat phytoplankton",
+          bannerText: "Zooplankton and fish eat phytoplankton – the carbon moves on through the marine food web!",
+          resultBadge: "Marine consumption",
+          resultTitle: "Marine consumers (Zooplankton & fish)",
+          resultRole: "The carbon is built into the fish's muscles, fat reserves, cell membranes and genetic material.",
+          resultEq: "Phytoplankton biomass → Digestion → Fish proteins, lipids & DNA",
+          resultDesc: "Zooplankton (e.g. krill and copepods) and small fish graze on the phytoplankton. The carbon is passed up the marine food web to larger fish, marine mammals and birds, where it builds tissues and energy stores.",
+          resultTrivia: "Many zooplankton migrate hundreds of metres upwards every night to feed near the surface under cover of darkness, and then swim back down into the deep during the day."
+        },
+        marineAnimal_to_ocean: {
+          btnLabel: "💨 Fish cellular respiration",
+          bannerText: "Marine animals break down carbohydrates in cellular respiration and release dissolved CO₂ (aq).",
+          resultBadge: "Fish cellular respiration",
+          resultTitle: "Seawater: Dissolved CO₂ (from fish respiration)",
+          resultRole: "Carbon dioxide from the respiration of marine animals is released through the gills directly into the seawater.",
+          resultEq: "Organic C + O₂ → CO₂ (aq) + H₂O + Kinetic energy",
+          resultDesc: "Marine animals break down carbohydrates and fat in their cellular respiration to swim and keep their bodies working. The carbon dioxide formed is carried by the body fluids to the gills, where it is released directly into the seawater as dissolved CO₂ (aq).",
+          resultTrivia: "Large schools of fish and zooplankton continuously add to the pool of dissolved carbon dioxide in the water column through their respiration."
+        },
+        marineAnimal_to_marineDecomposer: {
+          btnLabel: "🍄 Dead matter & droppings sink to the bottom",
+          bannerText: "Remains and droppings of marine animals sink and are taken care of by decomposers on the bottom.",
+          resultBadge: "Marine dead matter & droppings",
+          resultTitle: "Marine decomposers (Carcasses & faeces)",
+          resultRole: "Benthic bacteria break down sinking animal remains, faeces and shells.",
+          resultDesc: "When fish and zooplankton produce faecal pellets or die, the remains sink through the water column towards the sea floor. There the organic material is colonised by benthic decomposers (bacteria and deep-sea species) that break down the proteins and fat.",
+          resultTrivia: "Large carcasses (such as 'whale falls') can create rich microbial oases on the sea floor that feed specialised decomposer communities for decades."
+        },
+        phytoplankton_to_marineDecomposer: {
+          btnLabel: "❄️ Marine snow sinks to the decomposers",
+          bannerText: "Dead phytoplankton sink as marine snow down to the bacteria on the bottom.",
+          resultBadge: "The biological carbon pump",
+          resultTitle: "Marine decomposers (Marine snow & plankton remains)",
+          resultRole: "Benthic bacteria on the bottom receive dead phytoplankton that has sunk through the deep.",
+          resultDesc: "Dead phytoplankton clump together with mucus and mineral particles and sink through the water column as a constant 'marine snow'. On the bottom this organic carbon is broken down by bacteria, which effectively pumps carbon from the surface down to the sea floor.",
+          resultTrivia: "Only about 1–2 % of the carbon fixed by phytoplankton at the surface reaches all the way down to the deep sea floor; the rest is recycled in the upper water layers."
+        },
+        marineDecomposer_to_oceanDissolved: {
+          btnLabel: "💨 Bacterial respiration releases CO₂",
+          bannerText: "The decomposers' respiration releases dissolved CO₂ in the deep ocean – ocean currents eventually bring it up to the surface.",
+          resultBadge: "Bacterial remineralisation",
+          resultTitle: "Seawater: Dissolved CO₂ (from marine decomposers)",
+          resultRole: "Benthic bacteria remineralise organic carbon into dissolved CO₂ (aq) in the deep ocean.",
+          resultEq: "Dead marine organic C + O₂ → CO₂ (aq) + H₂O + Nutrients",
+          resultDesc: "The benthic bacteria on the sea floor break down the organic material through microbial cellular respiration. The carbon atoms become dissolved CO₂ (aq) again – first in the cold deep water. Ocean currents eventually bring the deep water back up to the surface (upwelling), which can take several hundred up to a thousand years.",
+          resultTrivia: "Because deep-ocean water is very cold, it can hold extremely high concentrations of dissolved CO₂ without the gas bubbling up."
+        },
+        marineDecomposer_to_fossil: {
+          btnLabel: "🛢️ Buried before decomposers can act (oil formation)",
+          bannerText: "If dead plankton is buried in an oxygen-free environment, the decomposers cannot break it down – it becomes crude oil and natural gas!",
+          resultBadge: "Marine oil formation",
+          resultTitle: "Fossil fuels: Crude oil & natural gas (Ancient plankton)",
+          resultRole: "Ancient marine plankton converted into liquid and gaseous hydrocarbons.",
+          resultEq: "Marine plankton sediment + Anoxic environment + Heat (millions of years) → Crude oil & natural gas",
+          resultDesc: "In oxygen-free (anoxic) deep-sea basins, decomposers could not break down the plankton remains. Over tens of millions of years the mud was buried under kilometre-thick layers of sediment. At temperatures of 60–120 °C (the so-called 'oil window') the lipids of the plankton were converted into crude oil and natural gas.",
+          resultTrivia: "Unlike coal (which comes mainly from ancient land plants), most of the Earth's crude oil comes from ancient marine phytoplankton and zooplankton."
+        },
+        ocean_to_carbonicAcid: {
+          btnLabel: "⚗️ Hydration to carbonic acid (H₂CO₃)",
+          bannerText: "Reversible equilibrium: Dissolved carbon dioxide reacts with water to form carbonic acid: CO₂ (aq) + H₂O ⇌ H₂CO₃.",
+          resultBadge: "Chemical hydration",
+          resultTitle: "Carbonic acid (H₂CO₃) forms from dissolved CO₂",
+          resultRole: "Dissolved carbon dioxide reacts with water molecules to form carbonic acid.",
+          resultEq: "CO₂ (aq) + H₂O ⇌ H₂CO₃ (Reversible hydration)",
+          resultDesc: "Some of the dissolved carbon dioxide reacts chemically with water and is hydrated to carbonic acid (H₂CO₃). The reaction is fully reversible and in constant chemical equilibrium: carbonic acid can split back, or give off a proton and become hydrogen carbonate.",
+          resultTrivia: "Only a small fraction (about 0.1–0.2 %) of the dissolved carbon dioxide in seawater is present as carbonic acid at equilibrium, but it is the link to the ocean's ion system."
+        },
+        carbonicAcid_to_ocean: {
+          btnLabel: "🔄 Splitting back to dissolved CO₂",
+          bannerText: "Reversible equilibrium: Carbonic acid splits back into dissolved carbon dioxide and water: H₂CO₃ ⇌ CO₂ (aq) + H₂O.",
+          resultBadge: "Chemical decomposition",
+          resultTitle: "Seawater: Dissolved CO₂ (re-formed from carbonic acid)",
+          resultRole: "The carbonic acid molecule splits back into dissolved carbon dioxide and water.",
+          resultEq: "H₂CO₃ ⇌ CO₂ (aq) + H₂O (Reversible equilibrium)",
+          resultDesc: "Carbonic acid reversibly splits back into water and dissolved carbon dioxide. If the amount of dissolved gas at the surface decreases (e.g. through warming or marine photosynthesis), the equilibrium shifts so that carbonic acid is converted back into dissolved gas.",
+          resultTrivia: "The reaction between CO₂ and water is surprisingly slow (seconds to minutes), while carbonic acid gives off a proton to form hydrogen carbonate almost instantly."
+        },
+        carbonicAcid_to_bicarbonate: {
+          btnLabel: "⚗️ Acid dissociation to hydrogen carbonate (HCO₃⁻)",
+          bannerText: "Reversible equilibrium: Carbonic acid gives off a proton and forms hydrogen carbonate: H₂CO₃ ⇌ H⁺ + HCO₃⁻.",
+          resultBadge: "Acid dissociation",
+          resultTitle: "Hydrogen carbonate (HCO₃⁻) forms from carbonic acid",
+          resultRole: "Carbonic acid gives off a hydrogen ion (H⁺) and forms hydrogen carbonate.",
+          resultEq: "H₂CO₃ ⇌ H⁺ + HCO₃⁻ (Reversible proton transfer)",
+          resultDesc: "Carbonic acid gives off a hydrogen ion (proton) to the water and forms hydrogen carbonate (HCO₃⁻), also called bicarbonate. This is the ocean's most important chemical buffer reaction. Over 90 % of all dissolved inorganic carbon in the oceans is stored in exactly this ionic form.",
+          resultTrivia: "When more carbonic acid forms, more hydrogen ions (H⁺) are released, which makes the ocean more acidic (lowers the pH) – this is the core of ocean acidification."
+        },
+        bicarbonate_to_carbonicAcid: {
+          btnLabel: "🔄 Re-form carbonic acid (H₂CO₃)",
+          bannerText: "Reversible equilibrium: Hydrogen carbonate can act as a base and take up a proton: HCO₃⁻ + H⁺ ⇌ H₂CO₃.",
+          resultBadge: "Chemical protonation",
+          resultTitle: "Carbonic acid (H₂CO₃) re-forms from hydrogen carbonate",
+          resultRole: "The hydrogen carbonate ion can take up a proton (H⁺) and re-form carbonic acid.",
+          resultEq: "HCO₃⁻ + H⁺ ⇌ H₂CO₃ (Reversible buffer)",
+          resultDesc: "Hydrogen carbonate can act as a base and take up a free hydrogen ion (H⁺) to re-form carbonic acid. This shows the ocean's reversible buffering capacity: the buffer counteracts large swings in pH by binding or releasing protons.",
+          resultTrivia: "The ocean's natural buffering capacity protects marine life, but it can be overwhelmed if CO₂ is added faster than the weathering of bedrock can supply new basic cations."
+        },
+        bicarbonate_to_carbonate: {
+          btnLabel: "🐚 Carbonate formation & shells (CaCO₃)",
+          bannerText: "Reversible equilibrium: Hydrogen carbonate forms carbonate (CO₃²⁻), which reacts with Ca²⁺ to form calcium carbonate shells (CaCO₃)!",
+          resultBadge: "Biomineralisation & precipitation",
+          resultTitle: "Carbonate & shells (CaCO₃) form from HCO₃⁻",
+          resultRole: "Hydrogen carbonate gives off a proton to form a carbonate ion, which precipitates with Ca²⁺ as solid calcium carbonate.",
+          resultDesc: "Hydrogen carbonate gives off another proton so that free carbonate ions (CO₃²⁻) are formed. Shell-building organisms such as corals, mussels, snails and microscopic foraminifera combine these with calcium ions (Ca²⁺) to build solid calcium carbonate (CaCO₃). Note! If you look at the whole process, the net reaction is Ca²⁺ + 2HCO₃⁻ → CaCO₃ + CO₂ + H₂O. In the short term CO₂ is therefore released into the water – but the carbon in the shell itself can be stored in limestone for millions of years.",
+          resultTrivia: "When these organisms die, the shells sink to the bottom and over millions of years form the sedimentary rock limestone. If limestone is later exposed to high pressure and high temperature it turns into marble, which is a metamorphic rock."
+        },
+        carbonate_to_bicarbonate: {
+          btnLabel: "🔄 Shells dissolve into HCO₃⁻",
+          bannerText: "Reversible equilibrium: Shells and sediments dissolve and re-form hydrogen carbonate: CaCO₃ + H⁺ ⇌ Ca²⁺ + HCO₃⁻.",
+          resultBadge: "Chemical shell dissolution",
+          resultTitle: "Hydrogen carbonate (HCO₃⁻) from dissolved calcium carbonate",
+          resultRole: "Solid calcium carbonate and free carbonate ions can react with H⁺ to form hydrogen carbonate.",
+          resultEq: "CaCO₃ (s) + H⁺ ⇌ Ca²⁺ + HCO₃⁻ (Reversible dissolution)",
+          resultDesc: "If the seawater becomes more acidic (more free H⁺ ions), the hydrogen ions can react with the shells and the carbonate ions. The calcium carbonate can then dissolve and form free hydrogen carbonate ions. The process is reversible and shows how acidified water can harm corals and other shell-builders.",
+          resultTrivia: "In the deep ocean there is a depth (the carbonate compensation depth, CCD) below which calcium carbonate shells dissolve completely because of the high pressure and the cold, CO₂-rich water."
+        }
+      }
+    };
+  </script>
 
   <script>
     const canvas = document.getElementById("cycleCanvas");
@@ -585,6 +1105,31 @@
     const chemEquation = document.getElementById("chemEquation");
     const descText = document.getElementById("descText");
     const didYouKnowBox = document.getElementById("didYouKnowBox");
+
+    // ============================================================
+    // SPRÅK – välj startspråk här ("sv" eller "en").
+    // Kan också styras med adressen: kolets-kretslopp.html?lang=en
+    // ============================================================
+    const DEFAULT_LANG = "sv";
+
+    function readStored(key) {
+      try { return localStorage.getItem(key); } catch (e) { return null; }
+    }
+    function store(key, value) {
+      try { localStorage.setItem(key, value); } catch (e) { /* ignoreras i inbäddad ram */ }
+    }
+    let lang = new URLSearchParams(location.search).get("lang") || readStored("kol-lang") || DEFAULT_LANG;
+    if (lang !== "sv" && lang !== "en") lang = "sv";
+
+    const T = () => UI[lang];
+    const isEn = () => lang === "en";
+    const stageT = (k) => isEn() ? Object.assign({}, STAGES_DATA[k], EN.stages[k]) : STAGES_DATA[k];
+    const transT = (t) => (t && isEn()) ? Object.assign({}, t, EN.transitions[t.id]) : t;
+    const pName = (id) => isEn() ? EN.processNames[id] : PROCESS_NAMES[id];
+    const shortF = (k) => (isEn() && EN.shortFormula[k]) ? EN.shortFormula[k] : SHORT_FORMULA[k];
+    const tierT = (i) => isEn() ? Object.assign({}, TIERS[i], EN.tiers[i]) : TIERS[i];
+    const tsLabel = (ts) => isEn() ? (EN.timeLabels[ts.label] || ts.label) : ts.label;
+    const tsNote = (id, ts) => isEn() ? EN.timeNotes[id] : ts.note;
 
     // Exact radius of the clickable dashed arrow circle
     const ARROW_CIRCLE_RADIUS = 14;
@@ -1137,7 +1682,7 @@
         resultTitle: "Havsvatten: Löst CO₂ (återbildat ur kolsyra)",
         resultRole: "Kolsyramolekylen spjälkas tillbaka till löst koldioxid och vatten.",
         resultEq: "H₂CO₃ ⇌ CO₂ (aq) + H₂O (Reversibel jämvikt)",
-        resultDesc: "Kolsyran spjälkas reversibelt tillbaka till vatten och löst koldioxid. Om halten av löst gas minskar vid ytan (t.ex. genom uppvärmning eller marin fotosyntes) förskjuts jämvikten åt vänster så att kolsyra omvandlas tillbaka till löst gas.",
+        resultDesc: "Kolsyran spjälkas reversibelt tillbaka till vatten och löst koldioxid. Om halten av löst gas minskar vid ytan (t.ex. genom uppvärmning eller marin fotosyntes) förskjuts jämvikten så att kolsyra omvandlas tillbaka till löst gas.",
         resultTrivia: "Reaktionen mellan CO₂ och vatten är förvånansvärt långsam (sekunder till minuter), medan kolsyrans protolys till vätekarbonat sker nästan ögonblickligen."
       },
       {
@@ -1223,7 +1768,9 @@
         oceanCarbonate:    { x: w * 0.88, y: h * 0.73, label: "Karbonat & kalk\nCO₃²⁻ / CaCO₃", color: "#e0f2fe" },
         marineDecomposer:  { x: w * 0.60, y: h * 0.87, label: "Dött material &\nnedbrytare (botten)", color: "#ffa726" }
       };
-      return nodes[nodeKey] || { x: w * 0.5, y: h * 0.5, label: "", color: "#fff" };
+      const node = nodes[nodeKey];
+      if (node && isEn() && EN.nodeLabels[nodeKey]) node.label = EN.nodeLabels[nodeKey];
+      return node || { x: w * 0.5, y: h * 0.5, label: "", color: "#fff" };
     }
 
     // Kurvorna räknas ut automatiskt: en båge åt sidan av den raka linjen.
@@ -1519,7 +2066,7 @@
       ctx.fillStyle = "#cbd5e1";
       ctx.font = "bold 12px system-ui";
       ctx.textAlign = "center";
-      ctx.fillText("🏭 Förbränning", x, y + 14);
+      ctx.fillText(T().factory, x, y + 14);
       ctx.restore();
     }
 
@@ -1570,7 +2117,7 @@
       ctx.fillStyle = "#bae6fd";
       ctx.font = "bold 9px system-ui";
       ctx.textAlign = "center";
-      
+
 
       // Carbonic acid zone (H2CO3)
       ctx.fillStyle = "rgba(103, 232, 249, 0.16)";
@@ -1585,7 +2132,7 @@
       ctx.fillStyle = "#a5f3fc";
       ctx.font = "bold 9px system-ui";
       ctx.textAlign = "center";
-      
+
 
       // Bicarbonate zone (HCO3-)
       ctx.fillStyle = "rgba(0, 180, 216, 0.16)";
@@ -1600,7 +2147,7 @@
       ctx.fillStyle = "#7dd3fc";
       ctx.font = "bold 9px system-ui";
       ctx.textAlign = "center";
-      
+
 
       // Photic zone - Phytoplankton colony
       ctx.fillStyle = "rgba(0, 230, 118, 0.18)";
@@ -1840,7 +2387,7 @@
       const fs = labelFont(w) - 1;
       ctx.font = `bold ${fs}px system-ui`;
       pendingArrows.forEach(({ t, mid, tierColor, isHovered, ts }) => {
-        const text = PROCESS_NAMES[t.id];
+        const text = pName(t.id);
         const bw = ctx.measureText(text).width + 14;
         const bh = fs + 8;
         const gap = 3;
@@ -1981,7 +2528,7 @@
     function drawMolecule(w, h) {
       let pos;
       let chemType = STAGES_DATA[currentLocation].chemType;
-      let displayFormula = SHORT_FORMULA[currentLocation];
+      let displayFormula = shortF(currentLocation);
 
       if (isTraveling && activeTransition) {
         const path = getTransitionPath(activeTransition.id, w, h);
@@ -1989,10 +2536,10 @@
 
         if (travelProgress > 0.5) {
           chemType = activeTransition.endChem;
-          displayFormula = SHORT_FORMULA[activeTransition.to];
+          displayFormula = shortF(activeTransition.to);
         } else {
           chemType = activeTransition.startChem;
-          displayFormula = SHORT_FORMULA[activeTransition.from];
+          displayFormula = shortF(activeTransition.from);
         }
       } else {
         pos = getNodeCoords(currentLocation, w, h);
@@ -2274,8 +2821,9 @@
       }
     }
 
-    function updateSidebarAndUI(locKey, transition = null) {
-      const fallback = STAGES_DATA[locKey];
+    function updateSidebarAndUI(locKey, transitionIn = null) {
+      const fallback = stageT(locKey);
+      const transition = transT(transitionIn);
 
       const badge = (transition && transition.resultBadge) ? transition.resultBadge : fallback.badge;
       const title = (transition && transition.resultTitle) ? transition.resultTitle : fallback.title;
@@ -2298,7 +2846,7 @@
       }
 
       descText.innerHTML = description;
-      didYouKnowBox.innerHTML = `<strong>Biologiskt & Geologiskt sammanhang</strong> ${triviaText}`;
+      didYouKnowBox.innerHTML = `<strong>${T().context}</strong> ${triviaText}`;
 
       updateTimeSection(transition);
       updateChemicalViewer(fallback.chemType);
@@ -2313,13 +2861,15 @@
       }
       const ts = TIMESCALES[transition.id];
       const tier = TIERS[ts.tier];
+      const note = tsNote(transition.id, ts);
       sec.style.display = "block";
-      document.getElementById("timeScale").innerHTML = TIERS.map((t, i) =>
-        `<div class="ts-seg${i === ts.tier ? " active" : ""}" style="${i === ts.tier ? `background:${t.color};border-color:${t.color}` : ""}">${t.name}<br>${t.range}</div>`
-      ).join("");
+      document.getElementById("timeScale").innerHTML = TIERS.map((t, i) => {
+        const tt = tierT(i);
+        return `<div class="ts-seg${i === ts.tier ? " active" : ""}" style="${i === ts.tier ? `background:${t.color};border-color:${t.color}` : ""}">${tt.name}<br>${tt.range}</div>`;
+      }).join("");
       document.getElementById("timeText").innerHTML =
-        `Detta steg tar ungefär <strong style="color:${tier.color}">${ts.label.toLowerCase()}</strong>.` +
-        (ts.note ? ` ${ts.note}` : "");
+        T().timeText(`<strong style="color:${tier.color}">${tsLabel(ts).toLowerCase()}</strong>`) +
+        (note ? ` ${note}` : "");
     }
 
     function renderLegend() {
@@ -2331,25 +2881,25 @@
     function renderQuickChoices() {
       quickChoicesBar.innerHTML = "";
       if (isTraveling) {
-        guideText.textContent = `Molekylen färdas och genomgår kemisk omvandling...`;
+        guideText.textContent = T().traveling;
         return;
       }
 
       const availableTrans = TRANSITIONS.filter(t => t.from === currentLocation);
       if (availableTrans.length > 0) {
-        guideText.textContent = `📍 Nu i: ${STAGES_DATA[currentLocation].title}. Klicka på en pilcirkel eller en knapp nedanför!`;
+        guideText.textContent = T().nowIn(stageT(currentLocation).title);
 
         availableTrans.forEach(trans => {
           const btn = document.createElement("button");
           btn.className = "choice-btn";
           const ts = TIMESCALES[trans.id];
           const col = "#00d2ff";
-          btn.innerHTML = `${trans.btnLabel} <span class="time-tag" style="background:${col}">${PROCESS_NAMES[trans.id]}</span>`;
+          btn.innerHTML = `${transT(trans).btnLabel} <span class="time-tag" style="background:${col}">${pName(trans.id)}</span>`;
           btn.addEventListener("click", () => triggerTransition(trans));
           quickChoicesBar.appendChild(btn);
         });
       } else {
-        guideText.textContent = `Kretsloppet har nått en nod. Klicka på återställ för att börja om.`;
+        guideText.textContent = T().deadEnd;
       }
     }
 
@@ -2374,9 +2924,10 @@
       travelProgress = 0;
 
       renderQuickChoices();
-      guideText.textContent = `Färdas: ${trans.bannerText}`;
-      const targetTitle = trans.resultTitle || STAGES_DATA[trans.to].title;
-      showToast(`Molekylen startar resan mot ${targetTitle}!`);
+      const tr = transT(trans);
+      guideText.textContent = T().travelBanner(tr.bannerText);
+      const targetTitle = tr.resultTitle || stageT(trans.to).title;
+      showToast(T().startToast(targetTitle));
     }
 
     function resetToAtmosphere() {
@@ -2385,8 +2936,39 @@
       activeTransition = null;
       lastTransition = null;
       updateSidebarAndUI(currentLocation, null);
-      showToast("Kolmolekylen är åter i atmosfären som koldioxid (CO₂).");
+      showToast(T().resetToast);
     }
+
+    // Byter alla texter till valt språk
+    function applyLanguage() {
+      const t = T();
+      document.documentElement.lang = lang;
+      document.title = t.docTitle;
+      document.getElementById("appTitle").textContent = t.title;
+      document.getElementById("appBadge").textContent = t.badge;
+      document.getElementById("appSubtitle").textContent = t.subtitle;
+      document.getElementById("langGroup").setAttribute("aria-label", t.lang);
+      document.getElementById("langSv").setAttribute("aria-pressed", String(lang === "sv"));
+      document.getElementById("langEn").setAttribute("aria-pressed", String(lang === "en"));
+      resetBtn.textContent = t.reset;
+      resetBtn.title = t.resetTitle;
+      document.getElementById("speedLabel").textContent = t.speed;
+      document.getElementById("eqHeading").textContent = t.eqHeading;
+      document.getElementById("timeHeading").textContent = t.timeHeading;
+      document.getElementById("descHeading").textContent = t.descHeading;
+      updateSidebarAndUI(currentLocation, lastTransition);
+      if (isTraveling && activeTransition) {
+        guideText.textContent = t.travelBanner(transT(activeTransition).bannerText);
+      }
+    }
+
+    [document.getElementById("langSv"), document.getElementById("langEn")].forEach(btn => {
+      btn.addEventListener("click", () => {
+        lang = btn.dataset.lang;
+        store("kol-lang", lang);
+        applyLanguage();
+      });
+    });
 
     resetBtn.addEventListener("click", resetToAtmosphere);
 
@@ -2479,8 +3061,8 @@
           lastTransition = activeTransition;
           isTraveling = false;
 
-          const finishedTitle = lastTransition.resultTitle || STAGES_DATA[currentLocation].title;
-          showToast(`Anlänt till: ${finishedTitle}`);
+          const finishedTitle = transT(lastTransition).resultTitle || stageT(currentLocation).title;
+          showToast(T().arrived(finishedTitle));
           updateSidebarAndUI(currentLocation, lastTransition);
           activeTransition = null;
         }
@@ -2494,7 +3076,7 @@
     window.addEventListener("load", () => {
       resizeCanvas();
       initBgParticles();
-      updateSidebarAndUI(currentLocation, null);
+      applyLanguage();
       requestAnimationFrame(mainLoop);
     });
   </script>
