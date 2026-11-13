@@ -62,22 +62,24 @@ const BILDER = {
     <g fill="none" stroke="#2b59c3" stroke-opacity=".12" stroke-width="1.5">
       <path d="M20 30l14-8 14 8v16l-14 8-14-8z"/><path d="M268 104l14-8 14 8v16l-14 8-14-8z"/><path d="M282 22l10-6 10 6v12l-10 6-10-6z"/>
     </g>
+    <!-- Etanol, CH3-CH2-OH: sicksack-kedja med ca 110° vid kolen och 104,5° vid syret -->
+    <g transform="translate(163 78) scale(.86) translate(-163 -76)">
     <g stroke="#9aa3b4" stroke-width="7" stroke-linecap="round">
-      <line x1="122" y1="80" x2="88" y2="56"/><line x1="122" y1="80" x2="100" y2="116"/><line x1="122" y1="80" x2="132" y2="36"/>
-      <line x1="122" y1="80" x2="184" y2="74"/>
-      <line x1="184" y1="74" x2="176" y2="32"/><line x1="184" y1="74" x2="190" y2="120"/>
-      <line x1="184" y1="74" x2="236" y2="98"/><line x1="236" y1="98" x2="268" y2="80"/>
+      <line x1="115" y1="93" x2="100" y2="129"/><line x1="164" y1="59" x2="146" y2="22"/>
+      <line x1="115" y1="93" x2="83" y2="71"/><line x1="115" y1="93" x2="130" y2="128"/>
+      <line x1="115" y1="93" x2="164" y2="59"/><line x1="164" y1="59" x2="184" y2="24"/>
+      <line x1="164" y1="59" x2="213" y2="93"/><line x1="213" y1="93" x2="243" y2="67"/>
     </g>
-    <path d="M218 90a20 20 0 0 1 4 -18" fill="none" stroke="#2b59c3" stroke-width="1.5" stroke-dasharray="3 3"/>
-    <circle cx="132" cy="36" r="10" fill="url(#mb-h)" opacity=".9"/>
-    <circle cx="176" cy="32" r="10" fill="url(#mb-h)" opacity=".9"/>
-    <circle cx="122" cy="80" r="21" fill="url(#mb-c)"/>
-    <circle cx="184" cy="74" r="21" fill="url(#mb-c)"/>
-    <circle cx="88" cy="56" r="12" fill="url(#mb-h)"/>
-    <circle cx="100" cy="116" r="13" fill="url(#mb-h)"/>
-    <circle cx="190" cy="120" r="13" fill="url(#mb-h)"/>
-    <circle cx="236" cy="98" r="19" fill="url(#mb-o)"/>
-    <circle cx="268" cy="80" r="12" fill="url(#mb-h)"/>
+    <circle cx="100" cy="129" r="10" fill="url(#mb-h)" opacity=".9"/>
+    <circle cx="146" cy="22" r="10" fill="url(#mb-h)" opacity=".9"/>
+    <circle cx="115" cy="93" r="21" fill="url(#mb-c)"/>
+    <circle cx="164" cy="59" r="21" fill="url(#mb-c)"/>
+    <circle cx="83" cy="71" r="12" fill="url(#mb-h)"/>
+    <circle cx="130" cy="128" r="13" fill="url(#mb-h)"/>
+    <circle cx="184" cy="24" r="13" fill="url(#mb-h)"/>
+    <circle cx="213" cy="93" r="19" fill="url(#mb-o)"/>
+    <circle cx="243" cy="67" r="12" fill="url(#mb-h)"/>
+    </g>
   </svg>`,
 
   /* ---------- Från DNA till protein: dubbelspiral → mRNA → ribosom → aminosyrakedja ---------- */
@@ -121,6 +123,7 @@ const BILDER = {
       <radialGradient id="ge-g" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#c5e8a0"/><stop offset="1" stop-color="#5f9e2f"/></radialGradient>
     </defs>
     <rect width="320" height="150" fill="url(#ge-bg)"/>
+    <g transform="translate(47 0)">
     <g transform="rotate(-25 60 82)">
       <ellipse cx="60" cy="82" rx="46" ry="17" fill="#6aa83a" stroke="#4a7d24" stroke-width="2"/>
       <ellipse cx="60" cy="80" rx="40" ry="10" fill="#b9dc8e"/>
@@ -136,13 +139,7 @@ const BILDER = {
     <line x1="124" y1="76" x2="212" y2="76" stroke="#c9a96a" stroke-width="2.5"/>
     <circle cx="146" cy="54" r="13" fill="url(#ge-y)"/><circle cx="190" cy="54" r="13" fill="url(#ge-y)"/>
     <circle cx="146" cy="98" r="13" fill="url(#ge-y)"/><circle cx="190" cy="98" r="13" fill="url(#ge-g)"/>
-    <g stroke-linecap="round" stroke-width="10">
-      <line x1="244" y1="34" x2="256" y2="74" stroke="#d3202a"/><line x1="256" y1="34" x2="244" y2="74" stroke="#d3202a"/>
-      <line x1="276" y1="34" x2="288" y2="74" stroke="#2b59c3"/><line x1="288" y1="34" x2="276" y2="74" stroke="#2b59c3"/>
-      <line x1="246" y1="92" x2="254" y2="120" stroke="#e8737a"/><line x1="254" y1="92" x2="246" y2="120" stroke="#e8737a"/>
-      <line x1="278" y1="92" x2="286" y2="120" stroke="#7d9be0"/><line x1="286" y1="92" x2="278" y2="120" stroke="#7d9be0"/>
     </g>
-    <g fill="#fff" opacity=".7"><circle cx="250" cy="54" r="3"/><circle cx="282" cy="54" r="3"/><circle cx="250" cy="106" r="2.5"/><circle cx="282" cy="106" r="2.5"/></g>
   </svg>`,
 
   /* ---------- Cellandningen: mitokondrie, glukos in och ATP ut ---------- */
@@ -199,8 +196,8 @@ const BILDER = {
       <circle cx="284" cy="80" r="7"/><circle cx="234" cy="92" r="7"/><circle cx="264" cy="102" r="7"/>
     </g>
     <g stroke="#f43f5e" stroke-width="2" stroke-linecap="round" opacity=".45">
-      <line x1="224" y1="44" x2="216" y2="48"/><line x1="288" y1="26" x2="294" y2="22"/><line x1="246" y1="62" x2="238" y2="60"/>
-      <line x1="292" y1="88" x2="296" y2="94"/><line x1="226" y1="100" x2="222" y2="106"/>
+      <line x1="244" y1="43" x2="252" y2="48"/><line x1="268" y1="36" x2="260" y2="40"/><line x1="250" y1="60" x2="242" y2="58"/>
+      <line x1="281" y1="73" x2="277" y2="66"/><line x1="240" y1="86" x2="246" y2="80"/><line x1="272" y1="100" x2="280" y2="98"/>
     </g>
     <g fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <path d="M104 68h12m-5-5l5 5-5 5"/><path d="M202 68h12m-5-5l5 5-5 5"/>
