@@ -1,3 +1,20 @@
+Claude
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Simuleringar kod · TXT
 /* =====================================================================
    LISTA ÖVER SIMULERINGAR (används av både startsidan och visa.html)
    Lägg till en ny simulering genom att kopiera ett block nedan och ändra:
@@ -43,13 +60,13 @@ const SIMULERINGAR = [
     en: { titel: "The Nitrogen Cycle", text: "See how nitrogen is fixed, converted and returned to the air – with oxidation numbers." }
   }
 ];
-
+ 
 /* =====================================================================
    BILDER TILL KORTEN (SVG-illustrationer, 320 × 150)
    Varje bild har egna id:n (t.ex. "mb-") så att de inte krockar med varandra.
    ===================================================================== */
 const BILDER = {
-
+ 
   /* ---------- Molekylbygget: kul-och-pinne-modell av etanol ---------- */
   molekyl: `<svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs>
@@ -81,7 +98,7 @@ const BILDER = {
     <circle cx="243" cy="67" r="12" fill="url(#mb-h)"/>
     </g>
   </svg>`,
-
+ 
   /* ---------- Från DNA till protein: dubbelspiral → mRNA → ribosom → aminosyrakedja ---------- */
   dna: `<svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs>
@@ -114,7 +131,7 @@ const BILDER = {
     <circle cx="244" cy="74" r="8" fill="#ef4444"/><circle cx="252" cy="58" r="8" fill="#10b981"/><circle cx="268" cy="50" r="8" fill="#3b82f6"/>
     <circle cx="280" cy="36" r="8" fill="#f59e0b"/><circle cx="298" cy="30" r="8" fill="#ec4899"/><circle cx="306" cy="14" r="8" fill="#14b8a6"/>
   </svg>`,
-
+ 
   /* ---------- Genetiklabbet: ärtskida, korsningsschema och kromosomer ---------- */
   genetik: `<svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs>
@@ -141,7 +158,7 @@ const BILDER = {
     <circle cx="146" cy="98" r="13" fill="url(#ge-y)"/><circle cx="190" cy="98" r="13" fill="url(#ge-g)"/>
     </g>
   </svg>`,
-
+ 
   /* ---------- Cellandningen: mitokondrie, glukos in och ATP ut ---------- */
   cellandning: `<svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs>
@@ -167,7 +184,7 @@ const BILDER = {
       <circle cx="300" cy="18" r="10" fill="url(#ca-atp)" opacity=".75"/><circle cx="302" cy="132" r="10" fill="url(#ca-atp)" opacity=".75"/>
     </g>
   </svg>`,
-
+ 
   /* ---------- Fasövergångar: fast → flytande → gas ---------- */
   fas: `<svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs>
@@ -204,7 +221,7 @@ const BILDER = {
     </g>
     <rect x="22" y="128" width="276" height="7" rx="3.5" fill="url(#fa-t)"/>
   </svg>`,
-
+ 
   /* ---------- Kolets kretslopp: sol, träd, fabrik, hav och CO₂ ---------- */
   kol: `<svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs>
@@ -232,7 +249,7 @@ const BILDER = {
     <path d="M190 38Q208 30 222 36" fill="none" stroke="#64748b" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ko-s)"/>
     <path d="M244 52Q256 80 254 104" fill="none" stroke="#0369a1" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ko-b)"/>
   </svg>`,
-
+ 
   /* ---------- Kvävets kretslopp: blixt, N₂, baljväxt med rotknölar, bakterier ---------- */
   kvave: `<svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs>
@@ -262,10 +279,12 @@ const BILDER = {
     <g fill="#ffb74d" stroke="#ef8f1c" stroke-width="1"><circle cx="160" cy="120" r="4.5"/><circle cx="176" cy="126" r="4.5"/><circle cx="192" cy="124" r="4.5"/><circle cx="154" cy="130" r="3.5"/><circle cx="198" cy="133" r="3.5"/></g>
     <g fill="#e57373"><rect x="80" y="118" width="14" height="6" rx="3" transform="rotate(20 87 121)"/><rect x="102" y="132" width="14" height="6" rx="3" transform="rotate(-15 109 135)"/><rect x="246" y="116" width="14" height="6" rx="3" transform="rotate(-25 253 119)"/><rect x="268" y="132" width="14" height="6" rx="3" transform="rotate(10 275 135)"/></g>
   </svg>`,
-
+ 
   /* ---------- Reservbild ---------- */
   standard: `<svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <rect width="320" height="150" fill="#e8eefc"/>
     <circle cx="160" cy="75" r="30" fill="#2b59c3"/><path d="M152 60l22 15-22 15z" fill="#fff"/>
   </svg>`
 };
+ 
+
