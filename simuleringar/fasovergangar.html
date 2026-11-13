@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Molekylära Fasövergångar & Värmerörelse</title>
+<style>
+    :root {
+        --bg: #0b1120;
+        --panel: #0f172a;
+        --panel-2: #0b1324;
+        --line: #1e293b;
+        --line-2: #334155;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --dim: #64748b;
+        --sky: #38bdf8;
+        --rose: #fb7185;
+        --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 14px;
+    }
+    button, select, input { font: inherit; color: inherit; }
+    .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+    .muted { color: var(--muted); }
+    .dim { color: var(--dim); }
+    .hidden { display: none !important; }
+
+    /* ---------- Appens ram: allt viktigt ryms på en skärm ---------- */
+    .app {
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px 14px;
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    /* ---------- Topprad ---------- */
+    .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px 16px;
+    }
+    .title h1 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.01em; color: #fff; }
+    .title p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+    .controls-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+
+    .sbtn {
+        display: flex; align-items: center; gap: 8px;
+        padding: 6px 12px 6px 6px;
+        background: #1e293b; border: 1px solid var(--line-2); border-radius: 10px;
+        cursor: pointer; font-size: 13px; font-weight: 500; color: #fff;
+        transition: background 0.15s, border-color 0.15s;
+    }
+    .sbtn:hover { background: #273449; }
+    .sbtn.active { background: #273449; border-color: var(--sky); box-shadow: 0 0 0 1px var(--sky); }
+    .sbtn .chip {
+        min-width: 34px; height: 24px; padding: 0 4px; border-radius: 6px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 12px; font-weight: 700;
+    }
+    .sbtn small { font-size: 11px; color: var(--muted); font-weight: 400; }
+    .pressure { display: flex; align-items: center; gap: 6px; padding-left: 10px; border-left: 1px solid var(--line-2); font-size: 12px; }
+    .pressure select { background: #1e293b; border: 1px solid var(--line-2); border-radius: 6px; padding: 4px 6px; font-size: 12px; }
+    .lang { display: flex; gap: 2px; padding: 2px; background: #1e293b; border: 1px solid var(--line-2); border-radius: 8px; }
+    .lang button { padding: 3px 8px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; }
+    .lang button.active { background: #0369a1; color: #fff; }
+    .theory-link { font-size: 12px; color: var(--sky); text-decoration: none; white-space: nowrap; }
+    .theory-link:hover { text-decoration: underline; }
+
+    /* ---------- Huvudyta ---------- */
+    .main {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 10px;
+    }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+
+    .stage { display: flex; flex-direction: column; min-height: 0; padding: 10px; gap: 8px; }
+    .stage-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; font-size: 12px; color: var(--muted); }
+    .stage-bar strong { color: #7dd3fc; font-weight: 600; }
+    .toggles { display: flex; align-items: center; gap: 12px; }
+    .toggles label { display: flex; align-items: center; gap: 5px; cursor: pointer; color: var(--text); }
+    .icon-btn { background: #1e293b; border: 1px solid var(--line-2); border-radius: 8px; padding: 3px 9px; cursor: pointer; font-size: 14px; }
+    .icon-btn:hover { background: #273449; }
+
+    .canvas-wrap {
+        position: relative; flex: 1; min-height: 300px;
+        background: #050811; border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+    }
+    #simCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: pointer; touch-action: none; }
+    .toast {
+        position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+        width: 90%; max-width: 460px; text-align: center;
+        padding: 8px 14px; border-radius: 10px;
+        background: rgba(79, 70, 229, 0.95); border: 1px solid rgba(165, 180, 252, 0.5);
+        font-size: 12.5px; font-weight: 600; color: #fff;
+        opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .status-overlay {
+        position: absolute; left: 10px; bottom: 34px;
+        pointer-events: none;
+    }
+
+    /* ---------- Termostat (direkt under kärlet) ---------- */
+    .thermo {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 6px 18px;
+        padding: 8px 4px 0;
+        border-top: 1px solid var(--line);
+    }
+    .slider-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; }
+    .slider-head .val { font-size: 16px; font-weight: 700; color: #fff; }
+    input[type=range] {
+        -webkit-appearance: none; appearance: none;
+        width: 100%; height: 12px; margin: 8px 0 2px;
+        background: linear-gradient(90deg, #0ea5e9, #64748b 50%, #f43f5e);
+        border-radius: 6px; outline: none; cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none; appearance: none;
+        width: 24px; height: 24px; border-radius: 50%;
+        background: #fff; border: 3px solid var(--sky);
+        box-shadow: 0 0 10px rgba(56, 189, 248, 0.7); cursor: grab;
+    }
+    input[type=range]::-moz-range-thumb {
+        width: 20px; height: 20px; border-radius: 50%;
+        background: #fff; border: 3px solid var(--sky); cursor: grab;
+    }
+    .markers { position: relative; height: 30px; margin: 0 12px; font-size: 11px; }
+    .marker { position: absolute; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; white-space: nowrap; font-weight: 700; }
+    .marker i { width: 1px; height: 7px; background: currentColor; }
+    .marker.low { top: 14px; }
+    .marker.low i { height: 20px; margin-top: -14px; }
+    .marker.end { font-weight: 400; color: var(--dim); top: 4px; }
+
+    .btn-groups { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end; }
+    .btn {
+        padding: 6px 10px; border-radius: 8px; cursor: pointer;
+        background: #1e293b; border: 1px solid var(--line-2);
+        font-size: 12px; font-weight: 600; white-space: nowrap;
+    }
+    .btn:hover { background: #273449; }
+    .btn.cold { background: rgba(8, 51, 68, 0.6); border-color: rgba(14, 116, 144, 0.7); color: #67e8f9; }
+    .btn.hot  { background: rgba(76, 5, 25, 0.6); border-color: rgba(190, 18, 60, 0.7); color: #fda4af; }
+    .btn.seg { padding: 4px 9px; font-weight: 500; }
+    .btn.seg.active { background: #0369a1; border-color: var(--sky); color: #fff; }
+    .sep { width: 1px; height: 22px; background: var(--line-2); margin: 0 2px; }
+
+    /* ---------- Verktyg: förstoringsglas, paus, stillbild ---------- */
+    .tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .btn.on { background: #0369a1; border-color: var(--sky); color: #fff; }
+    .zoomset { display: flex; gap: 4px; align-items: center; }
+    a.btn { text-decoration: none; color: inherit; display: inline-flex; align-items: center; }
+    .paused-tag {
+        position: absolute; left: 10px; top: 10px;
+        padding: 4px 9px; border-radius: 6px;
+        background: rgba(251, 191, 36, 0.92); color: #1c1917;
+        font-size: 11px; font-weight: 800; letter-spacing: 0.06em;
+        pointer-events: none;
+    }
+    .flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; transition: opacity 0.35s; }
+
+    .thumbs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+    .thumb {
+        position: relative; padding: 0; aspect-ratio: 1; overflow: hidden; cursor: pointer;
+        background: #050811; border: 1px solid var(--line-2); border-radius: 8px;
+    }
+    .thumb:hover { border-color: var(--sky); }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; object-position: center bottom; display: block; }
+    .thumb span {
+        position: absolute; left: 0; right: 0; bottom: 0; padding: 2px 4px;
+        background: rgba(2, 6, 23, 0.82); color: #cbd5e1; font-size: 9.5px; text-align: left;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .viewer {
+        position: fixed; inset: 0; z-index: 50;
+        display: flex; align-items: center; justify-content: center; padding: 16px;
+        background: rgba(2, 6, 23, 0.88);
+    }
+    .viewer-box {
+        display: flex; flex-direction: column; gap: 10px;
+        width: min(1400px, 100%); max-height: 100%;
+        padding: 12px; background: var(--panel); border: 1px solid var(--line-2); border-radius: 14px;
+    }
+    .viewer-imgs { display: flex; gap: 12px; justify-content: center; min-height: 0; }
+    .viewer-imgs figure { margin: 0; flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .viewer-imgs img {
+        max-width: 100%; max-height: calc(100vh - 150px); object-fit: contain;
+        background: #050811; border: 1px solid var(--line); border-radius: 8px;
+    }
+    .viewer-imgs figcaption { font-size: 12px; color: var(--muted); text-align: center; }
+    .viewer-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+    .viewer-bar select { background: #1e293b; border: 1px solid var(--line-2); border-radius: 6px; padding: 4px 6px; font-size: 12px; }
+    @media (max-width: 760px) { .viewer-imgs { flex-direction: column; } .viewer-imgs img { max-height: 40vh; } }
+
+    /* ---------- Sidopanel ---------- */
+    .side { display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow-y: auto; }
+    .side .card { padding: 12px; }
+    .side h3 { margin: 0 0 6px; font-size: 12px; font-weight: 600; color: var(--text); display: flex; justify-content: space-between; align-items: baseline; }
+    .side h3 .sub { font-size: 10px; font-weight: 400; color: var(--dim); }
+    .note { font-size: 10.5px; color: var(--dim); margin-top: 6px; line-height: 1.4; }
+
+    .temp-big { font-size: 30px; font-weight: 700; color: var(--rose); line-height: 1.05; }
+    .temp-big small { font-size: 14px; font-weight: 400; color: var(--dim); margin-left: 4px; }
+    .setpoint-line { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    .status {
+        display: inline-flex; align-items: center; gap: 7px;
+        margin-top: 10px; padding: 6px 10px; border-radius: 999px;
+        font-size: 11px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+        border: 1px solid; line-height: 1.2;
+    }
+    .status .dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; flex: none; }
+    .status.pulse .dot { animation: pulse 1.2s ease-in-out infinite; }
+    @keyframes pulse { 50% { opacity: 0.3; } }
+    .st-solid  { color: #93c5fd; background: rgba(30, 58, 138, 0.35); border-color: rgba(59, 130, 246, 0.5); }
+    .st-melt   { color: #c7d2fe; background: rgba(55, 48, 163, 0.4); border-color: rgba(129, 140, 248, 0.6); }
+    .st-liquid { color: #6ee7b7; background: rgba(6, 78, 59, 0.4); border-color: rgba(16, 185, 129, 0.5); }
+    .st-boil   { color: #fcd34d; background: rgba(120, 53, 15, 0.4); border-color: rgba(251, 191, 36, 0.6); }
+    .st-subl   { color: #ddd6fe; background: rgba(76, 29, 149, 0.4); border-color: rgba(167, 139, 250, 0.6); }
+    .st-gas    { color: #fda4af; background: rgba(136, 19, 55, 0.35); border-color: rgba(244, 63, 94, 0.5); }
+
+    .meter { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; }
+    .meter .track { flex: 1; height: 9px; background: #1e293b; border: 1px solid var(--line-2); border-radius: 999px; overflow: hidden; }
+    .meter .fill { height: 100%; background: linear-gradient(90deg, #0ea5e9, #fbbf24, #f43f5e); }
+
+    .curve-wrap { position: relative; height: 150px; }
+    .curve-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+    .comp { display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: #1e293b; border: 1px solid var(--line-2); }
+    .comp div { height: 100%; transition: width 0.2s; }
+    .comp-labels { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11.5px; }
+
+    .legend { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--muted); }
+    .lg { display: flex; align-items: center; gap: 8px; }
+    .sw { width: 13px; height: 13px; border-radius: 50%; flex: none; }
+    .sw-line { width: 22px; height: 0; border-top: 2px dashed; flex: none; }
+
+    /* ---------- Teori (under helskärmsytan) ---------- */
+    .theory { max-width: 1600px; margin: 0 auto; padding: 4px 14px 24px; }
+    .theory .card { padding: 14px; }
+    .theory h2 { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+    .theory-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .tcard { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.55; color: #cbd5e1; }
+    .tcard h4 { margin: 0 0 4px; font-size: 13px; color: var(--accent, #7dd3fc); }
+    .tcard strong { color: #fff; }
+
+    /* ---------- Mindre skärmar ---------- */
+    @media (max-width: 1023px) {
+        .app { height: auto; }
+        .main { grid-template-columns: 1fr; }
+        .canvas-wrap { flex: none; height: 56vh; min-height: 340px; }
+        .side { overflow: visible; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+        .theory-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
+        .thermo { grid-template-columns: 1fr; }
+        .btn-groups, .btn-row { align-items: stretch; justify-content: flex-start; }
+        .title p { display: none; }
+    }
+    @media (max-height: 760px) and (min-width: 1024px) {
+        .title p { display: none; }
+        .curve-wrap { height: 120px; }
+        .side .note { display: none; }
+    }
+</style>
+</head>
+<body>
+
+<div class="app">
+    <!-- Topprad: titel + ämnesval -->
+    <header class="topbar">
+        <div class="title">
+            <h1 data-i18n="title">Molekylära Fasövergångar & Värmerörelse</h1>
+            <p data-i18n="subtitle">Observera hur partiklarnas rörelseenergi och de intermolekylära bindningarna styr aggregationsformerna.</p>
+        </div>
+        <div class="controls-top">
+            <span class="label" data-i18n="subject">Ämne</span>
+            <button id="btn-co2" class="sbtn" onclick="setSubstance('co2')">
+                <span class="chip" style="background:rgba(16,185,129,.2);color:#34d399">CO₂</span>
+                <span><span data-i18n="co2Name">Koldioxid</span> <small data-i18n="co2Tag">(opolär)</small></span>
+            </button>
+            <button id="btn-hcl" class="sbtn" onclick="setSubstance('hcl')">
+                <span class="chip" style="background:rgba(245,158,11,.2);color:#fbbf24">HCl</span>
+                <span><span data-i18n="hclName">Väteklorid</span> <small data-i18n="hclTag">(dipol)</small></span>
+            </button>
+            <button id="btn-h2o" class="sbtn" onclick="setSubstance('h2o')">
+                <span class="chip" style="background:rgba(6,182,212,.2);color:#22d3ee">H₂O</span>
+                <span><span data-i18n="h2oName">Vatten</span> <small data-i18n="h2oTag">(vätebindning)</small></span>
+            </button>
+            <div id="co2-pressure-toggle" class="pressure">
+                <label for="pressure-select" class="muted" data-i18n="pressure">Tryck:</label>
+                <select id="pressure-select" onchange="setCo2Pressure(this.value)">
+                    <option value="1atm" data-i18n="p1">1 atm (sublimerar)</option>
+                    <option value="10atm" data-i18n="p10">10 atm (har flytande fas)</option>
+                </select>
+            </div>
+            <a href="#theory" class="theory-link" data-i18n="theoryLink">Förklaring ↓</a>
+            <div class="lang" role="group" aria-label="Språk / Language">
+                <button data-lang="sv" class="active" title="Svenska">SV</button>
+                <button data-lang="en" title="English">EN</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main">
+        <!-- Kärl + termostat -->
+        <section class="card stage">
+            <div class="stage-bar">
+                <div class="tools">
+                    <button id="btn-lens" class="btn" onclick="toggleLens()" data-i18n-title="lensTitle" data-i18n="lens">🔍 Förstoringsglas</button>
+                    <div id="zoomset" class="zoomset hidden">
+                        <button class="btn seg zoom active" data-zoom="2">2×</button>
+                        <button class="btn seg zoom" data-zoom="3">3×</button>
+                        <button class="btn seg zoom" data-zoom="4">4×</button>
+                    </div>
+                    <button id="btn-pause" class="btn" onclick="togglePause()" data-i18n-title="pauseTitle">⏸ Pausa</button>
+                    <button class="btn" onclick="takeStill()" data-i18n-title="stillTitle" data-i18n="still">📷 Stillbild</button>
+                </div>
+                <div class="toggles">
+                    <label><input type="checkbox" checked onchange="renderOptions.bonds = this.checked"> <span data-i18n="bonds">Bindningar</span></label>
+                    <label><input type="checkbox" checked onchange="renderOptions.charges = this.checked"> <span data-i18n="charges">Laddningar (δ⁺/δ⁻)</span></label>
+                    <button class="icon-btn" onclick="resetSimulation()" data-i18n-title="reset" data-i18n-aria="reset">↻</button>
+                </div>
+            </div>
+
+            <div class="canvas-wrap">
+                <canvas id="simCanvas"></canvas>
+                <div id="transition-toast" class="toast"></div>
+                <div id="paused-tag" class="paused-tag hidden" data-i18n="pausedTag">⏸ PAUSAD: tiden står still</div>
+                <div id="flash" class="flash"></div>
+            </div>
+
+            <div class="thermo">
+                <div>
+                    <div class="slider-head">
+                        <label for="temp-slider" class="muted" data-i18n="thermoLabel">🌡️ Termostat (önskad temperatur)</label>
+                        <span id="setpoint-big" class="val mono">−90 °C</span>
+                    </div>
+                    <input type="range" id="temp-slider" min="-150" max="150" value="-90" step="1" oninput="setSetpoint(parseFloat(this.value))">
+                    <div id="slider-markers" class="markers mono"></div>
+                </div>
+                <div class="btn-groups">
+                    <div class="btn-row">
+                        <button class="btn cold" onclick="nudgeSetpoint(-20)">❄ −20 °C</button>
+                        <button class="btn hot" onclick="nudgeSetpoint(20)">🔥 +20 °C</button>
+                        <span class="sep"></span>
+                        <button class="btn" onclick="setPhasePreset('solid')" data-i18n="solidBtn">🧊 Fast</button>
+                        <button class="btn" id="btn-liquid-preset" onclick="setPhasePreset('liquid')" data-i18n="liquidBtn">💧 Vätska</button>
+                        <button class="btn" onclick="setPhasePreset('gas')" data-i18n="gasBtn">💨 Gas</button>
+                    </div>
+                    <div class="btn-row">
+                        <span class="muted" style="font-size:12px" data-i18n="power">Värmeeffekt:</span>
+                        <button class="btn seg" data-power="0.5" data-i18n="low">Låg</button>
+                        <button class="btn seg active" data-power="1" data-i18n="normal">Normal</button>
+                        <button class="btn seg" data-power="3" data-i18n="high">Hög</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sidopanel -->
+        <aside class="side">
+            <div class="card">
+                <h3 data-i18n="substTemp">Ämnets temperatur</h3>
+                <div class="temp-big mono"><span id="temp-celsius">−90</span> °C<small>(<span id="temp-kelvin">183</span> K)</small></div>
+                <div class="setpoint-line"><span data-i18n="thermostat">Termostat:</span> <span id="setpoint-text" class="mono">−90 °C</span></div>
+                <div id="phase-badge" class="status st-solid"><span class="dot"></span>Fast fas</div>
+                <div class="meter">
+                    <span class="muted" data-i18n="thermalMotion">Värmerörelse</span>
+                    <div class="track"><div id="energy-fill" class="fill" style="width:40%"></div></div>
+                </div>
+                <div class="note" data-i18n="keNote">Medelrörelseenergin är proportionell mot T i kelvin. Den blir noll först vid 0 K.</div>
+            </div>
+
+            <div class="card">
+                <h3><span data-i18n="curveTitle">Temperatur över tid</span> <span class="sub" data-i18n="last60">senaste 60 s</span></h3>
+                <div class="curve-wrap"><canvas id="curveCanvas"></canvas></div>
+                <div class="note" data-i18n="curveNote">Plana partier = fasövergång. Energin går då åt till att bryta bindningar (eller frigörs när de bildas) i stället för att ändra temperaturen.</div>
+            </div>
+
+            <div class="card">
+                <h3 data-i18n="distTitle">Fördelning av molekyler</h3>
+                <div class="comp">
+                    <div id="bar-solid" style="background:#0ea5e9;width:100%"></div>
+                    <div id="bar-liquid" style="background:#10b981;width:0%"></div>
+                    <div id="bar-gas" style="background:#f43f5e;width:0%"></div>
+                </div>
+                <div class="comp-labels">
+                    <span style="color:#7dd3fc"><span data-i18n="cntSolid">Fast:</span> <b id="cnt-solid">64</b></span>
+                    <span style="color:#6ee7b7"><span data-i18n="cntLiquid">Flytande:</span> <b id="cnt-liquid">0</b></span>
+                    <span style="color:#fda4af"><span data-i18n="cntGas">Gas:</span> <b id="cnt-gas">0</b></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><span data-i18n="stillsTitle">Stillbilder</span> <span id="still-count" class="sub">0/12</span></h3>
+                <div id="thumbs" class="thumbs"></div>
+                <div id="thumbs-empty" class="note" data-i18n="stillsEmpty">Med förstoringsglaset på: klicka (eller tryck) i kärlet för att spara det som syns i glaset. Knappen 📷 Stillbild sparar hela kärlet. Klicka på en sparad bild för att studera den.</div>
+            </div>
+
+            <div class="card">
+                <h3 data-i18n="legendTitle">Teckenförklaring</h3>
+                <div class="muted" style="font-size:12px;margin-bottom:6px"><span data-i18n="bondLabel">Intermolekylär bindning:</span> <strong id="current-bond-name" style="color:#7dd3fc"></strong></div>
+                <div id="molecule-legend" class="legend"></div>
+                <div class="note" data-i18n="legendNote">Klicka eller dra i kärlet för att knuffa på molekylerna. Med förstoringsglaset på flyttar du i stället glaset, och ett klick tar en stillbild av det som syns i glaset.</div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<!-- Visningsläge för stillbilder -->
+<div id="viewer" class="viewer hidden" role="dialog" aria-modal="true" data-i18n-aria="snapshot" aria-label="Stillbild">
+    <div class="viewer-box">
+        <div class="viewer-imgs">
+            <figure><img id="v-img1" alt="Stillbild"><figcaption id="v-cap1"></figcaption></figure>
+            <figure id="v-fig2" class="hidden"><img id="v-img2" alt="Stillbild för jämförelse"><figcaption id="v-cap2"></figcaption></figure>
+        </div>
+        <div class="viewer-bar">
+            <div class="btn-row" style="justify-content:flex-start">
+                <button class="btn" onclick="stepStill(-1)" data-i18n-title="prev">◀</button>
+                <button class="btn" onclick="stepStill(1)" data-i18n-title="next">▶</button>
+                <label class="muted" style="font-size:12px"><span data-i18n="compare">Jämför med:</span>
+                    <select id="v-compare" onchange="setCompare(this.value)"></select>
+                </label>
+            </div>
+            <div class="btn-row">
+                <a id="v-download" class="btn" download="stillbild.png" data-i18n="download">⬇ Ladda ned</a>
+                <button class="btn" onclick="deleteStill()" data-i18n="delete">🗑 Ta bort</button>
+                <button class="btn" onclick="closeViewer()" data-i18n="close">Stäng ✕</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Teori -->
+<section id="theory" class="theory">
+    <div class="card">
+        <h2 data-i18n="theoryTitle">Förklaring: Hur de intermolekylära bindningarna samverkar med värmerörelsen</h2>
+        <div id="theory-content" class="theory-grid"></div>
+    </div>
+</section>
+
+<script>
+    // =====================================================================
+    //  SPRÅK (svenska/engelska)
+    //  Statiska texter i HTML har data-i18n="nyckel". Dynamiska texter hämtas med tr('nyckel').
+    // =====================================================================
+    const I18N = {
+        sv: {
+            docTitle: 'Molekylära Fasövergångar & Värmerörelse',
+            title: 'Molekylära Fasövergångar & Värmerörelse',
+            subtitle: 'Observera hur partiklarnas rörelseenergi och de intermolekylära bindningarna styr aggregationsformerna.',
+            subject: 'Ämne',
+            co2Name: 'Koldioxid', co2Tag: '(opolär)',
+            hclName: 'Väteklorid', hclTag: '(dipol)',
+            h2oName: 'Vatten', h2oTag: '(vätebindning)',
+            pressure: 'Tryck:', p1: '1 atm (sublimerar)', p10: '10 atm (har flytande fas)',
+            theoryLink: 'Förklaring ↓',
+            lens: '🔍 Förstoringsglas',
+            lensTitle: 'Förstoringsglas (L). Klicka i kärlet för att ta en stillbild av det som syns i glaset.',
+            pause: '⏸ Pausa', resume: '▶ Fortsätt', pauseTitle: 'Pausa/fortsätt (P)',
+            still: '📷 Stillbild', stillTitle: 'Ta stillbild (S)',
+            bonds: 'Bindningar', charges: 'Laddningar (δ⁺/δ⁻)', reset: 'Återställ partiklar',
+            pausedTag: '⏸ PAUSAD: tiden står still',
+            thermoLabel: '🌡️ Termostat (önskad temperatur)',
+            solidBtn: '🧊 Fast', liquidBtn: '💧 Vätska', gasBtn: '💨 Gas',
+            power: 'Värmeeffekt:', low: 'Låg', normal: 'Normal', high: 'Hög',
+            substTemp: 'Ämnets temperatur', thermostat: 'Termostat:', thermalMotion: 'Värmerörelse',
+            keNote: 'Medelrörelseenergin är proportionell mot T i kelvin. Den blir noll först vid 0 K.',
+            curveTitle: 'Temperatur över tid', last60: 'senaste 60 s',
+            curveNote: 'Plana partier = fasövergång. Energin går då åt till att bryta bindningar (eller frigörs när de bildas) i stället för att ändra temperaturen.',
+            distTitle: 'Fördelning av molekyler', cntSolid: 'Fast:', cntLiquid: 'Flytande:', cntGas: 'Gas:',
+            stillsTitle: 'Stillbilder',
+            stillsEmpty: 'Med förstoringsglaset på: klicka (eller tryck) i kärlet för att spara det som syns i glaset. Knappen 📷 Stillbild sparar hela kärlet. Klicka på en sparad bild för att studera den.',
+            legendTitle: 'Teckenförklaring', bondLabel: 'Intermolekylär bindning:',
+            legendNote: 'Klicka eller dra i kärlet för att knuffa på molekylerna. Med förstoringsglaset på flyttar du i stället glaset, och ett klick tar en stillbild av det som syns i glaset.',
+            snapshot: 'Stillbild', prev: 'Föregående', next: 'Nästa', compare: 'Jämför med:', none: 'ingen',
+            download: '⬇ Ladda ned', delete: '🗑 Ta bort', close: 'Stäng ✕', image: 'Bild', fileName: 'stillbild',
+            theoryTitle: 'Förklaring: Hur de intermolekylära bindningarna samverkar med värmerörelsen',
+            // kanvas
+            lid: 'LOCK', heating: 'TILLFÖR VÄRME', cooling: 'KYLER', plate: 'TERMOSTATPLATTA',
+            lensHint: 'klicka = stillbild', magnification: 'förstoring', wholeVessel: 'hela kärlet',
+            mp: 'Smp', bp: 'Kokp', subl: 'Subl.', mpShort: 'smp', bpShort: 'kokp', sublShort: 'subl.',
+            liquidPresetTitle: 'Koldioxid har ingen flytande fas vid 1 atm. Knappen byter till 10 atm.',
+            // statusrad
+            st_solid: 'Fast fas: molekylerna vibrerar kring fasta platser',
+            st_melt_up: 'Smältning pågår: temperaturen står still',
+            st_melt_dn: 'Stelning pågår: temperaturen står still',
+            st_melt_eq: 'Fast och flytande i jämvikt',
+            st_liquid: 'Flytande fas: molekylerna glider förbi varandra',
+            st_boil_up: 'Kokning pågår: temperaturen står still',
+            st_boil_dn: 'Kondensation pågår: temperaturen står still',
+            st_boil_eq: 'Vätska och gas i jämvikt',
+            st_subl_up: 'Sublimering pågår: temperaturen står still',
+            st_subl_dn: 'Deposition pågår: temperaturen står still',
+            st_subl_eq: 'Fast och gas i jämvikt',
+            st_gas: 'Gasfas: molekylerna fyller hela kärlet',
+            // korta fasnamn (stillbilder)
+            ph_solid: 'fast fas', ph_melt_up: 'smältning', ph_melt_dn: 'stelning', ph_melt_eq: 'fast + flytande',
+            ph_liquid: 'flytande fas', ph_boil_up: 'kokning', ph_boil_dn: 'kondensation', ph_boil_eq: 'vätska + gas',
+            ph_subl_up: 'sublimering', ph_subl_dn: 'deposition', ph_subl_eq: 'fast + gas', ph_gas: 'gasfas',
+            // notiser vid fasövergång ({T} ersätts med temperaturen)
+            'solid>melt':    'Smältning vid {T} °C: tillförd energi bryter bindningar, så temperaturen står still tills allt har smält.',
+            'liquid>melt':   'Stelning vid {T} °C: molekyler fastnar i kristallen och avger energi. Temperaturen står still.',
+            'melt>liquid':   'Allt har smält. Nu stiger temperaturen igen.',
+            'melt>solid':    'Allt har stelnat. Nu sjunker temperaturen igen.',
+            'liquid>boil':   'Kokning vid {T} °C: energin går åt till att bryta alla bindningar mellan molekylerna.',
+            'gas>boil':      'Kondensation vid {T} °C: bindningar bildas och energi avges. Temperaturen står still.',
+            'boil>gas':      'Allt har förångats. Nu stiger temperaturen igen.',
+            'boil>liquid':   'All gas har kondenserat. Nu sjunker temperaturen igen.',
+            'solid>sublime': 'Sublimering vid {T} °C: molekylerna lämnar kristallen direkt som gas.',
+            'gas>sublime':   'Deposition vid {T} °C: gasmolekyler fastnar direkt i kristallen.',
+            'sublime>gas':   'Allt har sublimerat. Nu stiger temperaturen igen.',
+            'sublime>solid': 'All gas har deponerats. Nu sjunker temperaturen igen.',
+            // teckenförklaring
+            lgC: 'Kol (C, δ⁺)', lgO: 'Syre (O, δ⁻)', lgVdw: 'van der Waals-bindning',
+            lgCl: 'Klor (Cl, δ⁻)', lgH: 'Väte (H, δ⁺)', lgDd: 'Dipol–dipolbindning (H···Cl)', lgHb: 'Vätebindning (H···O)',
+            bond_co2: 'van der Waals-bindningar (dispersion)', bond_hcl: 'dipol–dipolbindningar', bond_h2o: 'vätebindningar'
+        },
+        en: {
+            docTitle: 'Molecular Phase Transitions & Thermal Motion',
+            title: 'Molecular Phase Transitions & Thermal Motion',
+            subtitle: 'See how the kinetic energy of the particles and the intermolecular forces determine the state of matter.',
+            subject: 'Substance',
+            co2Name: 'Carbon dioxide', co2Tag: '(non-polar)',
+            hclName: 'Hydrogen chloride', hclTag: '(dipole)',
+            h2oName: 'Water', h2oTag: '(hydrogen bonding)',
+            pressure: 'Pressure:', p1: '1 atm (sublimes)', p10: '10 atm (liquid phase exists)',
+            theoryLink: 'Explanation ↓',
+            lens: '🔍 Magnifier',
+            lensTitle: 'Magnifier (L). Click in the container to take a snapshot of what the magnifier shows.',
+            pause: '⏸ Pause', resume: '▶ Resume', pauseTitle: 'Pause/resume (P)',
+            still: '📷 Snapshot', stillTitle: 'Take snapshot (S)',
+            bonds: 'Bonds', charges: 'Charges (δ⁺/δ⁻)', reset: 'Reset particles',
+            pausedTag: '⏸ PAUSED: time is frozen',
+            thermoLabel: '🌡️ Thermostat (target temperature)',
+            solidBtn: '🧊 Solid', liquidBtn: '💧 Liquid', gasBtn: '💨 Gas',
+            power: 'Heating power:', low: 'Low', normal: 'Normal', high: 'High',
+            substTemp: 'Temperature of the substance', thermostat: 'Thermostat:', thermalMotion: 'Thermal motion',
+            keNote: 'The average kinetic energy is proportional to T in kelvin. It only reaches zero at 0 K.',
+            curveTitle: 'Temperature over time', last60: 'last 60 s',
+            curveNote: 'Flat sections = phase transition. The energy then goes into breaking bonds (or is released when they form) instead of changing the temperature.',
+            distTitle: 'Distribution of molecules', cntSolid: 'Solid:', cntLiquid: 'Liquid:', cntGas: 'Gas:',
+            stillsTitle: 'Snapshots',
+            stillsEmpty: 'With the magnifier on: click (or tap) in the container to save what the magnifier shows. The 📷 Snapshot button saves the whole container. Click a saved image to study it.',
+            legendTitle: 'Legend', bondLabel: 'Intermolecular force:',
+            legendNote: 'Click or drag in the container to push the molecules. With the magnifier on, you move the magnifier instead, and a click takes a snapshot of what it shows.',
+            snapshot: 'Snapshot', prev: 'Previous', next: 'Next', compare: 'Compare with:', none: 'none',
+            download: '⬇ Download', delete: '🗑 Delete', close: 'Close ✕', image: 'Image', fileName: 'snapshot',
+            theoryTitle: 'Explanation: How intermolecular forces interact with thermal motion',
+            lid: 'LID', heating: 'HEATING', cooling: 'COOLING', plate: 'THERMOSTAT PLATE',
+            lensHint: 'click = snapshot', magnification: 'magnification', wholeVessel: 'whole container',
+            mp: 'm.p.', bp: 'b.p.', subl: 'Subl.', mpShort: 'm.p.', bpShort: 'b.p.', sublShort: 'subl.',
+            liquidPresetTitle: 'Carbon dioxide has no liquid phase at 1 atm. The button switches to 10 atm.',
+            st_solid: 'Solid: the molecules vibrate around fixed positions',
+            st_melt_up: 'Melting: the temperature stays constant',
+            st_melt_dn: 'Freezing: the temperature stays constant',
+            st_melt_eq: 'Solid and liquid in equilibrium',
+            st_liquid: 'Liquid: the molecules slide past each other',
+            st_boil_up: 'Boiling: the temperature stays constant',
+            st_boil_dn: 'Condensing: the temperature stays constant',
+            st_boil_eq: 'Liquid and gas in equilibrium',
+            st_subl_up: 'Sublimating: the temperature stays constant',
+            st_subl_dn: 'Deposition: the temperature stays constant',
+            st_subl_eq: 'Solid and gas in equilibrium',
+            st_gas: 'Gas: the molecules fill the whole container',
+            ph_solid: 'solid', ph_melt_up: 'melting', ph_melt_dn: 'freezing', ph_melt_eq: 'solid + liquid',
+            ph_liquid: 'liquid', ph_boil_up: 'boiling', ph_boil_dn: 'condensing', ph_boil_eq: 'liquid + gas',
+            ph_subl_up: 'sublimation', ph_subl_dn: 'deposition', ph_subl_eq: 'solid + gas', ph_gas: 'gas',
+            'solid>melt':    'Melting at {T} °C: the added energy breaks bonds, so the temperature stays constant until everything has melted.',
+            'liquid>melt':   'Freezing at {T} °C: molecules join the crystal and release energy. The temperature stays constant.',
+            'melt>liquid':   'Everything has melted. Now the temperature rises again.',
+            'melt>solid':    'Everything has frozen. Now the temperature falls again.',
+            'liquid>boil':   'Boiling at {T} °C: the energy goes into breaking all the bonds between the molecules.',
+            'gas>boil':      'Condensing at {T} °C: bonds form and energy is released. The temperature stays constant.',
+            'boil>gas':      'Everything has evaporated. Now the temperature rises again.',
+            'boil>liquid':   'All the gas has condensed. Now the temperature falls again.',
+            'solid>sublime': 'Sublimation at {T} °C: the molecules leave the crystal directly as gas.',
+            'gas>sublime':   'Deposition at {T} °C: gas molecules attach directly to the crystal.',
+            'sublime>gas':   'Everything has sublimated. Now the temperature rises again.',
+            'sublime>solid': 'All the gas has been deposited. Now the temperature falls again.',
+            lgC: 'Carbon (C, δ⁺)', lgO: 'Oxygen (O, δ⁻)', lgVdw: 'van der Waals force',
+            lgCl: 'Chlorine (Cl, δ⁻)', lgH: 'Hydrogen (H, δ⁺)', lgDd: 'Dipole–dipole force (H···Cl)', lgHb: 'Hydrogen bond (H···O)',
+            bond_co2: 'van der Waals forces (dispersion)', bond_hcl: 'dipole–dipole forces', bond_h2o: 'hydrogen bonds'
+        }
+    };
+
+    let lang = 'sv';
+    const tr = (key) => (I18N[lang][key] ?? I18N.sv[key] ?? key);
+
+    function applyLang(newLang) {
+        if (newLang) lang = I18N[newLang] ? newLang : 'sv';
+        try { localStorage.setItem('fasovergangar-lang', lang); } catch (e) { /* ignoreras */ }
+        document.documentElement.lang = lang;
+        document.title = tr('docTitle');
+        document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = tr(el.dataset.i18n); });
+        document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = tr(el.dataset.i18nTitle); });
+        document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', tr(el.dataset.i18nAria)); });
+        document.querySelectorAll('.lang button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+        document.getElementById('btn-pause').textContent = paused ? tr('resume') : tr('pause');
+        refreshSubstanceTexts();
+        updateSetpointUI();
+        lastBadge = '';
+        updateUI();
+        drawCurve();
+        renderThumbs();
+        if (viewId !== null) renderViewer();
+    }
+
+    function initialLang() {
+        const q = new URLSearchParams(location.search).get('lang');
+        if (q && I18N[q]) return q;
+        try { const sLang = localStorage.getItem('fasovergangar-lang'); if (sLang && I18N[sLang]) return sLang; } catch (e) { /* ignoreras */ }
+        return 'sv';
+    }
+
+    // =====================================================================
+    //  ÄMNESDATA
+    //  M = molmassa (g/mol), r = kollisionsradie (px)
+    //  Entalpier i kJ/mol (smältning, förångning, sublimering)
+    // =====================================================================
+    const card = (color, title, body) =>
+        `<div class="tcard" style="--accent:${color}"><h4>${title}</h4>${body}</div>`;
+
+    const SUBSTANCES = {
+        co2: {
+            id: 'co2', formula: 'CO₂', M: 44, r: 15,
+            lattice: 'hex', sx: 32, sy: 28,
+            pressures: {
+                '1atm':  { subl: true,  mp: -78.5, bp: -78.5, Hsub: 25.2 },
+                '10atm': { subl: false, mp: -56.4, bp: -40.0, Hfus: 9.0, Hvap: 14.0 }
+            },
+            explanation: () => lang === 'en' ? [
+                card('#34d399', 'Geometry and symmetry',
+                    'O=C=O is linear. Each C=O bond is polar (&delta;⁻ on O, &delta;⁺ on C), but because the molecule is symmetrical the dipoles cancel out. The molecule as a whole is therefore <strong>non-polar</strong>.'),
+                card('#34d399', 'Van der Waals forces',
+                    'The electron clouds fluctuate all the time and form temporary dipoles. These give weak attractions between neighbouring molecules. The forces have no direction, so they are drawn as lines between the centres of the molecules.'),
+                card('#34d399', 'Sublimation and pressure',
+                    co2Pressure === '1atm'
+                        ? 'At 1 atm, solid CO₂ (dry ice) <strong>sublimes</strong> directly to gas at <strong>−78.5 °C</strong>. Liquid CO₂ only exists above the pressure of the triple point, <strong>5.1 atm</strong> (−56.6 °C). Choose 10 atm to see the liquid.'
+                        : 'At 10 atm there is a liquid phase: CO₂ melts at about <strong>−56 °C</strong> and boils at about <strong>−40 °C</strong>. The melting point hardly changes with pressure, but the boiling point rises a lot.')
+            ].join('') : [
+                card('#34d399', 'Geometri och symmetri',
+                    'O=C=O är linjär. Varje C=O-bindning är polär (&delta;⁻ på O, &delta;⁺ på C), men eftersom molekylen är symmetrisk tar dipolerna ut varandra. Molekylen som helhet är därför <strong>opolär</strong>.'),
+                card('#34d399', 'Van der Waals-bindningar',
+                    'Elektronmolnen fluktuerar hela tiden och bildar tillfälliga dipoler. De ger svaga attraktioner mellan grannmolekylerna. Bindningarna saknar riktning, så de ritas som streck mellan molekylernas mittpunkter.'),
+                card('#34d399', 'Sublimering och tryck',
+                    co2Pressure === '1atm'
+                        ? 'Vid 1 atm <strong>sublimerar</strong> fast CO₂ (torris) direkt till gas vid <strong>−78,5 °C</strong>. Flytande CO₂ finns bara över trippelpunktens tryck, <strong>5,1 atm</strong> (−56,6 °C). Välj 10 atm för att se vätskan.'
+                        : 'Vid 10 atm finns en flytande fas: CO₂ smälter vid ca <strong>−56 °C</strong> och kokar vid ca <strong>−40 °C</strong>. Smältpunkten påverkas knappt av trycket, men kokpunkten stiger kraftigt.')
+            ].join('')
+        },
+        hcl: {
+            id: 'hcl', formula: 'HCl', M: 36.5, r: 14,
+            lattice: 'hex', sx: 32, sy: 26,
+            mp: -114.2, bp: -85.1, Hfus: 2.0, Hvap: 16.2,
+            explanation: () => lang === 'en' ? [
+                card('#fbbf24', 'Permanent dipole',
+                    'Chlorine is more electronegative than hydrogen. The shared electrons are pulled towards chlorine, which gets &delta;⁻, while hydrogen gets &delta;⁺.'),
+                card('#fbbf24', 'Dipole–dipole force',
+                    'The positive end (H) is attracted to the negative end (Cl) of a neighbouring molecule. In the crystal the molecules therefore line up in chains H···Cl–H···Cl. Van der Waals forces also contribute.'),
+                card('#fbbf24', 'Phase transitions',
+                    'Melts at <strong>−114.2 °C</strong> and boils at <strong>−85.1 °C</strong>. In the liquid, the bonds are constantly broken and formed again.')
+            ].join('') : [
+                card('#fbbf24', 'Permanent dipol',
+                    'Klor är mer elektronegativt än väte. De delade elektronerna förskjuts mot klor, som får &delta;⁻, medan väte får &delta;⁺.'),
+                card('#fbbf24', 'Dipol–dipolbindning',
+                    'Den positiva änden (H) attraheras av grannens negativa ände (Cl). I kristallen ligger molekylerna därför i kedjor H···Cl–H···Cl. Även van der Waals-bindningar bidrar.'),
+                card('#fbbf24', 'Fasövergångar',
+                    'Smälter vid <strong>−114,2 °C</strong> och kokar vid <strong>−85,1 °C</strong>. I vätskan bryts och bildas bindningarna hela tiden.')
+            ].join('')
+        },
+        h2o: {
+            id: 'h2o', formula: 'H₂O', M: 18, r: 12,
+            lattice: 'honeycomb', b: 30,
+            mp: 0.0, bp: 100.0, Hfus: 6.0, Hvap: 40.7,
+            explanation: () => lang === 'en' ? [
+                card('#22d3ee', 'Bent dipole (104.5°)',
+                    'Oxygen has two lone pairs and pulls the electrons in the O–H bonds towards itself. Oxygen gets &delta;⁻ and the hydrogen atoms get &delta;⁺.'),
+                card('#22d3ee', 'Hydrogen bond',
+                    'A hydrogen bond forms between a <strong>hydrogen atom (&delta;⁺) in one molecule</strong> and a <strong>lone pair on the oxygen in another molecule</strong>. It is the strongest of the three types of force shown here. That is why water has the highest melting and boiling points, even though its molecule is the lightest.'),
+                card('#22d3ee', 'Ice is less dense than water',
+                    'In ice, each molecule bonds to just a few neighbours in an open, hexagonal network with empty spaces. Ice therefore has a <strong>lower density</strong> than liquid water and floats. (The difference is exaggerated in the simulation. In reality it is about 9 %.)')
+            ].join('') : [
+                card('#22d3ee', 'Vinklad dipol (104,5°)',
+                    'Syret har två fria elektronpar och drar åt sig elektronerna i O–H-bindningarna. Syret får &delta;⁻ och väteatomerna &delta;⁺.'),
+                card('#22d3ee', 'Vätebindning',
+                    'En vätebindning bildas mellan en <strong>väteatom (&delta;⁺) i en molekyl</strong> och ett <strong>fritt elektronpar på syret i en annan molekyl</strong>. Den är den starkaste av de tre bindningstyperna här. Därför har vatten högst smält- och kokpunkt, trots att molekylen är lättast.'),
+                card('#22d3ee', 'Is är glesare än vatten',
+                    'I is binder varje molekyl till några få grannar i ett öppet, sexkantigt nätverk med hålrum. Is har därför <strong>lägre densitet</strong> än flytande vatten och flyter. (I simuleringen är skillnaden överdriven. I verkligheten är den ca 9 %.)')
+            ].join('')
+        }
+    };
+
+    // =====================================================================
+    //  TILLSTÅND
+    // =====================================================================
+    const N = 64;
+    const LUNIT = 60;          // skala för latent värme: L = LUNIT·√(ΔH)  (komprimerad men rätt ordning)
+    const HEAT_RATE = 0.04;    // värmeöverföring per steg per grad skillnad
+    const HEAT_MAX = 0.6;      // max värmeflöde per steg (°C-ekvivalenter) vid "Normal"
+    const A_COND = 0.35;       // hastighetsskala i fast/flytande fas  (σ = A·√(T/M))
+    const A_GAS = 0.9;         // hastighetsskala i gasfas
+    const GRAVITY = 0.08;
+    const ATTR_C = 0.012;      // attraktion ∝ kokpunkt(K)/M
+    const ATTR_W = 16;         // attraktionens räckvidd utanför kontakt (px)
+    const VIB_AMP_MP = 1.6;    // vibrationsamplitud (px) vid smältpunkten
+    const VIB_EXP = 2;         // hur snabbt vibrationerna avtar under smältpunkten: amplitud ∝ (T/Tsmp)^VIB_EXP
+    const K_SOLID = 0.08;      // fjäderkonstant mot gitterplatsen (lägre = lugnare, mjukare svängning)
+
+    let cur = SUBSTANCES.co2;
+    let co2Pressure = '1atm';
+    let setpoint = -90;
+    let H = 0;                 // systemets entalpi (°C-ekvivalenter)
+    let heatPower = 1;
+    let lastFlow = 0;
+    let lastSegment = null;
+    const renderOptions = { bonds: true, charges: true };
+
+    let canvas, ctx, width = 0, height = 0;
+    let curveCanvas, cctx, cW = 0, cH = 0;
+    const vessel = { x: 0, y: 0, w: 0, h: 0, bottom: 0 };
+    let sites = [];            // gitterplatser {x,y,level,angle,nb:[]}
+    let occ = [];              // occ[siteIndex] = molekylindex eller -1
+    let molecules = [];
+    let lockWait = 0;
+    let frameCount = 0;
+    const history = [];        // {T, sp}
+    const mouse = { x: 0, y: 0, down: false, radius: 60 };
+
+    // =====================================================================
+    //  TERMODYNAMIK (entalpimodell med platåer)
+    // =====================================================================
+    function trans() {
+        if (cur.id === 'co2') {
+            const p = cur.pressures[co2Pressure];
+            return p.subl
+                ? { subl: true, mp: p.mp, bp: p.mp, L1: LUNIT * Math.sqrt(p.Hsub), L2: 0 }
+                : { subl: false, mp: p.mp, bp: p.bp, L1: LUNIT * Math.sqrt(p.Hfus), L2: LUNIT * Math.sqrt(p.Hvap) };
+        }
+        return { subl: false, mp: cur.mp, bp: cur.bp, L1: LUNIT * Math.sqrt(cur.Hfus), L2: LUNIT * Math.sqrt(cur.Hvap) };
+    }
+
+    function bounds(t) {
+        const a0 = t.mp + 273.15, a1 = a0 + t.L1;
+        if (t.subl) return { a0, a1 };
+        const b0 = a1 + (t.bp - t.mp), b1 = b0 + t.L2;
+        return { a0, a1, b0, b1 };
+    }
+
+    // Entalpi -> temperatur + andelar fast/flytande/gas
+    function HtoState(h) {
+        const t = trans(), B = bounds(t);
+        if (h < B.a0) return { T: h - 273.15, fs: 1, fl: 0, fg: 0, seg: 'solid' };
+        if (t.subl) {
+            if (h < B.a1) { const x = (h - B.a0) / t.L1; return { T: t.mp, fs: 1 - x, fl: 0, fg: x, seg: 'sublime' }; }
+            return { T: t.mp + (h - B.a1), fs: 0, fl: 0, fg: 1, seg: 'gas' };
+        }
+        if (h < B.a1) { const x = (h - B.a0) / t.L1; return { T: t.mp, fs: 1 - x, fl: x, fg: 0, seg: 'melt' }; }
+        if (h < B.b0) return { T: t.mp + (h - B.a1), fs: 0, fl: 1, fg: 0, seg: 'liquid' };
+        if (h < B.b1) { const x = (h - B.b0) / t.L2; return { T: t.bp, fs: 0, fl: 1 - x, fg: x, seg: 'boil' }; }
+        return { T: t.bp + (h - B.b1), fs: 0, fl: 0, fg: 1, seg: 'gas' };
+    }
+
+    function TtoH(T) {
+        const t = trans(), B = bounds(t);
+        if (T <= t.mp) return T + 273.15;
+        if (t.subl) return B.a1 + (T - t.mp);
+        if (T <= t.bp) return B.a1 + (T - t.mp);
+        return B.b1 + (T - t.bp);
+    }
+
+    // Termostatplattan för över värme proportionellt mot temperaturskillnaden
+    function heatStep() {
+        const st = HtoState(H);
+        const diff = setpoint - st.T;
+        if (Math.abs(diff) < 0.01) { lastFlow = 0; return; }
+        const mag = Math.min(HEAT_MAX * heatPower, Math.max(0.12 * heatPower, HEAT_RATE * Math.abs(diff) * heatPower));
+        const flow = Math.sign(diff) * mag;
+        let Hn = H + flow;
+        const Tn = HtoState(Hn).T;
+        if (Math.sign(setpoint - Tn) !== Math.sign(diff) && Tn !== setpoint) {
+            Hn = TtoH(setpoint);  // gå inte förbi termostatens temperatur
+        }
+        lastFlow = flow;
+        H = Hn;
+        syncClamp();
+    }
+
+    // Entalpin får inte springa ifrån molekylerna: så länge kristallen inte har
+    // smält/stelnat färdigt står temperaturen kvar på platån.
+    function syncClamp() {
+        const t = trans(), B = bounds(t), c = counts();
+        if (t.subl) {
+            if (c.s > 0) H = Math.min(H, B.a0 + (c.g + 2) / N * t.L1);
+            if (c.g > 0) H = Math.max(H, B.a0 + (c.g - 2) / N * t.L1);
+            return;
+        }
+        const nonS = c.l + c.g;
+        if (c.s > 0) H = Math.min(H, B.a0 + (nonS + 2) / N * t.L1);
+        if (nonS > 0) H = Math.max(H, B.a0 + (nonS - 2) / N * t.L1);
+        if (c.l > 0) H = Math.min(H, B.b0 + (c.g + 2) / N * t.L2);
+        if (c.g > 5) H = Math.max(H, B.b0 + (c.g - 2) / N * t.L2);
+    }
+
+    // =====================================================================
+    //  HJÄLPFUNKTIONER
+    // =====================================================================
+    function gauss() {
+        let u = 0, v = 0;
+        while (u === 0) u = Math.random();
+        while (v === 0) v = Math.random();
+        return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+    }
+    function wrapAngle(a) {
+        while (a > Math.PI) a -= 2 * Math.PI;
+        while (a < -Math.PI) a += 2 * Math.PI;
+        return a;
+    }
+    const fmt = (v, d = 0) => (v < 0 ? '−' : '') + (lang === 'sv' ? Math.abs(v).toFixed(d).replace('.', ',') : Math.abs(v).toFixed(d));
+    const fmtT = (v) => (Number.isInteger(v) ? fmt(v) : fmt(v, 1));
+
+    // =====================================================================
+    //  KÄRL OCH GITTER
+    // =====================================================================
+    function updateVessel() {
+        const innerW = Math.max(220, Math.min(420, width - 70));
+        vessel.w = innerW;
+        vessel.x = Math.round((width - innerW) / 2);
+        vessel.y = 34;
+        vessel.bottom = height - 34;
+        vessel.h = vessel.bottom - vessel.y;
+    }
+
+    function buildLattice() {
+        sites = [];
+        const pad = cur.r + 3;
+        const left = vessel.x + pad, right = vessel.x + vessel.w - pad;
+        const span = right - left;
+        const yOf = (u) => vessel.bottom - pad - u;
+        let nbThr;
+
+        if (cur.lattice === 'hex') {
+            const { sx, sy } = cur;
+            const cols = Math.floor(span / sx) + 1;
+            const x0 = left + (span - (cols - 1) * sx) / 2;
+            for (let r = 0; sites.length < N; r++) {
+                const odd = r % 2 === 1;
+                const n = odd ? cols - 1 : cols;
+                for (let c = 0; c < n; c++) {
+                    let angle;
+                    if (cur.id === 'hcl') angle = odd ? Math.PI : 0;           // antiparallella kedjor H···Cl
+                    else angle = (c % 2 === 0) ? -0.75 : 0.75;                 // fiskbensmönster
+                    sites.push({ x: x0 + c * sx + (odd ? sx / 2 : 0), y: yOf(r * sy), level: r, angle });
+                }
+            }
+            nbThr = 1.15 * Math.max(sx, Math.hypot(sx / 2, sy));
+        } else {
+            // Bikakegitter (2D-motsvarighet till isens öppna struktur)
+            const b = cur.b, w = Math.sqrt(3) * b;
+            const cols = Math.floor(span / w) + 1;
+            const x0 = left + (span - (cols - 1) * w) / 2;
+            for (let j = 0; sites.length < N; j++) {
+                const odd = j % 2 === 1;
+                const n = odd ? cols - 1 : cols;
+                for (let i = 0; i < n; i++) {
+                    const x = x0 + i * w + (odd ? w / 2 : 0);
+                    // A: båda H pekar snett nedåt mot grannarna under
+                    sites.push({ x, y: yOf(1.5 * b * j), level: 2 * j, angle: Math.PI / 2 });
+                    // B: ett H pekar rakt nedåt mot A, det andra är fritt
+                    sites.push({ x, y: yOf(1.5 * b * j + b), level: 2 * j + 1, angle: (i % 2 === 0) ? 0.663 : 2.478 });
+                }
+            }
+            nbThr = 1.15 * b;
+        }
+
+        for (const s of sites) s.nb = [];
+        for (let i = 0; i < sites.length; i++) {
+            for (let j = i + 1; j < sites.length; j++) {
+                if (Math.hypot(sites[i].x - sites[j].x, sites[i].y - sites[j].y) < nbThr) {
+                    sites[i].nb.push(j);
+                    sites[j].nb.push(i);
+                }
+            }
+        }
+        occ = new Array(sites.length).fill(-1);
+    }
+
+    // =====================================================================
+    //  MOLEKYLER
+    // =====================================================================
+    function sigmaCond(TK) { return A_COND * Math.sqrt(TK / cur.M); }
+    function sigmaGas(TK) { return A_GAS * Math.sqrt(TK / cur.M); }
+
+    function makeGasVelocity(m, TK, upward) {
+        const s = sigmaGas(TK);
+        m.vx = gauss() * s;
+        m.vy = upward ? -Math.abs(gauss() * s) - s * 0.5 : gauss() * s;
+        m.av = (Math.random() - 0.5) * 0.2;
+    }
+
+    // Placera alla molekyler direkt enligt aktuell entalpi (vid start/byte av ämne)
+    function placeAll() {
+        buildLattice();
+        const st = HtoState(H);
+        const TK = st.T + 273.15;
+        const nS = Math.round(st.fs * N);
+        const nG = Math.round(st.fg * N);
+        const cx = vessel.x + vessel.w / 2;
+
+        const order = sites.map((s, i) => i)
+            .sort((a, b) => sites[a].level - sites[b].level || Math.abs(sites[a].x - cx) - Math.abs(sites[b].x - cx));
+
+        molecules = [];
+        let topY = vessel.bottom;
+        for (let i = 0; i < nS; i++) {
+            const si = order[i], s = sites[si];
+            molecules.push({ x: s.x, y: s.y, vx: 0, vy: 0, angle: s.angle, av: 0, state: 'solid', site: si, ramp: 1 });
+            occ[si] = i;
+            topY = Math.min(topY, s.y);
+        }
+        // Vätska staplas ovanpå
+        const d = cur.r * 2 + 1;
+        const left = vessel.x + cur.r + 3, right = vessel.x + vessel.w - cur.r - 3;
+        let lx = left, ly = (nS > 0 ? topY - d : vessel.bottom - cur.r - 3), row = 0;
+        const nL = N - nS - nG;
+        for (let i = 0; i < nL; i++) {
+            molecules.push({ x: lx, y: ly, vx: 0, vy: 0, angle: Math.random() * 6.28, av: 0, state: 'liquid', site: -1, ramp: 0 });
+            lx += d;
+            if (lx > right) { row++; lx = left + (row % 2 ? d / 2 : 0); ly -= d * 0.87; }
+        }
+        // Gas fördelas i hela kärlet
+        for (let i = 0; i < nG; i++) {
+            const m = {
+                x: vessel.x + cur.r + Math.random() * (vessel.w - 2 * cur.r),
+                y: vessel.y + cur.r + Math.random() * (vessel.h * 0.6),
+                vx: 0, vy: 0, angle: Math.random() * 6.28, av: 0, state: 'gas', site: -1, ramp: 0
+            };
+            makeGasVelocity(m, TK, false);
+            molecules.push(m);
+        }
+        lockWait = 0;
+    }
+
+    function counts() {
+        let s = 0, l = 0, g = 0;
+        for (const m of molecules) {
+            if (m.state === 'solid') s++; else if (m.state === 'liquid') l++; else g++;
+        }
+        return { s, l, g };
+    }
+
+    function solidNeighbours(si) {
+        let n = 0;
+        for (const k of sites[si].nb) if (occ[k] !== -1) n++;
+        return n;
+    }
+
+    // Fäst en fri molekyl på en ledig plats som gränsar till kristallen (kärnbildning + tillväxt)
+    function lockOne(nSolidNow) {
+        const cx = vessel.x + vessel.w / 2;
+        let cand = [];
+        if (nSolidNow === 0) {
+            // Kärnbildning: lägsta platsen närmast mitten
+            let best = -1, bd = Infinity;
+            for (let i = 0; i < sites.length; i++) {
+                if (sites[i].level !== 0) continue;
+                const dd = Math.abs(sites[i].x - cx);
+                if (dd < bd) { bd = dd; best = i; }
+            }
+            if (best >= 0) cand.push({ si: best, nbs: 0 });
+        } else {
+            for (let i = 0; i < sites.length; i++) {
+                if (occ[i] !== -1) continue;
+                const nbs = solidNeighbours(i);
+                if (nbs > 0) cand.push({ si: i, nbs });
+            }
+            cand.sort((a, b) => b.nbs - a.nbs || sites[a.si].level - sites[b.si].level);
+            cand = cand.slice(0, 8);
+        }
+        if (cand.length === 0) return false;
+
+        const R = Math.min(500, 36 + lockWait * 5);
+        let bestScore = Infinity, bestM = -1, bestS = -1;
+        for (const c of cand) {
+            const s = sites[c.si];
+            for (let i = 0; i < molecules.length; i++) {
+                const m = molecules[i];
+                if (m.state === 'solid') continue;
+                const dist = Math.hypot(m.x - s.x, m.y - s.y);
+                if (dist > R) continue;
+                const score = dist + (m.state === 'gas' ? 25 : 0) - c.nbs * 6;
+                if (score < bestScore) { bestScore = score; bestM = i; bestS = c.si; }
+            }
+        }
+        if (bestM < 0) { lockWait++; return false; }
+
+        const m = molecules[bestM];
+        m.state = 'solid';
+        m.site = bestS;
+        m.ramp = 0;
+        occ[bestS] = bestM;
+        lockWait = 0;
+        return true;
+    }
+
+    // Släpp en molekyl från kristallens yta (få grannar, inget ovanpå)
+    function releaseOne(toGas, TK) {
+        let best = -1, bestScore = Infinity;
+        for (let i = 0; i < molecules.length; i++) {
+            const m = molecules[i];
+            if (m.state !== 'solid') continue;
+            const s = sites[m.site];
+            let nbs = 0, above = false;
+            for (const k of s.nb) {
+                if (occ[k] !== -1) {
+                    nbs++;
+                    if (sites[k].level > s.level) above = true;
+                }
+            }
+            const score = nbs + (above ? 10 : 0) - s.level * 0.01 + Math.random() * 0.5;
+            if (score < bestScore) { bestScore = score; best = i; }
+        }
+        if (best < 0) return false;
+        const m = molecules[best];
+        occ[m.site] = -1;
+        m.site = -1;
+        m.ramp = 0;
+        if (toGas) { m.state = 'gas'; makeGasVelocity(m, TK, true); }
+        else { m.state = 'liquid'; m.vx *= 0.5; m.vy *= 0.5; }
+        return true;
+    }
+
+    function evaporateOne(TK) {
+        let best = -1, minY = Infinity;
+        molecules.forEach((m, i) => { if (m.state === 'liquid' && m.y < minY) { minY = m.y; best = i; } });
+        if (best < 0) return false;
+        molecules[best].state = 'gas';
+        makeGasVelocity(molecules[best], TK, true);
+        return true;
+    }
+
+    function condenseOne() {
+        let best = -1, maxY = -Infinity;
+        molecules.forEach((m, i) => { if (m.state === 'gas' && m.y > maxY) { maxY = m.y; best = i; } });
+        if (best < 0) return false;
+        molecules[best].state = 'liquid';
+        return true;
+    }
+
+    // Justera molekylernas tillstånd mot de termodynamiska andelarna
+    function phaseExchange() {
+        const t = trans();
+        const st = HtoState(H);
+        const TK = st.T + 273.15;
+        const nS = Math.round(st.fs * N);
+        let nG = Math.round(st.fg * N);
+        if (st.seg === 'liquid') {
+            // Avdunstning: några molekyler i gasfas ovanför vätskan även under kokpunkten
+            nG = Math.round(3 * Math.max(0, Math.min(1, (st.T - t.mp) / (t.bp - t.mp))));
+        }
+
+        for (let k = 0; k < 3; k++) {
+            const c = counts();
+            if (c.s > nS) { releaseOne(t.subl, TK); continue; }
+            if (c.s < nS) { if (lockOne(c.s)) continue; }
+            if (!t.subl && c.g > nG) { if (condenseOne()) continue; }
+            if (!t.subl && c.g < nG && c.l > 0) { if (evaporateOne(TK)) continue; }
+            if (t.subl && c.l > 0) {
+                // Ingen vätska vid detta tryck: överbliven vätska blir gas eller fryser
+                if (nS > c.s) { if (lockOne(c.s)) continue; }
+                evaporateOne(TK); continue;
+            }
+            break;
+        }
+    }
+
+    // =====================================================================
+    //  FYSIKSTEG
+    // =====================================================================
+    function physicsStep() {
+        heatStep();
+        phaseExchange();
+
+        const t = trans();
+        const st = HtoState(H);
+        const TK = st.T + 273.15;
+        const sC = sigmaCond(TK), sG = sigmaGas(TK);
+        const mpK = t.mp + 273.15;
+        // Fast fas: vibrationens amplitud avtar stegvis med temperaturen (förstärkt skala så att
+        // skillnaden syns tydligt). Hastighetsbruset väljs så att amplituden blir den önskade.
+        const vibF = Math.pow(Math.min(1.1, TK / mpK), VIB_EXP);
+        const sS = VIB_AMP_MP * vibF * Math.sqrt(K_SOLID);
+        const attr = ATTR_C * ((t.subl ? t.mp : t.bp) + 273.15) / cur.M;
+        const minD = cur.r * 2;
+        const n = molecules.length;
+
+        for (const m of molecules) m.lonely = true;
+        // Parvisa krafter
+        for (let i = 0; i < n; i++) {
+            const a = molecules[i];
+            for (let j = i + 1; j < n; j++) {
+                const b = molecules[j];
+                if (a.state === 'solid' && b.state === 'solid') continue;
+                let dx = b.x - a.x, dy = b.y - a.y;
+                const d2 = dx * dx + dy * dy;
+                const maxR = minD + ATTR_W;
+                if (d2 > maxR * maxR) continue;
+                const d = Math.sqrt(d2) || 0.001;
+                const nx = dx / d, ny = dy / d;
+                if (a.state !== 'gas' && b.state !== 'gas') { a.lonely = false; b.lonely = false; }
+
+                if (d < minD) {
+                    const invA = a.state === 'solid' ? 0.1 : 1;
+                    const invB = b.state === 'solid' ? 0.1 : 1;
+                    const sum = invA + invB;
+                    const overlap = (minD - d) * 0.8;
+                    a.x -= nx * overlap * invA / sum; a.y -= ny * overlap * invA / sum;
+                    b.x += nx * overlap * invB / sum; b.y += ny * overlap * invB / sum;
+                    const vn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+                    if (vn < 0) {
+                        const e = (a.state === 'gas' || b.state === 'gas') ? 1.0 : 0.2;
+                        const J = -(1 + e) * vn / sum;
+                        a.vx -= nx * J * invA; a.vy -= ny * J * invA;
+                        b.vx += nx * J * invB; b.vy += ny * J * invB;
+                    }
+                } else if (a.state !== 'gas' && b.state !== 'gas') {
+                    // Attraktion (intermolekylära bindningar) i fast/flytande fas
+                    const f = attr * (1 - (d - minD) / ATTR_W);
+                    if (a.state === 'liquid') { a.vx += nx * f; a.vy += ny * f; }
+                    if (b.state === 'liquid') { b.vx -= nx * f; b.vy -= ny * f; }
+                }
+            }
+        }
+
+        // Enskilda molekyler
+        const pad = cur.r + 2;
+        const L = vessel.x + pad, R = vessel.x + vessel.w - pad;
+        const T = vessel.y + pad, B = vessel.bottom - pad;
+
+        for (const m of molecules) {
+            if (m.state === 'solid') {
+                const s = sites[m.site];
+                m.ramp = Math.min(1, m.ramp + 1 / 40);
+                const k = K_SOLID * m.ramp * m.ramp + 0.004;
+                m.vx += (s.x - m.x) * k;
+                m.vy += (s.y - m.y) * k;
+                const g = 0.1 + 0.3 * (1 - m.ramp);
+                const c = Math.sqrt(1 - (1 - g) * (1 - g));
+                m.vx = m.vx * (1 - g) + sS * c * gauss();
+                m.vy = m.vy * (1 - g) + sS * c * gauss();
+                // Orienteringen glider mot gitterplatsens riktning och vickar mindre ju kallare det är
+                m.av += 0.05 * wrapAngle(s.angle - m.angle) + gauss() * 0.01 * vibF;
+                m.av *= 0.75;
+            } else if (m.state === 'liquid') {
+                m.vy += GRAVITY;
+                // Ensam vätskemolekyl (t.ex. nyss kondenserad) faller fritt, annars viskös dämpning
+                const g = m.lonely ? 0.01 : 0.12, c = Math.sqrt(1 - (1 - g) * (1 - g));
+                m.vx = m.vx * (1 - g) + sC * c * gauss();
+                m.vy = m.vy * (1 - g) + sC * c * gauss();
+                m.av = m.av * 0.92 + gauss() * 0.02 * sC;
+            }
+            // Gasmolekyler påverkas inte av några krafter mellan kollisionerna -> raka banor
+
+            // Mus/touch: knuffa molekylerna
+            if (mouse.down) {
+                const dx = m.x - mouse.x, dy = m.y - mouse.y;
+                const d = Math.hypot(dx, dy);
+                if (d < mouse.radius && d > 0) {
+                    const p = (1 - d / mouse.radius) * (m.state === 'solid' ? 0.8 : 1.5);
+                    m.vx += dx / d * p;
+                    m.vy += dy / d * p;
+                }
+            }
+
+            const vmax = m.state === 'gas' ? 14 : 5;
+            const sp = Math.hypot(m.vx, m.vy);
+            if (sp > vmax) { m.vx *= vmax / sp; m.vy *= vmax / sp; }
+
+            m.x += m.vx;
+            m.y += m.vy;
+            m.angle += m.av;
+
+            const el = m.state === 'gas' ? 1 : 0.4;
+            if (m.x < L) { m.x = L; m.vx = Math.abs(m.vx) * el; }
+            if (m.x > R) { m.x = R; m.vx = -Math.abs(m.vx) * el; }
+            if (m.y < T) { m.y = T; m.vy = Math.abs(m.vy) * el; }
+            if (m.y > B) { m.y = B; m.vy = -Math.abs(m.vy) * el; if (m.state !== 'gas') m.vx *= 0.9; }
+        }
+
+        // Termostat för gasen: alla gasmolekylers fart skalas med samma faktor mot
+        // rätt medelrörelseenergi. Riktningarna ändras inte, så banorna förblir raka.
+        let v2 = 0, ng = 0;
+        for (const m of molecules) if (m.state === 'gas') { v2 += m.vx * m.vx + m.vy * m.vy; ng++; }
+        if (ng > 0 && v2 > 0) {
+            const target = 2 * sG * sG;
+            const lam = Math.sqrt(Math.max(0.81, Math.min(1.21, 1 + 0.03 * (target / (v2 / ng) - 1))));
+            for (const m of molecules) if (m.state === 'gas') { m.vx *= lam; m.vy *= lam; }
+        }
+    }
+
+    // =====================================================================
+    //  RITNING
+    // =====================================================================
+    function drawVessel() {
+        const { x, y, w, h } = vessel;
+        ctx.save();
+        ctx.fillStyle = 'rgba(10, 16, 31, 0.75)';
+        ctx.fillRect(x, y, w, h);
+
+        // Termostatplatta (färg efter värmeflöde)
+        const rel = Math.min(1, Math.abs(lastFlow) / HEAT_MAX);
+        let plate = '#1e293b', label = tr('plate'), lc = '#94a3b8';
+        if (lastFlow > 0.001) { plate = `rgba(239, 68, 68, ${0.35 + 0.65 * rel})`; label = tr('heating'); lc = '#fff'; }
+        else if (lastFlow < -0.001) { plate = `rgba(14, 165, 233, ${0.35 + 0.65 * rel})`; label = tr('cooling'); lc = '#fff'; }
+        ctx.fillStyle = plate;
+        ctx.beginPath();
+        ctx.roundRect(x - 14, vessel.bottom + 6, w + 28, 16, 4);
+        ctx.fill();
+        ctx.fillStyle = lc;
+        ctx.font = 'bold 9px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, x + w / 2, vessel.bottom + 14.5);
+
+        // Glas
+        ctx.strokeStyle = 'rgba(125, 211, 252, 0.5)';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, y + h - 10);
+        ctx.arcTo(x, y + h, x + 10, y + h, 10);
+        ctx.lineTo(x + w - 10, y + h);
+        ctx.arcTo(x + w, y + h, x + w, y + h - 10, 10);
+        ctx.lineTo(x + w, y);
+        ctx.stroke();
+
+        // Lock
+        ctx.fillStyle = 'rgba(51, 65, 85, 0.95)';
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.6)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(x - 6, y - 12, w + 12, 12, 4);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '9px sans-serif';
+        ctx.fillText(tr('lid'), x + w / 2, y - 6);
+        ctx.restore();
+    }
+
+    function local(m, lx, ly) {
+        const c = Math.cos(m.angle), s = Math.sin(m.angle);
+        return { x: m.x + lx * c - ly * s, y: m.y + lx * s + ly * c };
+    }
+    const H2O_D = 9, H2O_A = 0.91;
+    function hydrogens(m) {
+        if (cur.id === 'hcl') return [local(m, 9, 0)];
+        if (cur.id === 'h2o') return [
+            local(m, H2O_D * Math.cos(H2O_A), H2O_D * Math.sin(H2O_A)),
+            local(m, H2O_D * Math.cos(-H2O_A), H2O_D * Math.sin(-H2O_A))
+        ];
+        return [];
+    }
+    function acceptor(m) {
+        if (cur.id === 'hcl') return local(m, -5, 0);
+        return { x: m.x, y: m.y };
+    }
+
+    function renderBonds() {
+        if (!renderOptions.bonds) return;
+        ctx.save();
+        const n = molecules.length;
+
+        if (cur.id === 'co2') {
+            // Riktningslösa van der Waals-bindningar
+            const maxD = cur.r * 2 + 8;
+            ctx.setLineDash([2, 4]);
+            ctx.lineWidth = 1.2;
+            for (let i = 0; i < n; i++) {
+                const a = molecules[i];
+                if (a.state === 'gas') continue;
+                for (let j = i + 1; j < n; j++) {
+                    const b = molecules[j];
+                    if (b.state === 'gas') continue;
+                    const d = Math.hypot(a.x - b.x, a.y - b.y);
+                    if (d < maxD) {
+                        const solid = a.state === 'solid' && b.state === 'solid';
+                        ctx.strokeStyle = `rgba(52, 211, 153, ${(solid ? 0.7 : 0.45) * Math.min(1, 1.4 - d / maxD)})`;
+                        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+                    }
+                }
+            }
+        } else {
+            // Riktade bindningar: H (δ⁺) -> Cl/O (δ⁻) i grannmolekylen
+            const maxD = cur.id === 'h2o' ? 25 : 22;
+            const color = cur.id === 'h2o' ? '56, 189, 248' : '251, 191, 36';
+            ctx.setLineDash([3, 3]);
+            ctx.lineWidth = 2;
+            const acc = molecules.map(acceptor);
+            for (let i = 0; i < n; i++) {
+                const a = molecules[i];
+                if (a.state === 'gas') continue;
+                const hs = hydrogens(a);
+                for (const h of hs) {
+                    const dirx = h.x - a.x, diry = h.y - a.y;
+                    const dl = Math.hypot(dirx, diry);
+                    for (let j = 0; j < n; j++) {
+                        if (j === i) continue;
+                        const b = molecules[j];
+                        if (b.state === 'gas') continue;
+                        const o = acc[j];
+                        const ex = o.x - h.x, ey = o.y - h.y;
+                        const d = Math.hypot(ex, ey);
+                        if (d > maxD || d < 1) continue;
+                        const align = (dirx * ex + diry * ey) / (dl * d);
+                        if (align < 0.6) continue;
+                        const solid = a.state === 'solid' && b.state === 'solid';
+                        ctx.strokeStyle = `rgba(${color}, ${(solid ? 1 : 0.75) * Math.min(1, 1.6 - d / maxD)})`;
+                        ctx.beginPath(); ctx.moveTo(h.x, h.y); ctx.lineTo(o.x, o.y); ctx.stroke();
+                    }
+                }
+            }
+        }
+        ctx.restore();
+    }
+
+    function chargeLabel(text, x, y, color) {
+        ctx.fillStyle = color;
+        ctx.fillText(text, x, y);
+    }
+
+    function drawMolecule(m) {
+        ctx.save();
+        ctx.translate(m.x, m.y);
+        ctx.rotate(m.angle);
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        if (cur.id === 'co2') {
+            const d = 10;
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(-d, -2); ctx.lineTo(d, -2);
+            ctx.moveTo(-d, 2); ctx.lineTo(d, 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(0, 0, 7, 0, Math.PI * 2);
+            ctx.fillStyle = '#334155'; ctx.fill();
+            ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1.2; ctx.stroke();
+            for (const xp of [-d, d]) {
+                ctx.beginPath();
+                ctx.arc(xp, 0, 6.5, 0, Math.PI * 2);
+                ctx.fillStyle = '#ef4444'; ctx.fill();
+                ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1; ctx.stroke();
+            }
+            if (renderOptions.charges) {
+                ctx.rotate(-m.angle);
+                const c = Math.cos(m.angle) * d, s = Math.sin(m.angle) * d;
+                chargeLabel('δ⁻', -c, -s, '#fee2e2');
+                chargeLabel('δ⁻', c, s, '#fee2e2');
+                chargeLabel('δ⁺', 0, 0, '#7dd3fc');
+            }
+        } else if (cur.id === 'hcl') {
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(8, 0); ctx.stroke();
+            ctx.beginPath(); ctx.arc(-5, 0, 9.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#16a34a'; ctx.fill();
+            ctx.strokeStyle = '#15803d'; ctx.lineWidth = 1.5; ctx.stroke();
+            ctx.beginPath(); ctx.arc(9, 0, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#f8fafc'; ctx.fill();
+            ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1; ctx.stroke();
+            if (renderOptions.charges) {
+                const p1 = { x: -5, y: 0 }, p2 = { x: 9, y: 0 };
+                ctx.rotate(-m.angle);
+                const c = Math.cos(m.angle), s = Math.sin(m.angle);
+                chargeLabel('δ⁻', p1.x * c, p1.x * s, '#dcfce7');
+                chargeLabel('δ⁺', p2.x * c, p2.x * s, '#0369a1');
+            }
+        } else {
+            const hx = H2O_D * Math.cos(H2O_A), hy = H2O_D * Math.sin(H2O_A);
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.moveTo(0, 0); ctx.lineTo(hx, hy);
+            ctx.moveTo(0, 0); ctx.lineTo(hx, -hy);
+            ctx.stroke();
+            ctx.beginPath(); ctx.arc(0, 0, 8.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ef4444'; ctx.fill();
+            ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.2; ctx.stroke();
+            for (const yy of [hy, -hy]) {
+                ctx.beginPath(); ctx.arc(hx, yy, 4.5, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff'; ctx.fill();
+                ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.stroke();
+            }
+            if (renderOptions.charges) {
+                ctx.rotate(-m.angle);
+                const c = Math.cos(m.angle), s = Math.sin(m.angle);
+                chargeLabel('δ⁻', 0, 0, '#fee2e2');
+                for (const yy of [hy, -hy]) chargeLabel('δ⁺', hx * c - yy * s, hx * s + yy * c, '#0369a1');
+            }
+        }
+        ctx.restore();
+    }
+
+    function drawCurve() {
+        if (!cctx || cW === 0) return;
+        const pad = { l: 34, r: 6, t: 6, b: 6 };
+        const Tmin = -150, Tmax = 150;
+        const gw = cW - pad.l - pad.r, gh = cH - pad.t - pad.b;
+        const yOf = (T) => pad.t + (1 - (T - Tmin) / (Tmax - Tmin)) * gh;
+
+        cctx.clearRect(0, 0, cW, cH);
+        cctx.font = '9px monospace';
+        cctx.textAlign = 'right';
+        cctx.textBaseline = 'middle';
+        for (let T = -150; T <= 150; T += 50) {
+            const y = yOf(T);
+            cctx.strokeStyle = T === 0 ? 'rgba(148,163,184,0.35)' : 'rgba(148,163,184,0.12)';
+            cctx.beginPath(); cctx.moveTo(pad.l, y); cctx.lineTo(cW - pad.r, y); cctx.stroke();
+            cctx.fillStyle = '#64748b';
+            cctx.fillText(fmt(T), pad.l - 4, y);
+        }
+        const t = trans();
+        const lines = t.subl ? [[t.mp, '#a78bfa', tr('sublShort')]] : [[t.mp, '#22d3ee', tr('mpShort')], [t.bp, '#fbbf24', tr('bpShort')]];
+        cctx.setLineDash([4, 3]);
+        cctx.textAlign = 'left';
+        for (const [T, col, lab] of lines) {
+            const y = yOf(T);
+            cctx.strokeStyle = col;
+            cctx.globalAlpha = 0.6;
+            cctx.beginPath(); cctx.moveTo(pad.l, y); cctx.lineTo(cW - pad.r, y); cctx.stroke();
+            cctx.globalAlpha = 1;
+            cctx.fillStyle = col;
+            cctx.fillText(lab, pad.l + 3, y - 6);
+        }
+        cctx.setLineDash([]);
+
+        const maxPts = 360;
+        const xOf = (i) => pad.l + (i / (maxPts - 1)) * gw;
+        const off = maxPts - history.length;
+        // termostat
+        cctx.strokeStyle = 'rgba(148,163,184,0.45)';
+        cctx.lineWidth = 1;
+        cctx.setLineDash([2, 3]);
+        cctx.beginPath();
+        history.forEach((p, i) => { const X = xOf(i + off), Y = yOf(p.sp); i ? cctx.lineTo(X, Y) : cctx.moveTo(X, Y); });
+        cctx.stroke();
+        cctx.setLineDash([]);
+        // ämnets temperatur
+        cctx.strokeStyle = '#fb7185';
+        cctx.lineWidth = 2;
+        cctx.beginPath();
+        history.forEach((p, i) => { const X = xOf(i + off), Y = yOf(p.T); i ? cctx.lineTo(X, Y) : cctx.moveTo(X, Y); });
+        cctx.stroke();
+    }
+
+    // =====================================================================
+    //  UI
+    // =====================================================================
+    // [css-klass, pulserande?, text]
+    // [css-klass, pulserande?]  (texten hämtas med tr('st_' + nyckel))
+    const BADGES = {
+        solid:   ['st-solid',  false], melt_up: ['st-melt', true], melt_dn: ['st-melt', true], melt_eq: ['st-melt', false],
+        liquid:  ['st-liquid', true],  boil_up: ['st-boil', true], boil_dn: ['st-boil', true], boil_eq: ['st-boil', false],
+        subl_up: ['st-subl',   true],  subl_dn: ['st-subl', true], subl_eq: ['st-subl', false], gas: ['st-gas', true]
+    };
+
+    function badgeKey(seg) {
+        const dir = lastFlow > 0.001 ? 'up' : lastFlow < -0.001 ? 'dn' : 'eq';
+        if (seg === 'melt') return 'melt_' + dir;
+        if (seg === 'boil') return 'boil_' + dir;
+        if (seg === 'sublime') return 'subl_' + dir;
+        return seg;
+    }
+
+    let lastBadge = '';
+    function updateUI() {
+        const st = HtoState(H);
+        const T = Math.round(st.T * 10) / 10;
+        document.getElementById('temp-celsius').textContent = (T > 0 ? '+' : '') + fmtT(T);
+        document.getElementById('temp-kelvin').textContent = fmt(st.T + 273.15, 0);
+        document.getElementById('energy-fill').style.width = `${Math.min(100, (st.T + 273.15) / 423.15 * 100)}%`;
+
+        const c = counts();
+        document.getElementById('cnt-solid').textContent = c.s;
+        document.getElementById('cnt-liquid').textContent = c.l;
+        document.getElementById('cnt-gas').textContent = c.g;
+        document.getElementById('bar-solid').style.width = `${c.s / N * 100}%`;
+        document.getElementById('bar-liquid').style.width = `${c.l / N * 100}%`;
+        document.getElementById('bar-gas').style.width = `${c.g / N * 100}%`;
+
+        const key = badgeKey(st.seg);
+        if (key !== lastBadge) {
+            lastBadge = key;
+            const [cls, pulse] = BADGES[key];
+            const text = tr('st_' + key);
+            const badge = document.getElementById('phase-badge');
+            badge.className = `status ${cls}${pulse ? ' pulse' : ''}`;
+            badge.innerHTML = `<span class="dot"></span>${text}`;
+        }
+
+        if (lastSegment !== null && st.seg !== lastSegment) segmentToast(lastSegment, st.seg);
+        lastSegment = st.seg;
+    }
+
+    let toastTimer = null;
+    function showToast(text) {
+        const toast = document.getElementById('transition-toast');
+        toast.textContent = text;
+        toast.style.opacity = '1';
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 3500);
+    }
+
+    function segmentToast(from, to) {
+        const t = trans();
+        const key = `${from}>${to}`;
+        const T = (to === 'boil' || from === 'boil') && !t.subl ? t.bp : t.mp;
+        const msg = I18N[lang][key] ? tr(key).replace('{T}', fmtT(T)) : null;
+        if (msg) showToast(msg);
+    }
+
+    function updateSetpointUI() {
+        const txt = (setpoint > 0 ? '+' : '') + fmtT(setpoint) + ' °C';
+        document.getElementById('setpoint-text').textContent = txt;
+        document.getElementById('setpoint-big').textContent = txt;
+        document.getElementById('temp-slider').value = setpoint;
+    }
+
+    function updateMarkers() {
+        const t = trans();
+        const pct = (T) => ((T + 150) / 300 * 100).toFixed(2) + '%';
+        const tick = (T, label, color, low) =>
+            `<div class="marker${low ? ' low' : ''}" style="left:${pct(T)};color:${color}"><i></i>${label}</div>`;
+        let html = `<div class="marker end" style="left:0">−150</div><div class="marker end" style="left:100%">+150</div>`;
+        const close = !t.subl && (t.bp - t.mp) < 40;
+        if (t.subl) {
+            html += tick(t.mp, `${tr('subl')} ${fmtT(t.mp)}°`, '#c4b5fd', false);
+        } else {
+            html += tick(t.mp, `${tr('mp')} ${fmtT(t.mp)}°`, '#67e8f9', false);
+            html += tick(t.bp, `${tr('bp')} ${fmtT(t.bp)}°`, '#fcd34d', close);
+        }
+        if (Math.abs(t.mp) > 12 && Math.abs(t.bp) > 12) html += tick(0, '0°', '#64748b', false);
+        const el = document.getElementById('slider-markers');
+        el.innerHTML = html;
+        el.style.height = close ? '44px' : '30px';
+    }
+
+    function updateLegend() {
+        const atom = (color, size, label, border) =>
+            `<div class="lg"><span class="sw" style="background:${color};width:${size}px;height:${size}px;${border ? 'border:1px solid #94a3b8' : ''}"></span>${label}</div>`;
+        const bond = (color, label) => `<div class="lg"><span class="sw-line" style="border-color:${color}"></span>${label}</div>`;
+        const el = document.getElementById('molecule-legend');
+        if (cur.id === 'co2') el.innerHTML =
+            atom('#334155', 14, tr('lgC'), true) + atom('#ef4444', 12, tr('lgO')) + bond('#34d399', tr('lgVdw'));
+        else if (cur.id === 'hcl') el.innerHTML =
+            atom('#16a34a', 14, tr('lgCl')) + atom('#f8fafc', 10, tr('lgH')) + bond('#fbbf24', tr('lgDd'));
+        else el.innerHTML =
+            atom('#ef4444', 14, tr('lgO')) + atom('#ffffff', 10, tr('lgH'), true) + bond('#38bdf8', tr('lgHb'));
+    }
+
+    // =====================================================================
+    //  KONTROLLER
+    // =====================================================================
+    function setSubstance(key) {
+        cur = SUBSTANCES[key];
+        ['co2', 'hcl', 'h2o'].forEach(k => {
+            const btn = document.getElementById(`btn-${k}`);
+            btn.classList.toggle('active', k === key);
+        });
+        document.getElementById('co2-pressure-toggle').classList.toggle('hidden', key !== 'co2');
+        refreshSubstanceTexts();
+        // Starta i jämvikt med termostaten
+        H = TtoH(setpoint);
+        history.length = 0;
+        lastSegment = null;
+        lastBadge = '';
+        placeAll();
+        updateUI();
+    }
+
+    function refreshSubstanceTexts() {
+        const t = trans();
+        const liq = document.getElementById('btn-liquid-preset');
+        liq.title = t.subl ? tr('liquidPresetTitle') : '';
+        document.getElementById('current-bond-name').textContent = tr('bond_' + cur.id);
+        document.getElementById('theory-content').innerHTML = cur.explanation();
+        updateLegend();
+        updateMarkers();
+    }
+
+    function setCo2Pressure(val) {
+        // Behåll temperaturen och placera molekylerna enligt fasen vid det nya trycket
+        const T = HtoState(H).T;
+        co2Pressure = val;
+        document.getElementById('pressure-select').value = val;
+        H = TtoH(T);
+        lastSegment = null;
+        lastBadge = '';
+        refreshSubstanceTexts();
+        placeAll();
+    }
+
+    function setSetpoint(v) {
+        setpoint = Math.max(-150, Math.min(150, v));
+        updateSetpointUI();
+    }
+    function nudgeSetpoint(d) { setSetpoint(setpoint + d); }
+
+    function setPhasePreset(target) {
+        let t = trans();
+        if (target === 'liquid' && t.subl) { setCo2Pressure('10atm'); t = trans(); }
+        let T;
+        if (t.subl) T = target === 'solid' ? t.mp - 30 : t.mp + 40;
+        else if (target === 'solid') T = t.mp - 25;
+        else if (target === 'liquid') T = (t.mp + t.bp) / 2;
+        else T = t.bp + 25;
+        setSetpoint(Math.round(T));
+    }
+
+    function resetSimulation() {
+        H = TtoH(HtoState(H).T);
+        placeAll();
+    }
+
+    // =====================================================================
+    //  STORLEK, INTERAKTION, LOOP
+    // =====================================================================
+    function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        const box = canvas.parentElement.getBoundingClientRect();
+        width = Math.floor(box.width); height = Math.floor(box.height);
+        canvas.width = width * dpr; canvas.height = height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const cb = curveCanvas.parentElement.getBoundingClientRect();
+        cW = Math.floor(cb.width); cH = Math.floor(cb.height);
+        curveCanvas.width = cW * dpr; curveCanvas.height = cH * dpr;
+        cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        updateVessel();
+        if (molecules.length) placeAll();
+    }
+
+    function setupInteractions() {
+        const pos = (e) => {
+            const r = canvas.getBoundingClientRect();
+            const p = e.touches ? e.touches[0] : e;
+            return { x: p.clientX - r.left, y: p.clientY - r.top };
+        };
+        // Med förstoringsglaset på styr pekaren glaset, och ett klick/tryck tar en stillbild
+        // av det som syns i glaset. Utan glaset knuffar pekaren på molekylerna.
+        let lastTouch = 0;
+        const touchStart = { x: 0, y: 0, moved: false };
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (lens.on) return;
+            mouse.down = true; Object.assign(mouse, pos(e));
+        });
+        canvas.addEventListener('mousemove', (e) => { if (lens.on) setLens(pos(e)); });
+        canvas.addEventListener('mouseleave', () => { if (lens.on) restoreLens(); });
+        canvas.addEventListener('click', (e) => {
+            if (!lens.on || performance.now() - lastTouch < 800) return;
+            setLens(pos(e));
+            takeStill();
+        });
+        window.addEventListener('mousemove', (e) => { if (!lens.on && mouse.down) Object.assign(mouse, pos(e)); });
+        window.addEventListener('mouseup', () => { mouse.down = false; });
+
+        canvas.addEventListener('touchstart', (e) => {
+            lastTouch = performance.now();
+            const p = pos(e);
+            if (lens.on) { Object.assign(touchStart, p, { moved: false }); return; }
+            mouse.down = true; Object.assign(mouse, p);
+        }, { passive: true });
+        canvas.addEventListener('touchmove', (e) => {
+            lastTouch = performance.now();
+            const p = pos(e);
+            if (lens.on) {
+                // Dra = flytta glaset (ingen bild)
+                if (touchStart.moved || Math.hypot(p.x - touchStart.x, p.y - touchStart.y) > 8) {
+                    touchStart.moved = true;
+                    setLens(p);
+                }
+                return;
+            }
+            if (mouse.down) Object.assign(mouse, p);
+        }, { passive: true });
+        canvas.addEventListener('touchend', () => {
+            lastTouch = performance.now();
+            mouse.down = false;
+            // Kort tryck utan att dra = flytta glaset dit och ta en stillbild
+            if (lens.on && !touchStart.moved) { setLens(touchStart); takeStill(); }
+        });
+
+        document.querySelectorAll('.btn.zoom').forEach(btn => btn.addEventListener('click', () => {
+            lens.zoom = parseFloat(btn.dataset.zoom);
+            document.querySelectorAll('.btn.zoom').forEach(b => b.classList.toggle('active', b === btn));
+        }));
+
+        // Kortkommandon: L = förstoringsglas, P = paus, S = stillbild, Esc = stäng bildvisning
+        window.addEventListener('keydown', (e) => {
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (e.key === 'Escape') { closeViewer(); return; }
+            if (tag === 'select' || tag === 'textarea' || (tag === 'input' && e.target.type !== 'range' && e.target.type !== 'checkbox')) return;
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            const k = e.key.toLowerCase();
+            if (k === 'l') toggleLens();
+            else if (k === 'p') togglePause();
+            else if (k === 's') takeStill();
+        });
+        document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
+        document.getElementById('viewer').addEventListener('click', (e) => { if (e.target.id === 'viewer') closeViewer(); });
+
+        document.querySelectorAll('.btn.seg:not(.zoom)').forEach(btn => btn.addEventListener('click', () => {
+            heatPower = parseFloat(btn.dataset.power);
+            document.querySelectorAll('.btn.seg:not(.zoom)').forEach(b => b.classList.toggle('active', b === btn));
+        }));
+    }
+
+    // =====================================================================
+    //  FÖRSTORINGSGLAS, PAUS OCH STILLBILDER
+    // =====================================================================
+    let paused = false;
+    const lens = { on: false, x: 0, y: 0, zoom: 2, placed: false, drag: false };
+    const stills = [];
+    const MAX_STILLS = 12;
+    let stillSeq = 0, viewId = null, compareId = null;
+
+
+
+    function drawScene() {
+        drawVessel();
+        renderBonds();
+        for (const m of molecules) drawMolecule(m);
+    }
+
+    function lensRadius() { return Math.max(60, Math.min(130, Math.min(width, height) * 0.22)); }
+
+    const lensTrail = [];
+    function setLens(p) {
+        lens.x = Math.max(0, Math.min(width, p.x));
+        lens.y = Math.max(0, Math.min(height, p.y));
+        lens.placed = true;
+        const now = performance.now();
+        lensTrail.push({ x: lens.x, y: lens.y, t: now });
+        while (lensTrail.length && now - lensTrail[0].t > 1000) lensTrail.shift();
+    }
+
+    // När pekaren lämnar ytan (t.ex. på väg till en knapp) stannar glaset där det
+    // var för en kort stund sedan, i stället för att hamna vid kanten.
+    function restoreLens() {
+        const now = performance.now();
+        let best = null;
+        for (const q of lensTrail) if (now - q.t >= 250) best = q;
+        if (best) { lens.x = best.x; lens.y = best.y; }
+        lensTrail.length = 0;
+    }
+
+    let lensFlash = 0;
+    function drawLens() {
+        const R = lensRadius();
+        lens.x = Math.max(0, Math.min(width, lens.x));
+        lens.y = Math.max(0, Math.min(height, lens.y));
+        // Förstorad vy: hela scenen ritas om skarpt (vektorgrafik) i större skala
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(lens.x, lens.y, R, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.fillStyle = '#050811';
+        ctx.fillRect(lens.x - R, lens.y - R, 2 * R, 2 * R);
+        ctx.translate(lens.x, lens.y);
+        ctx.scale(lens.zoom, lens.zoom);
+        ctx.translate(-lens.x, -lens.y);
+        drawScene();
+        ctx.restore();
+
+        // Kort vit blixt i glaset när en stillbild tas
+        const fl = 1 - (performance.now() - lensFlash) / 350;
+        if (fl > 0) {
+            ctx.save();
+            ctx.beginPath(); ctx.arc(lens.x, lens.y, R, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.6 * fl})`; ctx.fill();
+            ctx.restore();
+        }
+
+        // Ram, handtag och etikett
+        ctx.save();
+        const a = Math.PI / 4;
+        const hx = lens.x + Math.cos(a) * (R + 3), hy = lens.y + Math.sin(a) * (R + 3);
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 10;
+        ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx + Math.cos(a) * 36, hy + Math.sin(a) * 36); ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(lens.x, lens.y, R, 0, Math.PI * 2);
+        ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(226, 232, 240, 0.95)'; ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(lens.x, lens.y, R + 4, 0, Math.PI * 2);
+        ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)'; ctx.stroke();
+        const label = `${lens.zoom}×`;
+        ctx.font = 'bold 12px system-ui, sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+        ctx.beginPath(); ctx.roundRect(lens.x - 17, lens.y - R + 6, 34, 18, 9); ctx.fill();
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText(label, lens.x, lens.y - R + 15.5);
+        const hint = tr('lensHint');
+        ctx.font = '600 10.5px system-ui, sans-serif';
+        const hw = ctx.measureText(hint).width + 14;
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.beginPath(); ctx.roundRect(lens.x - hw / 2, lens.y + R - 24, hw, 17, 8.5); ctx.fill();
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillText(hint, lens.x, lens.y + R - 15.5);
+        ctx.restore();
+    }
+
+    function toggleLens(force) {
+        lens.on = typeof force === 'boolean' ? force : !lens.on;
+        if (lens.on && !lens.placed) {
+            lens.x = vessel.x + vessel.w / 2;
+            lens.y = vessel.bottom - lensRadius() * 0.8;
+        }
+        mouse.down = false;
+        document.getElementById('btn-lens').classList.toggle('on', lens.on);
+        document.getElementById('zoomset').classList.toggle('hidden', !lens.on);
+        canvas.style.cursor = lens.on ? 'crosshair' : 'pointer';
+    }
+
+    function togglePause() {
+        paused = !paused;
+        const b = document.getElementById('btn-pause');
+        b.textContent = paused ? tr('resume') : tr('pause');
+        b.classList.toggle('on', paused);
+        document.getElementById('paused-tag').classList.toggle('hidden', !paused);
+    }
+
+    function takeStill() {
+        let cx, cy, halfW, halfH, outW, outH, view;
+        if (lens.on) {
+            const h = lensRadius() / lens.zoom;
+            cx = lens.x; cy = lens.y; halfW = halfH = h;
+            outW = outH = 720;
+            view = `${lens.zoom}× ${tr('magnification')}`;
+        } else {
+            const top = vessel.y - 16, bot = vessel.bottom + 26;
+            cx = vessel.x + vessel.w / 2; cy = (top + bot) / 2;
+            halfW = vessel.w / 2 + 22; halfH = (bot - top) / 2;
+            const sc = Math.min(2, 1100 / (2 * halfH));
+            outW = Math.round(2 * halfW * sc); outH = Math.round(2 * halfH * sc);
+            view = tr('wholeVessel');
+        }
+        const capH = 34;
+        const oc = document.createElement('canvas');
+        oc.width = outW; oc.height = outH + capH;
+        const o = oc.getContext('2d');
+        o.fillStyle = '#050811';
+        o.fillRect(0, 0, oc.width, oc.height);
+        o.save();
+        o.translate(outW / 2, outH / 2);
+        o.scale(outW / (2 * halfW), outH / (2 * halfH));
+        o.translate(-cx, -cy);
+        const saved = ctx;
+        ctx = o;
+        try { drawScene(); } finally { ctx = saved; }
+        o.restore();
+
+        const st = HtoState(H);
+        const T = Math.round(st.T * 10) / 10;
+        const tTxt = `${T > 0 ? '+' : ''}${fmtT(T)} °C`;
+        const press = cur.id === 'co2' ? (co2Pressure === '1atm' ? ', 1 atm' : ', 10 atm') : '';
+        const phase = tr('ph_' + badgeKey(st.seg));
+        const label = `${tr(cur.id + 'Name')} (${cur.formula}${press}) · ${tTxt} · ${phase} · ${view}`;
+        o.fillStyle = '#0f172a';
+        o.fillRect(0, outH, outW, capH);
+        o.fillStyle = '#e2e8f0';
+        o.font = '600 14px system-ui, sans-serif';
+        o.textBaseline = 'middle';
+        o.fillText(label, 12, outH + capH / 2, outW - 24);
+
+        stills.push({ id: ++stillSeq, url: oc.toDataURL('image/png'), label, short: `${cur.formula} ${tTxt}`, n: stillSeq });
+        if (stills.length > MAX_STILLS) stills.shift();
+        renderThumbs();
+        if (lens.on) {
+            lensFlash = performance.now();   // blixten ritas i glaset (drawLens)
+        } else {
+            const f = document.getElementById('flash');
+            f.style.transition = 'none'; f.style.opacity = '0.6';
+            requestAnimationFrame(() => { f.style.transition = 'opacity 0.35s'; f.style.opacity = '0'; });
+        }
+    }
+
+    function renderThumbs() {
+        const box = document.getElementById('thumbs');
+        box.innerHTML = stills.map(s =>
+            `<button class="thumb" onclick="openStill(${s.id})" title="${s.label}"><img src="${s.url}" alt="${s.label}"><span>#${s.n} ${s.short}</span></button>`
+        ).join('');
+        document.getElementById('thumbs-empty').classList.toggle('hidden', stills.length > 0);
+        document.getElementById('still-count').textContent = `${stills.length}/${MAX_STILLS}`;
+    }
+
+    const findStill = (id) => stills.find(s => s.id === id);
+
+    function openStill(id) {
+        viewId = id;
+        if (compareId === id) compareId = null;
+        document.getElementById('viewer').classList.remove('hidden');
+        renderViewer();
+    }
+
+    function renderViewer() {
+        const s = findStill(viewId);
+        if (!s) { closeViewer(); return; }
+        document.getElementById('v-img1').src = s.url;
+        document.getElementById('v-cap1').textContent = `${tr('image')} #${s.n}`;
+        const dl = document.getElementById('v-download');
+        dl.href = s.url;
+        dl.download = `${tr('fileName')}-${s.n}.png`;
+
+        const c = compareId !== null ? findStill(compareId) : null;
+        document.getElementById('v-fig2').classList.toggle('hidden', !c);
+        if (c) {
+            document.getElementById('v-img2').src = c.url;
+            document.getElementById('v-cap2').textContent = `${tr('image')} #${c.n}`;
+        }
+        const sel = document.getElementById('v-compare');
+        sel.innerHTML = `<option value="">${tr('none')}</option>` + stills.filter(x => x.id !== viewId)
+            .map(x => `<option value="${x.id}"${x.id === compareId ? ' selected' : ''}>#${x.n} ${x.short}</option>`).join('');
+    }
+
+    function setCompare(v) { compareId = v ? parseInt(v, 10) : null; renderViewer(); }
+
+    function stepStill(d) {
+        const i = stills.findIndex(s => s.id === viewId);
+        if (i < 0) return;
+        viewId = stills[(i + d + stills.length) % stills.length].id;
+        if (compareId === viewId) compareId = null;
+        renderViewer();
+    }
+
+    function deleteStill() {
+        const i = stills.findIndex(s => s.id === viewId);
+        if (i < 0) return;
+        stills.splice(i, 1);
+        if (compareId === viewId) compareId = null;
+        renderThumbs();
+        if (stills.length === 0) { closeViewer(); return; }
+        viewId = stills[Math.min(i, stills.length - 1)].id;
+        if (compareId === viewId) compareId = null;
+        renderViewer();
+    }
+
+    function closeViewer() {
+        document.getElementById('viewer').classList.add('hidden');
+        viewId = null;
+    }
+
+    const STEP_MS = 1000 / 60;
+    let lastTime = null, acc = 0;
+    function loop(now) {
+        if (lastTime === null) lastTime = now;
+        acc += Math.min(100, now - lastTime);
+        lastTime = now;
+        let steps = 0;
+        if (paused) acc = 0;
+        while (acc >= STEP_MS && steps < 4) {
+            physicsStep();
+            frameCount++;
+            if (frameCount % 10 === 0) {
+                history.push({ T: HtoState(H).T, sp: setpoint });
+                if (history.length > 360) history.shift();
+            }
+            acc -= STEP_MS;
+            steps++;
+        }
+        if (steps === 4) acc = 0;
+
+        ctx.fillStyle = '#050811';
+        ctx.fillRect(0, 0, width, height);
+        drawScene();
+        if (lens.on) drawLens();
+
+        if (frameCount % 4 === 0) updateUI();
+        if (frameCount % 10 === 0) drawCurve();
+        requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        canvas = document.getElementById('simCanvas');
+        ctx = canvas.getContext('2d');
+        curveCanvas = document.getElementById('curveCanvas');
+        cctx = curveCanvas.getContext('2d');
+
+        resizeCanvas();
+        new ResizeObserver(() => {
+            const b = canvas.parentElement.getBoundingClientRect();
+            if (Math.abs(b.width - width) > 1 || Math.abs(b.height - height) > 1) resizeCanvas();
+        }).observe(canvas.parentElement);
+
+        setupInteractions();
+        lang = initialLang();
+        updateSetpointUI();
+        setSubstance('co2');
+        applyLang();
+        requestAnimationFrame(loop);
+    });
+    </script>
+</body>
+</html>
