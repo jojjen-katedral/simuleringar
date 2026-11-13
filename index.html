@@ -10,16 +10,19 @@
 :root{
   --bg:#f6f7fb; --surface:#ffffff; --ink:#16202e; --muted:#5b6678; --line:#e1e5ee;
   --accent:#2b59c3; --accent-soft:#e8eefc; --kemi:#c2410c; --kemi-soft:#fdeee4; --bio:#15803d; --bio-soft:#e5f5ea;
+  --int:#6d28d9; --int-soft:#f1eafd; --img-dim:1;
   --shadow:0 1px 2px rgba(16,24,40,.05),0 4px 16px rgba(16,24,40,.06);
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0e1218; --surface:#161c25; --ink:#e7ecf3; --muted:#9aa6b8; --line:#273141;
   --accent:#86a8ff; --accent-soft:#1c2740; --kemi:#fb9a5b; --kemi-soft:#33210f; --bio:#5fd38a; --bio-soft:#132a1c;
+  --int:#c4a5ff; --int-soft:#2a1f45; --img-dim:.88;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0e1218; --surface:#161c25; --ink:#e7ecf3; --muted:#9aa6b8; --line:#273141;
   --accent:#86a8ff; --accent-soft:#1c2740; --kemi:#fb9a5b; --kemi-soft:#33210f; --bio:#5fd38a; --bio-soft:#132a1c;
+  --int:#c4a5ff; --int-soft:#2a1f45; --img-dim:.88;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); color-scheme:dark}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -42,11 +45,15 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .filters{display:flex;flex-wrap:wrap;gap:8px;margin:26px 0 18px}
 .chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 15px;font:inherit;font-size:.92rem;font-weight:600;cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;padding-bottom:48px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;padding-bottom:48px}
 .card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s,border-color .15s}
 .card:hover{transform:translateY(-2px);border-color:var(--accent)}
-.thumb{height:130px;display:grid;place-items:center}
-.thumb svg{width:84px;height:84px}
+.thumb{position:relative;height:150px;overflow:hidden;border-bottom:1px solid var(--line)}
+.thumb svg{display:block;width:100%;height:100%;filter:brightness(var(--img-dim));transition:transform .35s ease}
+.card:hover .thumb svg{transform:scale(1.04)}
+.play{position:absolute;right:10px;bottom:10px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.15);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+.play svg{width:14px;height:14px;filter:none;transform:none!important}
+.card:hover .play,.card:focus-visible .play{opacity:1;transform:none}
 .body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
 .body h2{font-size:1.12rem;margin:0;line-height:1.3}
 .body p{margin:0;color:var(--muted);font-size:.93rem;flex:1}
@@ -54,10 +61,10 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .tag{font-size:.75rem;font-weight:700;padding:2px 9px;border-radius:999px}
 .tag.kemi{background:var(--kemi-soft);color:var(--kemi)}
 .tag.bio{background:var(--bio-soft);color:var(--bio)}
-.tag.kurs{background:var(--accent-soft);color:var(--accent)}
+.tag.int{background:var(--int-soft);color:var(--int)}
 .empty{color:var(--muted);padding:20px 0 48px}
 footer{border-top:1px solid var(--line);color:var(--muted);font-size:.88rem;padding:22px 0 32px}
-@media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
+@media (prefers-reduced-motion:reduce){.card,.thumb svg,.play{transition:none}.card:hover{transform:none}.card:hover .thumb svg{transform:none}}
 </style>
 </head>
 <body>
@@ -89,6 +96,7 @@ footer{border-top:1px solid var(--line);color:var(--muted);font-size:.88rem;padd
     <button type="button" class="chip" data-filter="alla" aria-pressed="true" data-t="all">Alla</button>
     <button type="button" class="chip" data-filter="kemi" aria-pressed="false" data-t="kemi">Kemi</button>
     <button type="button" class="chip" data-filter="biologi" aria-pressed="false" data-t="bio">Biologi</button>
+    <button type="button" class="chip" data-filter="interaktiv" aria-pressed="false" data-t="int">Interaktiv</button>
   </div>
 
   <div class="grid" id="grid"></div>
@@ -104,19 +112,27 @@ footer{border-top:1px solid var(--line);color:var(--muted);font-size:.88rem;padd
 const TEXT = {
   sv: { brand:"Simuleringar", h1:"Interaktiva simuleringar i kemi och biologi",
         lead:"Utforska molekyler, kretslopp och livets kemi. Simuleringarna fungerar direkt i webbläsaren – på dator, surfplatta och interaktiv tavla.",
-        all:"Alla", kemi:"Kemi", bio:"Biologi", empty:"Inga simuleringar i den här kategorin ännu.",
+        all:"Alla", kemi:"Kemi", bio:"Biologi", int:"Interaktiv", empty:"Inga simuleringar i den här kategorin ännu.",
         footer:"Skapad av Johan Jensen, lärare i kemi och biologi.", theme:"Byt ljust/mörkt läge", title:"Simuleringar i kemi och biologi" },
   en: { brand:"Simulations", h1:"Interactive simulations in chemistry and biology",
         lead:"Explore molecules, cycles and the chemistry of life. The simulations run right in the browser – on computers, tablets and interactive whiteboards.",
-        all:"All", kemi:"Chemistry", bio:"Biology", empty:"No simulations in this category yet.",
+        all:"All", kemi:"Chemistry", bio:"Biology", int:"Interactive", empty:"No simulations in this category yet.",
         footer:"Created by Johan Jensen, chemistry and biology teacher.", theme:"Toggle light/dark mode", title:"Simulations in chemistry and biology" }
 };
+
+const PLAY = '<span class="play" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M3 1.5l9 5.5-9 5.5z" fill="#2b59c3"/></svg></span>';
 
 function get(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function set(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 
 let lang = get("sim-lang")==="en" ? "en" : "sv";
 let filter = "alla";
+
+function matches(s){
+  if (filter === "alla") return true;
+  if (filter === "interaktiv") return !!s.interaktiv;
+  return s.amnen.includes(filter);
+}
 
 function render(){
   const t = TEXT[lang];
@@ -127,13 +143,13 @@ function render(){
   document.querySelectorAll("[data-filter]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.filter===filter)));
   document.getElementById("themeBtn").setAttribute("aria-label", t.theme);
 
-  const list = SIMULERINGAR.filter(s => filter==="alla" || s.amnen.includes(filter));
+  const list = SIMULERINGAR.filter(matches);
   document.getElementById("grid").innerHTML = list.map(s => {
     const x = s[lang] || s.sv;
     const tags = s.amnen.map(a => `<span class="tag ${a==="kemi"?"kemi":"bio"}">${a==="kemi"?t.kemi:t.bio}</span>`).join("")
-               + (s.kurs ? `<span class="tag kurs">${s.kurs}</span>` : "");
+               + (s.interaktiv ? `<span class="tag int">${t.int}</span>` : "");
     return `<a class="card" href="visa.html?sim=${encodeURIComponent(s.fil)}">
-      <div class="thumb" style="background:${s.farg}">${IKONER[s.ikon]||IKONER.standard}</div>
+      <div class="thumb">${BILDER[s.bild]||BILDER.standard}${PLAY}</div>
       <div class="body"><h2>${x.titel}</h2><p>${x.text}</p><div class="tags">${tags}</div></div>
     </a>`;
   }).join("");
