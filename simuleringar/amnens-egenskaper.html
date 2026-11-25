@@ -2593,7 +2593,7 @@
 &lt;script>
 // =====================================================================
 //  ÄMNENS EGENSKAPER – gemensam ämnesdata
-//  En källa för alla delar: ramens ämnesbibliotek och ämneskort, Jämför-diagrammet,
+//  En källa för alla delar: ramens ämnesbibliotek och ämneskort,
 //  och (i den sammanslagna filen) smält-/kokpunkter och densiteter i delarna.
 //
 //  Fält:
@@ -2619,63 +2619,63 @@
         // ---- vätebindningar ----
         water:    { name: n('Vatten', 'Water'), low: n('vatten', 'water'), formula: 'H₂O', M: 18.02, mp: 0, bp: 100, dens: 1.00, bond: 'hb', family: 'annat', pol: POL.vp,
                     note: n('Liten, vinklad molekyl som bildar upp till fyra vätebindningar.', 'A small, bent molecule that forms up to four hydrogen bonds.'),
-                    in: { varm: 'h2o', blanda: 'water', jamfor: true } },
+                    in: { varm: 'h2o', blanda: 'water' } },
         methanol: { name: n('Metanol', 'Methanol'), low: n('metanol', 'methanol'), formula: 'CH₃OH', M: 32.04, mp: -98, bp: 65, dens: 0.79, bond: 'hb', family: 'alkohol', nC: 1, pol: POL.p,
                     note: n('Den minsta alkoholen. Giftig.', 'The smallest alcohol. Toxic.'),
-                    in: { varm: 'methanol', blanda: 'methanol', jamfor: true } },
+                    in: { varm: 'methanol', blanda: 'methanol' } },
         ethanol:  { name: n('Etanol', 'Ethanol'), low: n('etanol', 'ethanol'), formula: 'C₂H₅OH', M: 46.07, mp: -114, bp: 78, dens: 0.79, bond: 'hb', family: 'alkohol', nC: 2, pol: POL.p,
                     note: n('Alkoholen i drycker och handsprit.', 'The alcohol in drinks and hand sanitiser.'),
-                    in: { varm: 'ethanol', blanda: 'ethanol', jamfor: true } },
+                    in: { varm: 'ethanol', blanda: 'ethanol' } },
         propanol: { name: n('1-propanol'), low: n('1-propanol'), formula: 'C₃H₇OH', M: 60.10, mp: -126, bp: 97, dens: 0.80, bond: 'hb', family: 'alkohol', nC: 3, pol: POL.p,
                     note: n('Tre kol. Blandas fortfarande helt med vatten.', 'Three carbons. Still mixes completely with water.'),
-                    in: { varm: 'propanol', blanda: 'propanol', jamfor: true } },
+                    in: { varm: 'propanol', blanda: 'propanol' } },
         butanol:  { name: n('1-butanol'), low: n('1-butanol'), formula: 'C₄H₉OH', M: 74.12, mp: -89, bp: 118, dens: 0.81, bond: 'hb', family: 'alkohol', nC: 4, pol: POL.wp,
                     note: n('Fyra kol. Bara delvis blandbar med vatten.', 'Four carbons. Only partly miscible with water.'),
-                    in: { varm: 'butanol', blanda: 'butanol', jamfor: true } },
+                    in: { varm: 'butanol', blanda: 'butanol' } },
         pentanol: { name: n('1-pentanol'), low: n('1-pentanol'), formula: 'C₅H₁₁OH', M: 88.15, mp: -78, bp: 138, dens: 0.81, bond: 'hb', family: 'alkohol', nC: 5, pol: POL.wp,
                     note: n('Fem kol. Den opolära kedjan dominerar.', 'Five carbons. The non-polar chain dominates.'),
-                    in: { varm: 'pentanol', blanda: 'pentanol', jamfor: true } },
+                    in: { varm: 'pentanol', blanda: 'pentanol' } },
         glycerol: { name: n('Glycerol'), low: n('glycerol'), formula: 'C₃H₅(OH)₃', M: 92.09, mp: 18, bp: 290, dens: 1.26, bond: 'hb', family: 'annat', pol: POL.vp,
                     note: n('Tre OH-grupper. Trögflytande. Kokar först vid 290 °C, så den ryms inte i Värm och kyl.', 'Three OH groups. Viscous. Only boils at 290 °C, so it does not fit in Heat and cool.'),
-                    in: { blanda: 'glycerol', jamfor: true } },
+                    in: { blanda: 'glycerol' } },
         ammonia:  { name: n('Ammoniak', 'Ammonia'), low: n('ammoniak', 'ammonia'), formula: 'NH₃', M: 17.03, mp: -78, bp: -33, dens: null, bond: 'hb', family: 'annat', pol: POL.p,
                     note: n('Bildar vätebindningar (N–H···N), men svagare än vattnets.', 'Forms hydrogen bonds (N–H···N), but weaker than those in water.'),
-                    in: { jamfor: true } },
+                    in: {} },
         // ---- dipol–dipol ----
         hcl:      { name: n('Väteklorid', 'Hydrogen chloride'), low: n('väteklorid', 'hydrogen chloride'), formula: 'HCl', M: 36.46, mp: -114.2, bp: -85.1, dens: null, bond: 'dd', family: 'annat', pol: POL.p,
                     note: n('Permanent dipol. Gas vid rumstemperatur.', 'Permanent dipole. A gas at room temperature.'),
-                    in: { varm: 'hcl', jamfor: true } },
+                    in: { varm: 'hcl' } },
         acetone:  { name: n('Aceton', 'Acetone'), low: n('aceton', 'acetone'), formula: 'CH₃COCH₃', M: 58.08, mp: -95, bp: 56, dens: 0.78, bond: 'dd', family: 'annat', pol: POL.p,
                     note: n('Polär C=O-grupp men ingen O–H. Bra lösningsmedel.', 'Polar C=O group but no O–H. A good solvent.'),
-                    in: { varm: 'acetone', blanda: 'acetone', jamfor: true } },
+                    in: { varm: 'acetone', blanda: 'acetone' } },
         h2s:      { name: n('Vätesulfid', 'Hydrogen sulfide'), low: n('vätesulfid', 'hydrogen sulfide'), formula: 'H₂S', M: 34.08, mp: -86, bp: -60, dens: null, bond: 'dd', family: 'annat', pol: POL.wp,
                     note: n('Byggd som vatten men utan vätebindningar. Jämför kokpunkterna!', 'Shaped like water but without hydrogen bonds. Compare the boiling points!'),
-                    in: { jamfor: true } },
+                    in: {} },
         // ---- van der Waals ----
         co2:      { name: n('Koldioxid', 'Carbon dioxide'), low: n('koldioxid', 'carbon dioxide'), formula: 'CO₂', M: 44.01, mp: -78.5, bp: -78.5, subl: true, dens: null, bond: 'vdw', family: 'annat', pol: POL.np,
                     note: n('Linjär och opolär. Sublimerar vid 1 atm (torris).', 'Linear and non-polar. Sublimes at 1 atm (dry ice).'),
-                    in: { varm: 'co2', jamfor: true } },
+                    in: { varm: 'co2' } },
         methane:  { name: n('Metan', 'Methane'), low: n('metan', 'methane'), formula: 'CH₄', M: 16.04, mp: -182, bp: -162, dens: null, bond: 'vdw', family: 'alkan', nC: 1, pol: POL.np,
                     note: n('Den minsta alkanen. Huvuddelen av naturgas och biogas.', 'The smallest alkane. The main part of natural gas and biogas.'),
-                    in: { jamfor: true } },
+                    in: {} },
         ethane:   { name: n('Etan', 'Ethane'), low: n('etan', 'ethane'), formula: 'C₂H₆', M: 30.07, mp: -183, bp: -89, dens: null, bond: 'vdw', family: 'alkan', nC: 2, pol: POL.np,
-                    note: n('Alkan med två kol.', 'Alkane with two carbons.'), in: { jamfor: true } },
+                    note: n('Alkan med två kol.', 'Alkane with two carbons.'), in: {} },
         propane:  { name: n('Propan', 'Propane'), low: n('propan', 'propane'), formula: 'C₃H₈', M: 44.10, mp: -188, bp: -42, dens: null, bond: 'vdw', family: 'alkan', nC: 3, pol: POL.np,
-                    note: n('Gasol. Alkan med tre kol.', 'Bottled gas. Alkane with three carbons.'), in: { jamfor: true } },
+                    note: n('Gasol. Alkan med tre kol.', 'Bottled gas. Alkane with three carbons.'), in: {} },
         butane:   { name: n('Butan', 'Butane'), low: n('butan', 'butane'), formula: 'C₄H₁₀', M: 58.12, mp: -138, bp: -0.5, dens: null, bond: 'vdw', family: 'alkan', nC: 4, pol: POL.np,
-                    note: n('Tändargas. Alkan med fyra kol.', 'Lighter gas. Alkane with four carbons.'), in: { jamfor: true } },
+                    note: n('Tändargas. Alkan med fyra kol.', 'Lighter gas. Alkane with four carbons.'), in: {} },
         pentane:  { name: n('Pentan', 'Pentane'), low: n('pentan', 'pentane'), formula: 'C₅H₁₂', M: 72.15, mp: -130, bp: 36, dens: 0.63, bond: 'vdw', family: 'alkan', nC: 5, pol: POL.np,
                     note: n('Alkan med fem kol. Kokar redan vid 36 °C.', 'Alkane with five carbons. Boils at only 36 °C.'),
-                    in: { varm: 'pentane', blanda: 'pentane', jamfor: true } },
+                    in: { varm: 'pentane', blanda: 'pentane' } },
         hexane:   { name: n('Hexan', 'Hexane'), low: n('hexan', 'hexane'), formula: 'C₆H₁₄', M: 86.18, mp: -95, bp: 69, dens: 0.66, bond: 'vdw', family: 'alkan', nC: 6, pol: POL.np,
                     note: n('Alkan med sex kol. Vanligt lösningsmedel.', 'Alkane with six carbons. A common solvent.'),
-                    in: { varm: 'hexane', blanda: 'hexane', jamfor: true } },
+                    in: { varm: 'hexane', blanda: 'hexane' } },
         heptane:  { name: n('Heptan', 'Heptane'), low: n('heptan', 'heptane'), formula: 'C₇H₁₆', M: 100.2, mp: -91, bp: 98, dens: 0.68, bond: 'vdw', family: 'alkan', nC: 7, pol: POL.np,
                     note: n('Alkan med sju kol.', 'Alkane with seven carbons.'),
-                    in: { varm: 'heptane', blanda: 'heptane', jamfor: true } },
+                    in: { varm: 'heptane', blanda: 'heptane' } },
         octane:   { name: n('Oktan', 'Octane'), low: n('oktan', 'octane'), formula: 'C₈H₁₈', M: 114.2, mp: -57, bp: 126, dens: 0.70, bond: 'vdw', family: 'alkan', nC: 8, pol: POL.np,
                     note: n('Alkan med åtta kol. Finns i bensin.', 'Alkane with eight carbons. Found in petrol.'),
-                    in: { varm: 'octane', blanda: 'octane', jamfor: true } },
+                    in: { varm: 'octane', blanda: 'octane' } },
         oil:      { name: n('Matolja', 'Cooking oil'), low: n('matolja', 'cooking oil'), formula: n('triglycerider', 'triglycerides'), M: 880, mp: null, bp: null, dens: 0.92, bond: 'vdw', family: 'annat', pol: POL.np,
                     note: n('Stora, nästan opolära molekyler. Sönderfaller innan den kokar.', 'Large, almost non-polar molecules. Decomposes before boiling.'),
                     in: { blanda: 'oil' } },
@@ -2730,8 +2730,7 @@
         },
         delar: {
             varm: { name: n('Värm och kyl', 'Heat and cool'), icon: '🌡️' },
-            blanda: { name: n('Blanda och lös', 'Mix and dissolve'), icon: '🧪' },
-            jamfor: { name: n('Jämför', 'Compare'), icon: '📈' }
+            blanda: { name: n('Blanda och lös', 'Mix and dissolve'), icon: '🧪' }
         },
         // Sök upp ämnet som har ett visst namn i en viss del (t.ex. 'h2o' i Värm och kyl)
         fran(del, id) {
@@ -5468,7 +5467,7 @@ window.addEventListener('DOMContentLoaded', () => {
 &lt;script>
 // =====================================================================
 //  ÄMNENS EGENSKAPER – gemensam ämnesdata
-//  En källa för alla delar: ramens ämnesbibliotek och ämneskort, Jämför-diagrammet,
+//  En källa för alla delar: ramens ämnesbibliotek och ämneskort,
 //  och (i den sammanslagna filen) smält-/kokpunkter och densiteter i delarna.
 //
 //  Fält:
@@ -5494,63 +5493,63 @@ window.addEventListener('DOMContentLoaded', () => {
         // ---- vätebindningar ----
         water:    { name: n('Vatten', 'Water'), low: n('vatten', 'water'), formula: 'H₂O', M: 18.02, mp: 0, bp: 100, dens: 1.00, bond: 'hb', family: 'annat', pol: POL.vp,
                     note: n('Liten, vinklad molekyl som bildar upp till fyra vätebindningar.', 'A small, bent molecule that forms up to four hydrogen bonds.'),
-                    in: { varm: 'h2o', blanda: 'water', jamfor: true } },
+                    in: { varm: 'h2o', blanda: 'water' } },
         methanol: { name: n('Metanol', 'Methanol'), low: n('metanol', 'methanol'), formula: 'CH₃OH', M: 32.04, mp: -98, bp: 65, dens: 0.79, bond: 'hb', family: 'alkohol', nC: 1, pol: POL.p,
                     note: n('Den minsta alkoholen. Giftig.', 'The smallest alcohol. Toxic.'),
-                    in: { varm: 'methanol', blanda: 'methanol', jamfor: true } },
+                    in: { varm: 'methanol', blanda: 'methanol' } },
         ethanol:  { name: n('Etanol', 'Ethanol'), low: n('etanol', 'ethanol'), formula: 'C₂H₅OH', M: 46.07, mp: -114, bp: 78, dens: 0.79, bond: 'hb', family: 'alkohol', nC: 2, pol: POL.p,
                     note: n('Alkoholen i drycker och handsprit.', 'The alcohol in drinks and hand sanitiser.'),
-                    in: { varm: 'ethanol', blanda: 'ethanol', jamfor: true } },
+                    in: { varm: 'ethanol', blanda: 'ethanol' } },
         propanol: { name: n('1-propanol'), low: n('1-propanol'), formula: 'C₃H₇OH', M: 60.10, mp: -126, bp: 97, dens: 0.80, bond: 'hb', family: 'alkohol', nC: 3, pol: POL.p,
                     note: n('Tre kol. Blandas fortfarande helt med vatten.', 'Three carbons. Still mixes completely with water.'),
-                    in: { varm: 'propanol', blanda: 'propanol', jamfor: true } },
+                    in: { varm: 'propanol', blanda: 'propanol' } },
         butanol:  { name: n('1-butanol'), low: n('1-butanol'), formula: 'C₄H₉OH', M: 74.12, mp: -89, bp: 118, dens: 0.81, bond: 'hb', family: 'alkohol', nC: 4, pol: POL.wp,
                     note: n('Fyra kol. Bara delvis blandbar med vatten.', 'Four carbons. Only partly miscible with water.'),
-                    in: { varm: 'butanol', blanda: 'butanol', jamfor: true } },
+                    in: { varm: 'butanol', blanda: 'butanol' } },
         pentanol: { name: n('1-pentanol'), low: n('1-pentanol'), formula: 'C₅H₁₁OH', M: 88.15, mp: -78, bp: 138, dens: 0.81, bond: 'hb', family: 'alkohol', nC: 5, pol: POL.wp,
                     note: n('Fem kol. Den opolära kedjan dominerar.', 'Five carbons. The non-polar chain dominates.'),
-                    in: { varm: 'pentanol', blanda: 'pentanol', jamfor: true } },
+                    in: { varm: 'pentanol', blanda: 'pentanol' } },
         glycerol: { name: n('Glycerol'), low: n('glycerol'), formula: 'C₃H₅(OH)₃', M: 92.09, mp: 18, bp: 290, dens: 1.26, bond: 'hb', family: 'annat', pol: POL.vp,
                     note: n('Tre OH-grupper. Trögflytande. Kokar först vid 290 °C, så den ryms inte i Värm och kyl.', 'Three OH groups. Viscous. Only boils at 290 °C, so it does not fit in Heat and cool.'),
-                    in: { blanda: 'glycerol', jamfor: true } },
+                    in: { blanda: 'glycerol' } },
         ammonia:  { name: n('Ammoniak', 'Ammonia'), low: n('ammoniak', 'ammonia'), formula: 'NH₃', M: 17.03, mp: -78, bp: -33, dens: null, bond: 'hb', family: 'annat', pol: POL.p,
                     note: n('Bildar vätebindningar (N–H···N), men svagare än vattnets.', 'Forms hydrogen bonds (N–H···N), but weaker than those in water.'),
-                    in: { jamfor: true } },
+                    in: {} },
         // ---- dipol–dipol ----
         hcl:      { name: n('Väteklorid', 'Hydrogen chloride'), low: n('väteklorid', 'hydrogen chloride'), formula: 'HCl', M: 36.46, mp: -114.2, bp: -85.1, dens: null, bond: 'dd', family: 'annat', pol: POL.p,
                     note: n('Permanent dipol. Gas vid rumstemperatur.', 'Permanent dipole. A gas at room temperature.'),
-                    in: { varm: 'hcl', jamfor: true } },
+                    in: { varm: 'hcl' } },
         acetone:  { name: n('Aceton', 'Acetone'), low: n('aceton', 'acetone'), formula: 'CH₃COCH₃', M: 58.08, mp: -95, bp: 56, dens: 0.78, bond: 'dd', family: 'annat', pol: POL.p,
                     note: n('Polär C=O-grupp men ingen O–H. Bra lösningsmedel.', 'Polar C=O group but no O–H. A good solvent.'),
-                    in: { varm: 'acetone', blanda: 'acetone', jamfor: true } },
+                    in: { varm: 'acetone', blanda: 'acetone' } },
         h2s:      { name: n('Vätesulfid', 'Hydrogen sulfide'), low: n('vätesulfid', 'hydrogen sulfide'), formula: 'H₂S', M: 34.08, mp: -86, bp: -60, dens: null, bond: 'dd', family: 'annat', pol: POL.wp,
                     note: n('Byggd som vatten men utan vätebindningar. Jämför kokpunkterna!', 'Shaped like water but without hydrogen bonds. Compare the boiling points!'),
-                    in: { jamfor: true } },
+                    in: {} },
         // ---- van der Waals ----
         co2:      { name: n('Koldioxid', 'Carbon dioxide'), low: n('koldioxid', 'carbon dioxide'), formula: 'CO₂', M: 44.01, mp: -78.5, bp: -78.5, subl: true, dens: null, bond: 'vdw', family: 'annat', pol: POL.np,
                     note: n('Linjär och opolär. Sublimerar vid 1 atm (torris).', 'Linear and non-polar. Sublimes at 1 atm (dry ice).'),
-                    in: { varm: 'co2', jamfor: true } },
+                    in: { varm: 'co2' } },
         methane:  { name: n('Metan', 'Methane'), low: n('metan', 'methane'), formula: 'CH₄', M: 16.04, mp: -182, bp: -162, dens: null, bond: 'vdw', family: 'alkan', nC: 1, pol: POL.np,
                     note: n('Den minsta alkanen. Huvuddelen av naturgas och biogas.', 'The smallest alkane. The main part of natural gas and biogas.'),
-                    in: { jamfor: true } },
+                    in: {} },
         ethane:   { name: n('Etan', 'Ethane'), low: n('etan', 'ethane'), formula: 'C₂H₆', M: 30.07, mp: -183, bp: -89, dens: null, bond: 'vdw', family: 'alkan', nC: 2, pol: POL.np,
-                    note: n('Alkan med två kol.', 'Alkane with two carbons.'), in: { jamfor: true } },
+                    note: n('Alkan med två kol.', 'Alkane with two carbons.'), in: {} },
         propane:  { name: n('Propan', 'Propane'), low: n('propan', 'propane'), formula: 'C₃H₈', M: 44.10, mp: -188, bp: -42, dens: null, bond: 'vdw', family: 'alkan', nC: 3, pol: POL.np,
-                    note: n('Gasol. Alkan med tre kol.', 'Bottled gas. Alkane with three carbons.'), in: { jamfor: true } },
+                    note: n('Gasol. Alkan med tre kol.', 'Bottled gas. Alkane with three carbons.'), in: {} },
         butane:   { name: n('Butan', 'Butane'), low: n('butan', 'butane'), formula: 'C₄H₁₀', M: 58.12, mp: -138, bp: -0.5, dens: null, bond: 'vdw', family: 'alkan', nC: 4, pol: POL.np,
-                    note: n('Tändargas. Alkan med fyra kol.', 'Lighter gas. Alkane with four carbons.'), in: { jamfor: true } },
+                    note: n('Tändargas. Alkan med fyra kol.', 'Lighter gas. Alkane with four carbons.'), in: {} },
         pentane:  { name: n('Pentan', 'Pentane'), low: n('pentan', 'pentane'), formula: 'C₅H₁₂', M: 72.15, mp: -130, bp: 36, dens: 0.63, bond: 'vdw', family: 'alkan', nC: 5, pol: POL.np,
                     note: n('Alkan med fem kol. Kokar redan vid 36 °C.', 'Alkane with five carbons. Boils at only 36 °C.'),
-                    in: { varm: 'pentane', blanda: 'pentane', jamfor: true } },
+                    in: { varm: 'pentane', blanda: 'pentane' } },
         hexane:   { name: n('Hexan', 'Hexane'), low: n('hexan', 'hexane'), formula: 'C₆H₁₄', M: 86.18, mp: -95, bp: 69, dens: 0.66, bond: 'vdw', family: 'alkan', nC: 6, pol: POL.np,
                     note: n('Alkan med sex kol. Vanligt lösningsmedel.', 'Alkane with six carbons. A common solvent.'),
-                    in: { varm: 'hexane', blanda: 'hexane', jamfor: true } },
+                    in: { varm: 'hexane', blanda: 'hexane' } },
         heptane:  { name: n('Heptan', 'Heptane'), low: n('heptan', 'heptane'), formula: 'C₇H₁₆', M: 100.2, mp: -91, bp: 98, dens: 0.68, bond: 'vdw', family: 'alkan', nC: 7, pol: POL.np,
                     note: n('Alkan med sju kol.', 'Alkane with seven carbons.'),
-                    in: { varm: 'heptane', blanda: 'heptane', jamfor: true } },
+                    in: { varm: 'heptane', blanda: 'heptane' } },
         octane:   { name: n('Oktan', 'Octane'), low: n('oktan', 'octane'), formula: 'C₈H₁₈', M: 114.2, mp: -57, bp: 126, dens: 0.70, bond: 'vdw', family: 'alkan', nC: 8, pol: POL.np,
                     note: n('Alkan med åtta kol. Finns i bensin.', 'Alkane with eight carbons. Found in petrol.'),
-                    in: { varm: 'octane', blanda: 'octane', jamfor: true } },
+                    in: { varm: 'octane', blanda: 'octane' } },
         oil:      { name: n('Matolja', 'Cooking oil'), low: n('matolja', 'cooking oil'), formula: n('triglycerider', 'triglycerides'), M: 880, mp: null, bp: null, dens: 0.92, bond: 'vdw', family: 'annat', pol: POL.np,
                     note: n('Stora, nästan opolära molekyler. Sönderfaller innan den kokar.', 'Large, almost non-polar molecules. Decomposes before boiling.'),
                     in: { blanda: 'oil' } },
@@ -5605,8 +5604,7 @@ window.addEventListener('DOMContentLoaded', () => {
         },
         delar: {
             varm: { name: n('Värm och kyl', 'Heat and cool'), icon: '🌡️' },
-            blanda: { name: n('Blanda och lös', 'Mix and dissolve'), icon: '🧪' },
-            jamfor: { name: n('Jämför', 'Compare'), icon: '📈' }
+            blanda: { name: n('Blanda och lös', 'Mix and dissolve'), icon: '🧪' }
         },
         // Sök upp ämnet som har ett visst namn i en viss del (t.ex. 'h2o' i Värm och kyl)
         fran(del, id) {
@@ -5719,675 +5717,11 @@ window.addEventListener('DOMContentLoaded', () => {
 &lt;/body>
 &lt;/html>
 </textarea>
-<textarea id="tpl-jamfor" hidden>
-&lt;!DOCTYPE html>
-&lt;html lang="sv">
-&lt;head>
-&lt;meta charset="UTF-8">
-&lt;meta name="viewport" content="width=device-width, initial-scale=1.0">
-&lt;title>Jämför ämnen&lt;/title>
-&lt;style>
-    :root { --bg: #0b1120; --panel: #0f172a; --panel-2: #0b1324; --line: #1e293b; --line-2: #334155;
-            --text: #e2e8f0; --muted: #94a3b8; --dim: #64748b; --sky: #38bdf8; --radius: 14px; }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; }
-    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
-    button, select, input { font: inherit; color: inherit; }
-    .hidden { display: none !important; }
-    .app { height: 100vh; height: 100dvh; display: flex; flex-direction: column; gap: 10px; padding: 10px 14px; max-width: 1600px; margin: 0 auto; }
-    .topbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
-    .title h1 { margin: 0; font-size: 19px; font-weight: 700; color: #fff; }
-    .title p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
-    .lang { display: flex; gap: 2px; padding: 2px; background: #1e293b; border: 1px solid var(--line-2); border-radius: 8px; }
-    .lang button { padding: 3px 8px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; }
-    .lang button.active { background: #0369a1; color: #fff; }
-    .main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 10px; }
-    .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
-    .stage { display: flex; flex-direction: column; min-height: 0; padding: 10px; gap: 8px; }
-    .bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; font-size: 12.5px; }
-    .bar-l, .bar-r { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-    .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-    select { background: #1e293b; border: 1px solid var(--line-2); border-radius: 8px; padding: 6px 8px; font-size: 13px; }
-    .seg { display: flex; gap: 2px; padding: 2px; background: #1e293b; border: 1px solid var(--line-2); border-radius: 9px; }
-    .seg button { padding: 5px 11px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font-size: 12.5px; font-weight: 600; cursor: pointer; }
-    .seg button.active { background: #0369a1; color: #fff; }
-    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line-2); background: #1e293b; font-size: 12px; cursor: pointer; }
-    .chip .d { width: 10px; height: 10px; border-radius: 50%; }
-    .chip.off { opacity: 0.4; }
-    .toggles label { display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 12.5px; }
-    .btn { padding: 7px 12px; border-radius: 8px; cursor: pointer; background: #1e293b; border: 1px solid var(--line-2); font-size: 13px; font-weight: 600; }
-    .btn:hover { background: #273449; }
-    .btn.primary { background: #0369a1; border-color: var(--sky); color: #fff; }
-    .chart-wrap { position: relative; flex: 1; min-height: 320px; background: #050811; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-    #chart { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: crosshair; }
-    .tip { position: absolute; pointer-events: none; padding: 6px 9px; border-radius: 8px; background: rgba(15, 23, 42, 0.95); border: 1px solid var(--line-2); font-size: 12px; white-space: nowrap; transform: translate(-50%, calc(-100% - 12px)); }
-    .side { display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow-y: auto; }
-    .side .card { padding: 12px 13px; font-size: 13px; line-height: 1.5; color: #cbd5e1; }
-    .side h3 { margin: 0 0 6px; font-size: 13px; color: #fff; }
-    .side ul { margin: 4px 0 0; padding-left: 18px; }
-    .side li { margin-bottom: 5px; }
-    .side table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 6px 0; }
-    .side td { padding: 2px 0; }
-    .side td:first-child { color: var(--muted); }
-    .side td:last-child { text-align: right; }
-    .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; border: 1px solid; }
-    .muted { color: var(--muted); }
-    .big { font-size: 22px; font-weight: 700; color: #fff; }
-    .res-good { color: #6ee7b7; } .res-ok { color: #fcd34d; } .res-bad { color: #fda4af; }
-    .embedded .title, .embedded .lang { display: none; }
-    @media (max-width: 1023px) {
-        .app { height: auto; }
-        .main { grid-template-columns: 1fr; }
-        .chart-wrap { flex: none; height: 60vh; min-height: 360px; }
-        .side { overflow: visible; }
-    }
-&lt;/style>
-&lt;/head>
-&lt;body>
-&lt;div class="app">
-    &lt;header class="topbar">
-        &lt;div class="title">
-            &lt;h1 data-i18n="title">Jämför ämnen&lt;/h1>
-            &lt;p data-i18n="subtitle">Hur hänger kokpunkt, smältpunkt och densitet ihop med molekylernas storlek och bindningar?&lt;/p>
-        &lt;/div>
-        &lt;div class="lang" role="group" aria-label="Språk / Language">
-            &lt;button data-lang="sv" class="active">SV&lt;/button>
-            &lt;button data-lang="en">EN&lt;/button>
-        &lt;/div>
-    &lt;/header>
-    &lt;div class="main">
-        &lt;section class="card stage">
-            &lt;div class="bar">
-                &lt;div class="bar-l">
-                    &lt;span class="lbl" data-i18n="yLabel">Visa&lt;/span>
-                    &lt;select id="metric" onchange="setMetric(this.value)">&lt;/select>
-                    &lt;span class="lbl" style="margin-left:6px" data-i18n="xLabel">mot molmassa&lt;/span>
-                &lt;/div>
-                &lt;div class="bar-r">
-                    &lt;div class="seg" role="group">
-                        &lt;button id="m-explore" class="active" onclick="setMode('explore')" data-i18n="explore">Utforska&lt;/button>
-                        &lt;button id="m-predict" onclick="setMode('predict')" data-i18n="predict">Förutsäg&lt;/button>
-                    &lt;/div>
-                &lt;/div>
-            &lt;/div>
-            &lt;div class="bar">
-                &lt;div class="bar-l" id="groups">&lt;/div>
-                &lt;div class="bar-r toggles">
-                    &lt;label>&lt;input type="checkbox" id="chk-series" checked onchange="opts.series = this.checked; draw()"> &lt;span data-i18n="series">Visa serier&lt;/span>&lt;/label>
-                    &lt;label>&lt;input type="checkbox" id="chk-names" checked onchange="opts.names = this.checked; draw()"> &lt;span data-i18n="names">Namn&lt;/span>&lt;/label>
-                &lt;/div>
-            &lt;/div>
-            &lt;div class="chart-wrap">
-                &lt;canvas id="chart">&lt;/canvas>
-                &lt;div id="tip" class="tip hidden">&lt;/div>
-            &lt;/div>
-        &lt;/section>
-        &lt;aside class="side">
-            &lt;div id="predict-card" class="card hidden">&lt;/div>
-            &lt;div id="info-card" class="card">&lt;/div>
-            &lt;div class="card">
-                &lt;h3 data-i18n="obsTitle">Vad visar diagrammet?&lt;/h3>
-                &lt;ul id="obs">&lt;/ul>
-            &lt;/div>
-        &lt;/aside>
-    &lt;/div>
-&lt;/div>
-
-&lt;script>
-// =====================================================================
-//  ÄMNENS EGENSKAPER – gemensam ämnesdata
-//  En källa för alla delar: ramens ämnesbibliotek och ämneskort, Jämför-diagrammet,
-//  och (i den sammanslagna filen) smält-/kokpunkter och densiteter i delarna.
-//
-//  Fält:
-//    name, low  namn (svenska/engelska), low = med liten bokstav i löptext
-//    formula    kemisk formel
-//    M          molmassa (g/mol)
-//    mp, bp     smält- och kokpunkt (°C) vid 1 atm. null = finns inte (sönderfaller)
-//    subl       true om ämnet sublimerar vid 1 atm (mp = bp = sublimeringspunkt)
-//    dens       densitet vid 20 °C (g/cm³) för vätskor och fasta ämnen, null för gaser
-//    bond       starkaste bindningen mellan partiklarna: hb | dd | vdw | jon
-//    family     alkohol | alkan | annat | fast
-//    pol        polaritet (text)
-//    note       kort beskrivning för ämneskortet
-//    in         i vilka delar ämnet finns, och vad det heter där
-// =====================================================================
-(function () {
-    const n = (sv, en) => ({ sv, en: en || sv });
-    const POL = {
-        vp: n('mycket polär', 'very polar'), p: n('polär', 'polar'), wp: n('svagt polär', 'weakly polar'),
-        np: n('opolär', 'non-polar'), ion: n('jonförening', 'ionic compound')
-    };
-    const A = {
-        // ---- vätebindningar ----
-        water:    { name: n('Vatten', 'Water'), low: n('vatten', 'water'), formula: 'H₂O', M: 18.02, mp: 0, bp: 100, dens: 1.00, bond: 'hb', family: 'annat', pol: POL.vp,
-                    note: n('Liten, vinklad molekyl som bildar upp till fyra vätebindningar.', 'A small, bent molecule that forms up to four hydrogen bonds.'),
-                    in: { varm: 'h2o', blanda: 'water', jamfor: true } },
-        methanol: { name: n('Metanol', 'Methanol'), low: n('metanol', 'methanol'), formula: 'CH₃OH', M: 32.04, mp: -98, bp: 65, dens: 0.79, bond: 'hb', family: 'alkohol', nC: 1, pol: POL.p,
-                    note: n('Den minsta alkoholen. Giftig.', 'The smallest alcohol. Toxic.'),
-                    in: { varm: 'methanol', blanda: 'methanol', jamfor: true } },
-        ethanol:  { name: n('Etanol', 'Ethanol'), low: n('etanol', 'ethanol'), formula: 'C₂H₅OH', M: 46.07, mp: -114, bp: 78, dens: 0.79, bond: 'hb', family: 'alkohol', nC: 2, pol: POL.p,
-                    note: n('Alkoholen i drycker och handsprit.', 'The alcohol in drinks and hand sanitiser.'),
-                    in: { varm: 'ethanol', blanda: 'ethanol', jamfor: true } },
-        propanol: { name: n('1-propanol'), low: n('1-propanol'), formula: 'C₃H₇OH', M: 60.10, mp: -126, bp: 97, dens: 0.80, bond: 'hb', family: 'alkohol', nC: 3, pol: POL.p,
-                    note: n('Tre kol. Blandas fortfarande helt med vatten.', 'Three carbons. Still mixes completely with water.'),
-                    in: { varm: 'propanol', blanda: 'propanol', jamfor: true } },
-        butanol:  { name: n('1-butanol'), low: n('1-butanol'), formula: 'C₄H₉OH', M: 74.12, mp: -89, bp: 118, dens: 0.81, bond: 'hb', family: 'alkohol', nC: 4, pol: POL.wp,
-                    note: n('Fyra kol. Bara delvis blandbar med vatten.', 'Four carbons. Only partly miscible with water.'),
-                    in: { varm: 'butanol', blanda: 'butanol', jamfor: true } },
-        pentanol: { name: n('1-pentanol'), low: n('1-pentanol'), formula: 'C₅H₁₁OH', M: 88.15, mp: -78, bp: 138, dens: 0.81, bond: 'hb', family: 'alkohol', nC: 5, pol: POL.wp,
-                    note: n('Fem kol. Den opolära kedjan dominerar.', 'Five carbons. The non-polar chain dominates.'),
-                    in: { varm: 'pentanol', blanda: 'pentanol', jamfor: true } },
-        glycerol: { name: n('Glycerol'), low: n('glycerol'), formula: 'C₃H₅(OH)₃', M: 92.09, mp: 18, bp: 290, dens: 1.26, bond: 'hb', family: 'annat', pol: POL.vp,
-                    note: n('Tre OH-grupper. Trögflytande. Kokar först vid 290 °C, så den ryms inte i Värm och kyl.', 'Three OH groups. Viscous. Only boils at 290 °C, so it does not fit in Heat and cool.'),
-                    in: { blanda: 'glycerol', jamfor: true } },
-        ammonia:  { name: n('Ammoniak', 'Ammonia'), low: n('ammoniak', 'ammonia'), formula: 'NH₃', M: 17.03, mp: -78, bp: -33, dens: null, bond: 'hb', family: 'annat', pol: POL.p,
-                    note: n('Bildar vätebindningar (N–H···N), men svagare än vattnets.', 'Forms hydrogen bonds (N–H···N), but weaker than those in water.'),
-                    in: { jamfor: true } },
-        // ---- dipol–dipol ----
-        hcl:      { name: n('Väteklorid', 'Hydrogen chloride'), low: n('väteklorid', 'hydrogen chloride'), formula: 'HCl', M: 36.46, mp: -114.2, bp: -85.1, dens: null, bond: 'dd', family: 'annat', pol: POL.p,
-                    note: n('Permanent dipol. Gas vid rumstemperatur.', 'Permanent dipole. A gas at room temperature.'),
-                    in: { varm: 'hcl', jamfor: true } },
-        acetone:  { name: n('Aceton', 'Acetone'), low: n('aceton', 'acetone'), formula: 'CH₃COCH₃', M: 58.08, mp: -95, bp: 56, dens: 0.78, bond: 'dd', family: 'annat', pol: POL.p,
-                    note: n('Polär C=O-grupp men ingen O–H. Bra lösningsmedel.', 'Polar C=O group but no O–H. A good solvent.'),
-                    in: { varm: 'acetone', blanda: 'acetone', jamfor: true } },
-        h2s:      { name: n('Vätesulfid', 'Hydrogen sulfide'), low: n('vätesulfid', 'hydrogen sulfide'), formula: 'H₂S', M: 34.08, mp: -86, bp: -60, dens: null, bond: 'dd', family: 'annat', pol: POL.wp,
-                    note: n('Byggd som vatten men utan vätebindningar. Jämför kokpunkterna!', 'Shaped like water but without hydrogen bonds. Compare the boiling points!'),
-                    in: { jamfor: true } },
-        // ---- van der Waals ----
-        co2:      { name: n('Koldioxid', 'Carbon dioxide'), low: n('koldioxid', 'carbon dioxide'), formula: 'CO₂', M: 44.01, mp: -78.5, bp: -78.5, subl: true, dens: null, bond: 'vdw', family: 'annat', pol: POL.np,
-                    note: n('Linjär och opolär. Sublimerar vid 1 atm (torris).', 'Linear and non-polar. Sublimes at 1 atm (dry ice).'),
-                    in: { varm: 'co2', jamfor: true } },
-        methane:  { name: n('Metan', 'Methane'), low: n('metan', 'methane'), formula: 'CH₄', M: 16.04, mp: -182, bp: -162, dens: null, bond: 'vdw', family: 'alkan', nC: 1, pol: POL.np,
-                    note: n('Den minsta alkanen. Huvuddelen av naturgas och biogas.', 'The smallest alkane. The main part of natural gas and biogas.'),
-                    in: { jamfor: true } },
-        ethane:   { name: n('Etan', 'Ethane'), low: n('etan', 'ethane'), formula: 'C₂H₆', M: 30.07, mp: -183, bp: -89, dens: null, bond: 'vdw', family: 'alkan', nC: 2, pol: POL.np,
-                    note: n('Alkan med två kol.', 'Alkane with two carbons.'), in: { jamfor: true } },
-        propane:  { name: n('Propan', 'Propane'), low: n('propan', 'propane'), formula: 'C₃H₈', M: 44.10, mp: -188, bp: -42, dens: null, bond: 'vdw', family: 'alkan', nC: 3, pol: POL.np,
-                    note: n('Gasol. Alkan med tre kol.', 'Bottled gas. Alkane with three carbons.'), in: { jamfor: true } },
-        butane:   { name: n('Butan', 'Butane'), low: n('butan', 'butane'), formula: 'C₄H₁₀', M: 58.12, mp: -138, bp: -0.5, dens: null, bond: 'vdw', family: 'alkan', nC: 4, pol: POL.np,
-                    note: n('Tändargas. Alkan med fyra kol.', 'Lighter gas. Alkane with four carbons.'), in: { jamfor: true } },
-        pentane:  { name: n('Pentan', 'Pentane'), low: n('pentan', 'pentane'), formula: 'C₅H₁₂', M: 72.15, mp: -130, bp: 36, dens: 0.63, bond: 'vdw', family: 'alkan', nC: 5, pol: POL.np,
-                    note: n('Alkan med fem kol. Kokar redan vid 36 °C.', 'Alkane with five carbons. Boils at only 36 °C.'),
-                    in: { varm: 'pentane', blanda: 'pentane', jamfor: true } },
-        hexane:   { name: n('Hexan', 'Hexane'), low: n('hexan', 'hexane'), formula: 'C₆H₁₄', M: 86.18, mp: -95, bp: 69, dens: 0.66, bond: 'vdw', family: 'alkan', nC: 6, pol: POL.np,
-                    note: n('Alkan med sex kol. Vanligt lösningsmedel.', 'Alkane with six carbons. A common solvent.'),
-                    in: { varm: 'hexane', blanda: 'hexane', jamfor: true } },
-        heptane:  { name: n('Heptan', 'Heptane'), low: n('heptan', 'heptane'), formula: 'C₇H₁₆', M: 100.2, mp: -91, bp: 98, dens: 0.68, bond: 'vdw', family: 'alkan', nC: 7, pol: POL.np,
-                    note: n('Alkan med sju kol.', 'Alkane with seven carbons.'),
-                    in: { varm: 'heptane', blanda: 'heptane', jamfor: true } },
-        octane:   { name: n('Oktan', 'Octane'), low: n('oktan', 'octane'), formula: 'C₈H₁₈', M: 114.2, mp: -57, bp: 126, dens: 0.70, bond: 'vdw', family: 'alkan', nC: 8, pol: POL.np,
-                    note: n('Alkan med åtta kol. Finns i bensin.', 'Alkane with eight carbons. Found in petrol.'),
-                    in: { varm: 'octane', blanda: 'octane', jamfor: true } },
-        oil:      { name: n('Matolja', 'Cooking oil'), low: n('matolja', 'cooking oil'), formula: n('triglycerider', 'triglycerides'), M: 880, mp: null, bp: null, dens: 0.92, bond: 'vdw', family: 'annat', pol: POL.np,
-                    note: n('Stora, nästan opolära molekyler. Sönderfaller innan den kokar.', 'Large, almost non-polar molecules. Decomposes before boiling.'),
-                    in: { blanda: 'oil' } },
-        // ---- fasta ämnen (Blanda och lös) ----
-        nacl:     { name: n('Natriumklorid', 'Sodium chloride'), low: n('natriumklorid', 'sodium chloride'), formula: 'NaCl', M: 58.44, mp: 801, bp: 1465, dens: 2.16, bond: 'jon', family: 'fast', pol: POL.ion,
-                    note: n('Koksalt. Jonbindningar mellan Na⁺ och Cl⁻.', 'Table salt. Ionic bonds between Na⁺ and Cl⁻.'), in: { blanda: 'nacl', solid: true } },
-        cuso4:    { name: n('Kopparsulfat', 'Copper sulfate'), low: n('kopparsulfat', 'copper sulfate'), formula: 'CuSO₄', M: 159.6, mp: null, bp: null, dens: 2.28, bond: 'jon', family: 'fast', pol: POL.ion,
-                    note: n('Jonförening. Ger blå lösning i vatten.', 'Ionic compound. Gives a blue solution in water.'), in: { blanda: 'cuso4', solid: true } },
-        sugar:    { name: n('Socker (sackaros)', 'Sugar (sucrose)'), low: n('socker', 'sugar'), formula: 'C₁₂H₂₂O₁₁', M: 342.3, mp: 186, bp: null, dens: 1.59, bond: 'hb', family: 'fast', pol: POL.vp,
-                    note: n('Stor polär molekyl med åtta OH-grupper. Sönderfaller när den smälter.', 'Large polar molecule with eight OH groups. Decomposes as it melts.'), in: { blanda: 'sugar', solid: true } },
-        iodine:   { name: n('Jod', 'Iodine'), low: n('jod', 'iodine'), formula: 'I₂', M: 253.8, mp: 114, bp: 184, dens: 4.93, bond: 'vdw', family: 'fast', pol: POL.np,
-                    note: n('Opolär. Violett i opolära lösningsmedel.', 'Non-polar. Violet in non-polar solvents.'), in: { blanda: 'iodine', solid: true } },
-        paraffin: { name: n('Paraffin (stearinljus)', 'Paraffin wax (candle)'), low: n('paraffin', 'paraffin'), formula: 'CₙH₂ₙ₊₂', M: 350, mp: 55, bp: null, dens: 0.90, bond: 'vdw', family: 'fast', pol: POL.np,
-                    note: n('Långa alkankedjor (ca 20–30 kol). Smälter vid ca 50–60 °C.', 'Long alkane chains (about 20–30 carbons). Melts at about 50–60 °C.'), in: { blanda: 'paraffin', solid: true } }
-    };
-    // Alla bindningstyper som har betydelse för ämnet, den starkaste först (= fältet bond).
-    // Alkoholerna har både vätebindningar (OH-gruppen) och van der Waals-bindningar (kolkedjan).
-    // Vatten och ammoniak har också van der Waals-bindningar, men de är små jämfört med vätebindningarna.
-    const FLERA = {
-        methanol: ['hb', 'vdw'], ethanol: ['hb', 'vdw'], propanol: ['hb', 'vdw'], butanol: ['hb', 'vdw'], pentanol: ['hb', 'vdw'],
-        glycerol: ['hb', 'vdw'], sugar: ['hb', 'vdw'],
-        hcl: ['dd', 'vdw'], acetone: ['dd', 'vdw'], h2s: ['dd', 'vdw']
-    };
-    for (const k in A) A[k].bonds = FLERA[k] || [A[k].bond];
-
-    window.AMNEN = {
-        lista: A,
-        // korta namn på bindningstyperna (för etiketter)
-        typ: {
-            hb: n('vätebindningar', 'hydrogen bonds'), dd: n('dipol–dipol', 'dipole–dipole'),
-            vdw: n('van der Waals', 'van der Waals'), jon: n('jonbindningar', 'ionic bonds')
-        },
-        grupper: [
-            { id: 'hb', name: n('Vätebindningar', 'Hydrogen bonds'), col: '#38bdf8' },
-            { id: 'dd', name: n('Dipol–dipol', 'Dipole–dipole'), col: '#fbbf24' },
-            { id: 'vdw', name: n('van der Waals', 'van der Waals'), col: '#34d399' },
-            { id: 'jon', name: n('Jonbindningar', 'Ionic bonds'), col: '#f472b6' }
-        ],
-        // Ämnesbibliotekets grupper. De följer ämnesklass, inte bindningstyp, så att eleverna själva
-        // får upptäcka bindningarna i animeringen.
-        familjer: [
-            { id: 'annat', name: n('Vatten och andra ämnen', 'Water and other substances') },
-            { id: 'alkohol', name: n('Alkoholer', 'Alcohols') },
-            { id: 'alkan', name: n('Alkaner', 'Alkanes') },
-            { id: 'fast', name: n('Fasta ämnen', 'Solids') }
-        ],
-        bindning: {
-            hb: n('vätebindningar (och van der Waals)', 'hydrogen bonds (and van der Waals)'),
-            dd: n('dipol–dipolbindningar (och van der Waals)', 'dipole–dipole forces (and van der Waals)'),
-            vdw: n('van der Waals-bindningar', 'van der Waals forces'),
-            jon: n('jonbindningar', 'ionic bonds')
-        },
-        delar: {
-            varm: { name: n('Värm och kyl', 'Heat and cool'), icon: '🌡️' },
-            blanda: { name: n('Blanda och lös', 'Mix and dissolve'), icon: '🧪' },
-            jamfor: { name: n('Jämför', 'Compare'), icon: '📈' }
-        },
-        // Sök upp ämnet som har ett visst namn i en viss del (t.ex. 'h2o' i Värm och kyl)
-        fran(del, id) {
-            for (const k in A) if (A[k].in[del] === id) return k;
-            return null;
-        }
-    };
-})();
-&lt;/script>
-&lt;script>
-// =====================================================================
-//  SPRÅK
-// =====================================================================
-const I18N = {
-    sv: {
-        docTitle: 'Jämför ämnen', title: 'Jämför ämnen',
-        subtitle: 'Hur hänger kokpunkt, smältpunkt och densitet ihop med molekylernas storlek och bindningar?',
-        yLabel: 'Visa', xLabel: 'mot molmassa', explore: 'Utforska', predict: 'Förutsäg',
-        series: 'Visa serier', names: 'Namn',
-        m_bp: 'Kokpunkt', m_mp: 'Smältpunkt', m_dens: 'Densitet (vätskor vid 20 °C)',
-        axisX: 'Molmassa (g/mol)', unit_bp: '°C', unit_mp: '°C', unit_dens: 'g/cm³',
-        ser_alkan: 'alkaner', ser_alkohol: 'alkoholer', subl: 'sublimerar',
-        obsTitle: 'Vad visar diagrammet?',
-        obs_bp: [
-            'Inom varje färg stiger kokpunkten med molmassan. Större molekyler har större kontaktyta och starkare van der Waals-bindningar.',
-            'Vid samma molmassa kokar ämnen med vätebindningar mycket högre än ämnen med bara van der Waals-bindningar. Jämför etanol (46 g/mol) med propan (44 g/mol).',
-            'Vatten sticker ut: en liten molekyl med mycket hög kokpunkt, eftersom varje molekyl kan bilda upp till fyra vätebindningar. Jämför med vätesulfid, H₂S, som är byggd på samma sätt.'
-        ],
-        obs_mp: [
-            'Smältpunkterna följer inte molmassan lika tydligt som kokpunkterna. De beror också på hur väl molekylerna kan packas i en kristall.',
-            'Vatten och glycerol har höga smältpunkter tack vare vätebindningarna, som håller ihop kristallen.',
-            'Små symmetriska molekyler som metan och koldioxid packas lätt, men bindningarna är svaga, så de smälter (eller sublimerar) vid låg temperatur.'
-        ],
-        obs_dens: [
-            'Alkanerna har lägst densitet (0,63–0,70 g/cm³) och flyter på vatten.',
-            'Ämnen med vätebindningar packas tätare. Vatten (1,00) och glycerol (1,26) är tätast.',
-            'Gaser vid 20 °C (t.ex. propan och ammoniak) visas inte, eftersom deras densitet är ungefär tusen gånger lägre.'
-        ],
-        pickHint: 'Klicka på en punkt för att läsa om ämnet.',
-        infoTitle: 'Om ämnet', notInChart: 'Visas inte i det här diagrammet.',
-        rowFormula: 'Formel', rowM: 'Molmassa', rowMp: 'Smältpunkt', rowBp: 'Kokpunkt', rowDens: 'Densitet (20 °C)', rowBond: 'Bindningar',
-        gas: 'gas vid 20 °C', none: '–', decomp: 'sönderfaller',
-        why_hb: 'Vätebindningar mellan molekylerna gör att det krävs mycket energi för att skilja dem åt. Därför ligger ämnet högt i förhållande till sin molmassa.',
-        why_dd: 'Dipol–dipolbindningar är starkare än van der Waals-bindningar mellan lika stora molekyler, men svagare än vätebindningar.',
-        why_vdw: 'Här finns bara van der Waals-bindningar. Hur högt ämnet hamnar beror främst på molekylens storlek och form.',
-        extra_hb: 'Kolkedjan ger dessutom van der Waals-bindningar, som blir starkare ju längre kedjan är. Därför stiger kokpunkten även inom alkoholserien.',
-        extra_dd: 'Dessutom finns van der Waals-bindningar, som ofta bidrar lika mycket som dipol–dipolbindningarna eller mer.',
-        ringNote: 'Ring runt punkten = även van der Waals-bindningar',
-        pTitle: 'Förutsäg', pAsk: 'Var hamnar {name}?', pInfo: '{formula} · {M} g/mol · {bond}',
-        pHow: 'Klicka i diagrammet på den höjd där du tror att punkten ska ligga. Den streckade linjen visar molmassan.',
-        pYour: 'Din gissning', pTrue: 'Rätt värde', pDiff: 'Skillnad',
-        pGood: 'Mycket bra!', pOk: 'Ganska nära.', pBad: 'Långt ifrån. Titta på bindningstypen.',
-        pNext: 'Nästa ämne →', pScore: 'Antal: {n} · medelfel: {e}',
-        bond_hb: 'vätebindningar', bond_dd: 'dipol–dipol', bond_vdw: 'van der Waals'
-    },
-    en: {
-        docTitle: 'Compare substances', title: 'Compare substances',
-        subtitle: 'How are boiling point, melting point and density related to the size of the molecules and their bonds?',
-        yLabel: 'Show', xLabel: 'against molar mass', explore: 'Explore', predict: 'Predict',
-        series: 'Show series', names: 'Names',
-        m_bp: 'Boiling point', m_mp: 'Melting point', m_dens: 'Density (liquids at 20 °C)',
-        axisX: 'Molar mass (g/mol)', unit_bp: '°C', unit_mp: '°C', unit_dens: 'g/cm³',
-        ser_alkan: 'alkanes', ser_alkohol: 'alcohols', subl: 'sublimes',
-        obsTitle: 'What does the chart show?',
-        obs_bp: [
-            'Within each colour, the boiling point rises with molar mass. Larger molecules have a larger contact area and stronger van der Waals forces.',
-            'At the same molar mass, substances with hydrogen bonds boil at much higher temperatures than substances with only van der Waals forces. Compare ethanol (46 g/mol) with propane (44 g/mol).',
-            'Water stands out: a small molecule with a very high boiling point, because each molecule can form up to four hydrogen bonds. Compare with hydrogen sulfide, H₂S, which has the same shape.'
-        ],
-        obs_mp: [
-            'Melting points do not follow molar mass as clearly as boiling points. They also depend on how well the molecules pack in a crystal.',
-            'Water and glycerol have high melting points thanks to the hydrogen bonds that hold the crystal together.',
-            'Small symmetrical molecules such as methane and carbon dioxide pack easily, but the forces are weak, so they melt (or sublime) at low temperatures.'
-        ],
-        obs_dens: [
-            'The alkanes have the lowest density (0.63–0.70 g/cm³) and float on water.',
-            'Substances with hydrogen bonds pack more tightly. Water (1.00) and glycerol (1.26) are the densest.',
-            'Gases at 20 °C (e.g. propane and ammonia) are not shown, because their density is about a thousand times lower.'
-        ],
-        pickHint: 'Click a point to read about the substance.',
-        infoTitle: 'About the substance', notInChart: 'Not shown in this chart.',
-        rowFormula: 'Formula', rowM: 'Molar mass', rowMp: 'Melting point', rowBp: 'Boiling point', rowDens: 'Density (20 °C)', rowBond: 'Forces',
-        gas: 'gas at 20 °C', none: '–', decomp: 'decomposes',
-        why_hb: 'Hydrogen bonds between the molecules mean that a lot of energy is needed to separate them. That is why the substance lies high for its molar mass.',
-        why_dd: 'Dipole–dipole forces are stronger than van der Waals forces between molecules of the same size, but weaker than hydrogen bonds.',
-        why_vdw: 'There are only van der Waals forces here. How high the substance lies depends mainly on the size and shape of the molecule.',
-        extra_hb: 'The carbon chain also gives van der Waals forces, which get stronger the longer the chain. That is why the boiling point rises within the alcohol series as well.',
-        extra_dd: 'There are also van der Waals forces, which often contribute as much as the dipole–dipole forces or more.',
-        ringNote: 'Ring around the point = also van der Waals forces',
-        pTitle: 'Predict', pAsk: 'Where does {name} go?', pInfo: '{formula} · {M} g/mol · {bond}',
-        pHow: 'Click in the chart at the height where you think the point belongs. The dashed line shows the molar mass.',
-        pYour: 'Your guess', pTrue: 'Correct value', pDiff: 'Difference',
-        pGood: 'Very good!', pOk: 'Fairly close.', pBad: 'Far off. Look at the type of force.',
-        pNext: 'Next substance →', pScore: 'Count: {n} · mean error: {e}',
-        bond_hb: 'hydrogen bonds', bond_dd: 'dipole–dipole', bond_vdw: 'van der Waals'
-    }
-};
-let lang = 'sv';
-const tr = (k) => (I18N[lang][k] ?? I18N.sv[k] ?? k);
-const L = (o) => (o &amp;&amp; typeof o === 'object' ? (o[lang] ?? o.sv) : o);
-const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
-const fmt = (v, d = 0) => (v &lt; 0 ? '−' : '') + (lang === 'sv' ? Math.abs(v).toFixed(d).replace('.', ',') : Math.abs(v).toFixed(d));
-
-// =====================================================================
-//  DATA
-// =====================================================================
-const AM = window.AMNEN;
-const ALL = Object.keys(AM.lista).filter(k => AM.lista[k].in.jamfor).map(k => Object.assign({ id: k }, AM.lista[k]));
-const GCOL = {}; AM.grupper.forEach(g => { GCOL[g.id] = g.col; });
-const METRICS = {
-    bp: { get: (s) => s.bp, min: -200, max: 300, step: 50, dec: 0, tol: [20, 50] },
-    mp: { get: (s) => s.mp, min: -200, max: 50, step: 50, dec: 0, tol: [20, 45] },
-    dens: { get: (s) => s.dens, min: 0.5, max: 1.4, step: 0.1, dec: 2, tol: [0.05, 0.12] }
-};
-const X_MIN = 0, X_MAX = 130;
-const opts = { series: true, names: true };
-const state = { metric: 'bp', mode: 'explore', groups: { hb: true, dd: true, vdw: true }, sel: null, hover: null,
-                pred: null, guess: null, n: 0, errSum: 0, recent: [] };
-
-const visible = () => ALL.filter(s => state.groups[s.bond] &amp;&amp; METRICS[state.metric].get(s) != null &amp;&amp; s.M &lt;= X_MAX);
-
-// =====================================================================
-//  DIAGRAM
-// =====================================================================
-let cv, cx, W = 0, H = 0;
-const PAD = { l: 58, r: 18, t: 18, b: 44 };
-const xOf = (M) => PAD.l + (M - X_MIN) / (X_MAX - X_MIN) * (W - PAD.l - PAD.r);
-const yOf = (v) => { const m = METRICS[state.metric]; return PAD.t + (1 - (v - m.min) / (m.max - m.min)) * (H - PAD.t - PAD.b); };
-const vOfY = (y) => { const m = METRICS[state.metric]; return m.min + (1 - (y - PAD.t) / (H - PAD.t - PAD.b)) * (m.max - m.min); };
-
-function draw() {
-    if (!cx) return;
-    const m = METRICS[state.metric];
-    cx.clearRect(0, 0, W, H);
-    // rutnät och axlar
-    cx.font = '11px system-ui, sans-serif'; cx.textBaseline = 'middle';
-    for (let v = m.min; v &lt;= m.max + 1e-9; v += m.step) {
-        const y = yOf(v);
-        cx.strokeStyle = Math.abs(v) &lt; 1e-9 &amp;&amp; state.metric !== 'dens' ? 'rgba(148,163,184,0.4)' : 'rgba(148,163,184,0.12)';
-        cx.beginPath(); cx.moveTo(PAD.l, y); cx.lineTo(W - PAD.r, y); cx.stroke();
-        cx.fillStyle = '#64748b'; cx.textAlign = 'right'; cx.fillText(fmt(v, m.dec ? 1 : 0), PAD.l - 6, y);
-    }
-    cx.textAlign = 'center';
-    for (let M = 0; M &lt;= X_MAX; M += 20) {
-        const x = xOf(M);
-        cx.strokeStyle = 'rgba(148,163,184,0.08)';
-        cx.beginPath(); cx.moveTo(x, PAD.t); cx.lineTo(x, H - PAD.b); cx.stroke();
-        cx.fillStyle = '#64748b'; cx.fillText(String(M), x, H - PAD.b + 14);
-    }
-    cx.fillStyle = '#94a3b8'; cx.font = '600 12px system-ui, sans-serif';
-    cx.fillText(tr('axisX'), (PAD.l + W - PAD.r) / 2, H - 12);
-    cx.save(); cx.translate(16, (PAD.t + H - PAD.b) / 2); cx.rotate(-Math.PI / 2);
-    cx.fillText(`${tr('m_' + state.metric).replace(/ \(.*\)/, '')} (${tr('unit_' + state.metric)})`, 0, 0); cx.restore();
-    // referenslinje 20 °C (rumstemperatur)
-    if (state.metric !== 'dens') {
-        const y = yOf(20);
-        cx.setLineDash([5, 4]); cx.strokeStyle = 'rgba(251,191,36,0.35)';
-        cx.beginPath(); cx.moveTo(PAD.l, y); cx.lineTo(W - PAD.r, y); cx.stroke(); cx.setLineDash([]);
-        cx.fillStyle = 'rgba(251,191,36,0.7)'; cx.textAlign = 'left'; cx.font = '10.5px system-ui, sans-serif';
-        cx.fillText(lang === 'sv' ? 'rumstemperatur' : 'room temperature', PAD.l + 4, y - 8);
-    }
-    const pts = visible();
-    const hidden = state.mode === 'predict' &amp;&amp; state.pred &amp;&amp; state.guess === null ? state.pred.id : null;
-    // serier (alkaner och alkoholer)
-    if (opts.series) {
-        for (const fam of ['alkan', 'alkohol']) {
-            const ser = pts.filter(s => s.family === fam &amp;&amp; s.id !== hidden).sort((a, b) => a.M - b.M);
-            if (ser.length &lt; 2) continue;
-            cx.strokeStyle = GCOL[ser[0].bond]; cx.globalAlpha = 0.45; cx.lineWidth = 1.5;
-            cx.beginPath(); ser.forEach((s, i) => { const x = xOf(s.M), y = yOf(m.get(s)); i ? cx.lineTo(x, y) : cx.moveTo(x, y); }); cx.stroke();
-            cx.globalAlpha = 1;
-            const last = ser[ser.length - 1];
-            cx.fillStyle = GCOL[last.bond]; cx.font = 'italic 11px system-ui, sans-serif'; cx.textAlign = 'left';
-            cx.fillText(tr('ser_' + fam), xOf(last.M) + 10, yOf(m.get(last)) + 14);
-        }
-    }
-    // förutsägelse: hjälplinje för molmassan
-    if (state.mode === 'predict' &amp;&amp; state.pred) {
-        const x = xOf(state.pred.M);
-        cx.setLineDash([4, 4]); cx.strokeStyle = 'rgba(226,232,240,0.5)';
-        cx.beginPath(); cx.moveTo(x, PAD.t); cx.lineTo(x, H - PAD.b); cx.stroke(); cx.setLineDash([]);
-    }
-    // punkter
-    for (const s of pts) {
-        if (s.id === hidden) continue;
-        const x = xOf(s.M), y = yOf(m.get(s)), col = GCOL[s.bond];
-        const big = s.id === state.sel || s.id === state.hover || (state.pred &amp;&amp; s.id === state.pred.id);
-        const r = big ? 8 : 6;
-        cx.fillStyle = col; cx.strokeStyle = big ? '#fff' : 'rgba(5,8,17,0.9)'; cx.lineWidth = big ? 2 : 1.5;
-        cx.beginPath();
-        if (s.subl &amp;&amp; state.metric !== 'dens') { cx.moveTo(x, y - r - 1); cx.lineTo(x + r + 1, y); cx.lineTo(x, y + r + 1); cx.lineTo(x - r - 1, y); cx.closePath(); }
-        else cx.arc(x, y, r, 0, Math.PI * 2);
-        cx.fill(); cx.stroke();
-        // ring i en andra färg = ämnet har även en annan bindningstyp (t.ex. van der Waals från kolkedjan)
-        if (s.bonds.length > 1) {
-            cx.strokeStyle = GCOL[s.bonds[1]]; cx.lineWidth = 2;
-            cx.beginPath(); cx.arc(x, y, r + 3.5, 0, Math.PI * 2); cx.stroke();
-        }
-        if (opts.names || big) {
-            cx.font = (big ? '700 ' : '600 ') + '11.5px system-ui, sans-serif'; cx.textAlign = 'left';
-            const label = s.formula + (s.subl &amp;&amp; state.metric !== 'dens' ? ` (${tr('subl')})` : '');
-            cx.lineWidth = 3; cx.strokeStyle = 'rgba(5,8,17,0.9)'; cx.strokeText(label, x + r + 4, y - 1);
-            cx.fillStyle = big ? '#fff' : '#cbd5e1'; cx.fillText(label, x + r + 4, y - 1);
-        }
-    }
-    // gissning och rätt svar
-    if (state.mode === 'predict' &amp;&amp; state.pred &amp;&amp; state.guess !== null) {
-        const x = xOf(state.pred.M), yg = yOf(state.guess), yt = yOf(m.get(state.pred));
-        cx.setLineDash([3, 3]); cx.strokeStyle = '#fbbf24'; cx.lineWidth = 2;
-        cx.beginPath(); cx.moveTo(x, yg); cx.lineTo(x, yt); cx.stroke(); cx.setLineDash([]);
-        cx.strokeStyle = '#fbbf24'; cx.lineWidth = 2.5;
-        cx.beginPath(); cx.moveTo(x - 7, yg - 7); cx.lineTo(x + 7, yg + 7); cx.moveTo(x + 7, yg - 7); cx.lineTo(x - 7, yg + 7); cx.stroke();
-    }
-}
-
-function nearest(px, py) {
-    let best = null, bd = 16;
-    const m = METRICS[state.metric];
-    for (const s of visible()) {
-        if (state.mode === 'predict' &amp;&amp; state.pred &amp;&amp; state.guess === null &amp;&amp; s.id === state.pred.id) continue;
-        const d = Math.hypot(xOf(s.M) - px, yOf(m.get(s)) - py);
-        if (d &lt; bd) { bd = d; best = s; }
-    }
-    return best;
-}
-
-// =====================================================================
-//  PANELER
-// =====================================================================
-const valTxt = (s, key) => {
-    const v = s[key];
-    if (key === 'dens') return v == null ? tr('gas') : `${fmt(v, 2)} g/cm³`;
-    if (v == null) return tr('decomp');
-    return `${fmt(v, Number.isInteger(v) ? 0 : 1)} °C${s.subl ? ` (${tr('subl')})` : ''}`;
-};
-function renderInfo() {
-    const el = document.getElementById('info-card');
-    const s = ALL.find(x => x.id === state.sel);
-    if (!s) { el.innerHTML = `&lt;h3>${tr('infoTitle')}&lt;/h3>&lt;div class="muted">${tr('pickHint')}&lt;/div>`; return; }
-    const shown = visible().some(x => x.id === s.id);
-    el.innerHTML = `&lt;h3>${L(s.name)}&lt;/h3>
-        ${bondBadges(s)}
-        &lt;table>
-            &lt;tr>&lt;td>${tr('rowFormula')}&lt;/td>&lt;td>${L(s.formula)}&lt;/td>&lt;/tr>
-            &lt;tr>&lt;td>${tr('rowM')}&lt;/td>&lt;td>${fmt(s.M, 1)} g/mol&lt;/td>&lt;/tr>
-            &lt;tr>&lt;td>${tr('rowMp')}&lt;/td>&lt;td>${valTxt(s, 'mp')}&lt;/td>&lt;/tr>
-            &lt;tr>&lt;td>${tr('rowBp')}&lt;/td>&lt;td>${valTxt(s, 'bp')}&lt;/td>&lt;/tr>
-            &lt;tr>&lt;td>${tr('rowDens')}&lt;/td>&lt;td>${valTxt(s, 'dens')}&lt;/td>&lt;/tr>
-        &lt;/table>
-        &lt;div>${L(s.note)}&lt;/div>
-        &lt;div style="margin-top:6px">${whyTxt(s)}&lt;/div>
-        ${shown ? '' : `&lt;div class="muted" style="margin-top:6px">${tr('notInChart')}&lt;/div>`}`;
-}
-// Etiketter för alla bindningstyper, den starkaste först
-function bondBadges(s) {
-    return s.bonds.map(b => `&lt;span class="badge" style="color:${GCOL[b]};border-color:${GCOL[b]}">${L(AM.typ[b])}&lt;/span>`)
-        .join(' &lt;span class="muted">+&lt;/span> ');
-}
-function whyTxt(s) {
-    let t = tr('why_' + s.bond);
-    if (s.bonds.length > 1 &amp;&amp; s.bonds.includes('vdw')) t += ' ' + tr(s.bond === 'hb' ? 'extra_hb' : 'extra_dd');
-    return t;
-}
-function renderObs() {
-    document.getElementById('obs').innerHTML = tr('obs_' + state.metric).map(t => `&lt;li>${t}&lt;/li>`).join('');
-}
-function renderPredict() {
-    const el = document.getElementById('predict-card');
-    el.classList.toggle('hidden', state.mode !== 'predict');
-    if (state.mode !== 'predict' || !state.pred) return;
-    const s = state.pred, m = METRICS[state.metric], unit = tr('unit_' + state.metric);
-    let html = `&lt;h3>${tr('pTitle')}: ${fill(tr('pAsk'), { name: L(s.low) })}&lt;/h3>
-        &lt;div class="muted">${fill(tr('pInfo'), { formula: L(s.formula), M: fmt(s.M, 0), bond: s.bonds.map(b => tr('bond_' + b)).join(' + ') })}&lt;/div>`;
-    if (state.guess === null) html += `&lt;p style="margin:8px 0 0">${tr('pHow')}&lt;/p>`;
-    else {
-        const t = m.get(s), d = Math.abs(state.guess - t);
-        const cls = d &lt;= m.tol[0] ? 'res-good' : d &lt;= m.tol[1] ? 'res-ok' : 'res-bad';
-        const msg = d &lt;= m.tol[0] ? tr('pGood') : d &lt;= m.tol[1] ? tr('pOk') : tr('pBad');
-        html += `&lt;table>
-            &lt;tr>&lt;td>${tr('pYour')}&lt;/td>&lt;td>${fmt(state.guess, m.dec)} ${unit}&lt;/td>&lt;/tr>
-            &lt;tr>&lt;td>${tr('pTrue')}&lt;/td>&lt;td>&lt;b>${fmt(t, m.dec || (Number.isInteger(t) ? 0 : 1))} ${unit}&lt;/b>&lt;/td>&lt;/tr>
-            &lt;tr>&lt;td>${tr('pDiff')}&lt;/td>&lt;td>${fmt(d, m.dec)} ${unit}&lt;/td>&lt;/tr>&lt;/table>
-            &lt;div class="${cls}" style="font-weight:700">${msg}&lt;/div>
-            &lt;div style="margin-top:4px">${whyTxt(s)}&lt;/div>
-            &lt;div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:8px">
-                &lt;span class="muted" style="font-size:12px">${fill(tr('pScore'), { n: state.n, e: fmt(state.errSum / Math.max(1, state.n), m.dec) + ' ' + unit })}&lt;/span>
-                &lt;button class="btn primary" onclick="nextPredict()">${tr('pNext')}&lt;/button>&lt;/div>`;
-    }
-    el.innerHTML = html;
-}
-function renderControls() {
-    const sel = document.getElementById('metric');
-    sel.innerHTML = ['bp', 'mp', 'dens'].map(k => `&lt;option value="${k}">${tr('m_' + k)}&lt;/option>`).join('');
-    sel.value = state.metric;
-    document.getElementById('groups').innerHTML = AM.grupper.filter(g => g.id !== 'jon').map(g =>
-        `&lt;button class="chip${state.groups[g.id] ? '' : ' off'}" onclick="toggleGroup('${g.id}')">&lt;span class="d" style="background:${g.col}">&lt;/span>${L(g.name)}&lt;/button>`).join('') +
-        `&lt;span class="muted" style="font-size:11.5px;display:inline-flex;align-items:center;gap:6px">&lt;span style="width:12px;height:12px;border-radius:50%;border:2px solid ${GCOL.vdw}">&lt;/span>${tr('ringNote')}&lt;/span>`;
-}
-function renderAll() { renderControls(); renderObs(); renderInfo(); renderPredict(); draw(); }
-
-// =====================================================================
-//  KONTROLLER
-// =====================================================================
-function setMetric(k) { state.metric = k; if (state.mode === 'predict') nextPredict(true); renderAll(); }
-function toggleGroup(g) {
-    state.groups[g] = !state.groups[g];
-    if (!Object.values(state.groups).some(Boolean)) state.groups[g] = true;
-    if (state.mode === 'predict' &amp;&amp; state.pred &amp;&amp; !state.groups[state.pred.bond]) nextPredict(true);
-    renderAll();
-}
-function setMode(md) {
-    state.mode = md;
-    document.getElementById('m-explore').classList.toggle('active', md === 'explore');
-    document.getElementById('m-predict').classList.toggle('active', md === 'predict');
-    if (md === 'predict') { state.n = 0; state.errSum = 0; nextPredict(true); }
-    else { state.pred = null; state.guess = null; }
-    renderAll();
-}
-function nextPredict(silent) {
-    const pool = visible().filter(s => !state.recent.includes(s.id));
-    const list = pool.length ? pool : visible();
-    state.pred = list[Math.floor(Math.random() * list.length)] || null;
-    state.guess = null;
-    if (state.pred) { state.recent.push(state.pred.id); if (state.recent.length > Math.min(6, visible().length - 1)) state.recent.shift(); }
-    if (!silent) renderAll();
-}
-function select(id, fromOutside) {
-    state.sel = id;
-    renderInfo(); draw();
-    if (!fromOutside) post({ type: 'chose', id });
-}
-
-function applyLang(newLang) {
-    if (newLang) lang = I18N[newLang] ? newLang : 'sv';
-    try { localStorage.setItem('jamfor-lang', lang); } catch (e) { /* ignoreras */ }
-    document.documentElement.lang = lang;
-    document.title = tr('docTitle');
-    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = tr(el.dataset.i18n); });
-    document.querySelectorAll('.lang button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
-    renderAll();
-}
-
-// =====================================================================
-//  INBÄDDNING I RAMEN (Ämnens egenskaper)
-// =====================================================================
-const EMBED = window.parent !== window;
-function post(m) { if (EMBED) parent.postMessage(Object.assign({ from: 'del', del: 'jamfor' }, m), '*'); }
-window.addEventListener('message', (e) => {
-    const m = e.data || {};
-    if (m.to !== 'del') return;
-    if (m.type === 'lang') applyLang(m.lang);
-    else if (m.type === 'select' &amp;&amp; ALL.some(s => s.id === m.id)) select(m.id, true);
-});
-
-// =====================================================================
-//  START
-// =====================================================================
-function resize() {
-    const dpr = window.devicePixelRatio || 1, box = cv.parentElement.getBoundingClientRect();
-    W = Math.floor(box.width); H = Math.floor(box.height);
-    cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    draw();
-}
-window.addEventListener('DOMContentLoaded', () => {
-    if (EMBED) document.documentElement.classList.add('embedded');
-    cv = document.getElementById('chart'); cx = cv.getContext('2d');
-    const q = new URLSearchParams(location.search);
-    lang = I18N[q.get('lang')] ? q.get('lang') : (() => { try { return localStorage.getItem('jamfor-lang') || 'sv'; } catch (e) { return 'sv'; } })();
-    if (!I18N[lang]) lang = 'sv';
-    if (q.get('amne') &amp;&amp; ALL.some(s => s.id === q.get('amne'))) state.sel = q.get('amne');
-    const tip = document.getElementById('tip');
-    const pos = (e) => { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
-    cv.addEventListener('mousemove', (e) => {
-        const p = pos(e), s = nearest(p.x, p.y);
-        const id = s ? s.id : null;
-        if (id !== state.hover) { state.hover = id; draw(); }
-        if (s) {
-            tip.innerHTML = `&lt;b>${L(s.name)}&lt;/b> · ${fmt(s.M, 0)} g/mol · ${valTxt(s, state.metric)}`;
-            tip.style.left = xOf(s.M) + 'px'; tip.style.top = yOf(METRICS[state.metric].get(s)) + 'px';
-            tip.classList.remove('hidden');
-        } else tip.classList.add('hidden');
-    });
-    cv.addEventListener('mouseleave', () => { state.hover = null; tip.classList.add('hidden'); draw(); });
-    cv.addEventListener('click', (e) => {
-        const p = pos(e);
-        if (state.mode === 'predict' &amp;&amp; state.pred &amp;&amp; state.guess === null) {
-            if (p.y &lt; PAD.t || p.y > H - PAD.b) return;
-            const m = METRICS[state.metric];
-            state.guess = Math.max(m.min, Math.min(m.max, vOfY(p.y)));
-            state.n++; state.errSum += Math.abs(state.guess - m.get(state.pred));
-            state.sel = state.pred.id;
-            renderAll();
-            post({ type: 'chose', id: state.pred.id });
-            return;
-        }
-        const s = nearest(p.x, p.y);
-        if (s) select(s.id);
-    });
-    document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
-    new ResizeObserver(resize).observe(cv.parentElement);
-    applyLang();
-    resize();
-    post({ type: 'ready' });
-});
-&lt;/script>
-&lt;/body>
-&lt;/html>
-</textarea>
 
 <script>
 // =====================================================================
 //  ÄMNENS EGENSKAPER – gemensam ämnesdata
-//  En källa för alla delar: ramens ämnesbibliotek och ämneskort, Jämför-diagrammet,
+//  En källa för alla delar: ramens ämnesbibliotek och ämneskort,
 //  och (i den sammanslagna filen) smält-/kokpunkter och densiteter i delarna.
 //
 //  Fält:
@@ -6413,63 +5747,63 @@ window.addEventListener('DOMContentLoaded', () => {
         // ---- vätebindningar ----
         water:    { name: n('Vatten', 'Water'), low: n('vatten', 'water'), formula: 'H₂O', M: 18.02, mp: 0, bp: 100, dens: 1.00, bond: 'hb', family: 'annat', pol: POL.vp,
                     note: n('Liten, vinklad molekyl som bildar upp till fyra vätebindningar.', 'A small, bent molecule that forms up to four hydrogen bonds.'),
-                    in: { varm: 'h2o', blanda: 'water', jamfor: true } },
+                    in: { varm: 'h2o', blanda: 'water' } },
         methanol: { name: n('Metanol', 'Methanol'), low: n('metanol', 'methanol'), formula: 'CH₃OH', M: 32.04, mp: -98, bp: 65, dens: 0.79, bond: 'hb', family: 'alkohol', nC: 1, pol: POL.p,
                     note: n('Den minsta alkoholen. Giftig.', 'The smallest alcohol. Toxic.'),
-                    in: { varm: 'methanol', blanda: 'methanol', jamfor: true } },
+                    in: { varm: 'methanol', blanda: 'methanol' } },
         ethanol:  { name: n('Etanol', 'Ethanol'), low: n('etanol', 'ethanol'), formula: 'C₂H₅OH', M: 46.07, mp: -114, bp: 78, dens: 0.79, bond: 'hb', family: 'alkohol', nC: 2, pol: POL.p,
                     note: n('Alkoholen i drycker och handsprit.', 'The alcohol in drinks and hand sanitiser.'),
-                    in: { varm: 'ethanol', blanda: 'ethanol', jamfor: true } },
+                    in: { varm: 'ethanol', blanda: 'ethanol' } },
         propanol: { name: n('1-propanol'), low: n('1-propanol'), formula: 'C₃H₇OH', M: 60.10, mp: -126, bp: 97, dens: 0.80, bond: 'hb', family: 'alkohol', nC: 3, pol: POL.p,
                     note: n('Tre kol. Blandas fortfarande helt med vatten.', 'Three carbons. Still mixes completely with water.'),
-                    in: { varm: 'propanol', blanda: 'propanol', jamfor: true } },
+                    in: { varm: 'propanol', blanda: 'propanol' } },
         butanol:  { name: n('1-butanol'), low: n('1-butanol'), formula: 'C₄H₉OH', M: 74.12, mp: -89, bp: 118, dens: 0.81, bond: 'hb', family: 'alkohol', nC: 4, pol: POL.wp,
                     note: n('Fyra kol. Bara delvis blandbar med vatten.', 'Four carbons. Only partly miscible with water.'),
-                    in: { varm: 'butanol', blanda: 'butanol', jamfor: true } },
+                    in: { varm: 'butanol', blanda: 'butanol' } },
         pentanol: { name: n('1-pentanol'), low: n('1-pentanol'), formula: 'C₅H₁₁OH', M: 88.15, mp: -78, bp: 138, dens: 0.81, bond: 'hb', family: 'alkohol', nC: 5, pol: POL.wp,
                     note: n('Fem kol. Den opolära kedjan dominerar.', 'Five carbons. The non-polar chain dominates.'),
-                    in: { varm: 'pentanol', blanda: 'pentanol', jamfor: true } },
+                    in: { varm: 'pentanol', blanda: 'pentanol' } },
         glycerol: { name: n('Glycerol'), low: n('glycerol'), formula: 'C₃H₅(OH)₃', M: 92.09, mp: 18, bp: 290, dens: 1.26, bond: 'hb', family: 'annat', pol: POL.vp,
                     note: n('Tre OH-grupper. Trögflytande. Kokar först vid 290 °C, så den ryms inte i Värm och kyl.', 'Three OH groups. Viscous. Only boils at 290 °C, so it does not fit in Heat and cool.'),
-                    in: { blanda: 'glycerol', jamfor: true } },
+                    in: { blanda: 'glycerol' } },
         ammonia:  { name: n('Ammoniak', 'Ammonia'), low: n('ammoniak', 'ammonia'), formula: 'NH₃', M: 17.03, mp: -78, bp: -33, dens: null, bond: 'hb', family: 'annat', pol: POL.p,
                     note: n('Bildar vätebindningar (N–H···N), men svagare än vattnets.', 'Forms hydrogen bonds (N–H···N), but weaker than those in water.'),
-                    in: { jamfor: true } },
+                    in: {} },
         // ---- dipol–dipol ----
         hcl:      { name: n('Väteklorid', 'Hydrogen chloride'), low: n('väteklorid', 'hydrogen chloride'), formula: 'HCl', M: 36.46, mp: -114.2, bp: -85.1, dens: null, bond: 'dd', family: 'annat', pol: POL.p,
                     note: n('Permanent dipol. Gas vid rumstemperatur.', 'Permanent dipole. A gas at room temperature.'),
-                    in: { varm: 'hcl', jamfor: true } },
+                    in: { varm: 'hcl' } },
         acetone:  { name: n('Aceton', 'Acetone'), low: n('aceton', 'acetone'), formula: 'CH₃COCH₃', M: 58.08, mp: -95, bp: 56, dens: 0.78, bond: 'dd', family: 'annat', pol: POL.p,
                     note: n('Polär C=O-grupp men ingen O–H. Bra lösningsmedel.', 'Polar C=O group but no O–H. A good solvent.'),
-                    in: { varm: 'acetone', blanda: 'acetone', jamfor: true } },
+                    in: { varm: 'acetone', blanda: 'acetone' } },
         h2s:      { name: n('Vätesulfid', 'Hydrogen sulfide'), low: n('vätesulfid', 'hydrogen sulfide'), formula: 'H₂S', M: 34.08, mp: -86, bp: -60, dens: null, bond: 'dd', family: 'annat', pol: POL.wp,
                     note: n('Byggd som vatten men utan vätebindningar. Jämför kokpunkterna!', 'Shaped like water but without hydrogen bonds. Compare the boiling points!'),
-                    in: { jamfor: true } },
+                    in: {} },
         // ---- van der Waals ----
         co2:      { name: n('Koldioxid', 'Carbon dioxide'), low: n('koldioxid', 'carbon dioxide'), formula: 'CO₂', M: 44.01, mp: -78.5, bp: -78.5, subl: true, dens: null, bond: 'vdw', family: 'annat', pol: POL.np,
                     note: n('Linjär och opolär. Sublimerar vid 1 atm (torris).', 'Linear and non-polar. Sublimes at 1 atm (dry ice).'),
-                    in: { varm: 'co2', jamfor: true } },
+                    in: { varm: 'co2' } },
         methane:  { name: n('Metan', 'Methane'), low: n('metan', 'methane'), formula: 'CH₄', M: 16.04, mp: -182, bp: -162, dens: null, bond: 'vdw', family: 'alkan', nC: 1, pol: POL.np,
                     note: n('Den minsta alkanen. Huvuddelen av naturgas och biogas.', 'The smallest alkane. The main part of natural gas and biogas.'),
-                    in: { jamfor: true } },
+                    in: {} },
         ethane:   { name: n('Etan', 'Ethane'), low: n('etan', 'ethane'), formula: 'C₂H₆', M: 30.07, mp: -183, bp: -89, dens: null, bond: 'vdw', family: 'alkan', nC: 2, pol: POL.np,
-                    note: n('Alkan med två kol.', 'Alkane with two carbons.'), in: { jamfor: true } },
+                    note: n('Alkan med två kol.', 'Alkane with two carbons.'), in: {} },
         propane:  { name: n('Propan', 'Propane'), low: n('propan', 'propane'), formula: 'C₃H₈', M: 44.10, mp: -188, bp: -42, dens: null, bond: 'vdw', family: 'alkan', nC: 3, pol: POL.np,
-                    note: n('Gasol. Alkan med tre kol.', 'Bottled gas. Alkane with three carbons.'), in: { jamfor: true } },
+                    note: n('Gasol. Alkan med tre kol.', 'Bottled gas. Alkane with three carbons.'), in: {} },
         butane:   { name: n('Butan', 'Butane'), low: n('butan', 'butane'), formula: 'C₄H₁₀', M: 58.12, mp: -138, bp: -0.5, dens: null, bond: 'vdw', family: 'alkan', nC: 4, pol: POL.np,
-                    note: n('Tändargas. Alkan med fyra kol.', 'Lighter gas. Alkane with four carbons.'), in: { jamfor: true } },
+                    note: n('Tändargas. Alkan med fyra kol.', 'Lighter gas. Alkane with four carbons.'), in: {} },
         pentane:  { name: n('Pentan', 'Pentane'), low: n('pentan', 'pentane'), formula: 'C₅H₁₂', M: 72.15, mp: -130, bp: 36, dens: 0.63, bond: 'vdw', family: 'alkan', nC: 5, pol: POL.np,
                     note: n('Alkan med fem kol. Kokar redan vid 36 °C.', 'Alkane with five carbons. Boils at only 36 °C.'),
-                    in: { varm: 'pentane', blanda: 'pentane', jamfor: true } },
+                    in: { varm: 'pentane', blanda: 'pentane' } },
         hexane:   { name: n('Hexan', 'Hexane'), low: n('hexan', 'hexane'), formula: 'C₆H₁₄', M: 86.18, mp: -95, bp: 69, dens: 0.66, bond: 'vdw', family: 'alkan', nC: 6, pol: POL.np,
                     note: n('Alkan med sex kol. Vanligt lösningsmedel.', 'Alkane with six carbons. A common solvent.'),
-                    in: { varm: 'hexane', blanda: 'hexane', jamfor: true } },
+                    in: { varm: 'hexane', blanda: 'hexane' } },
         heptane:  { name: n('Heptan', 'Heptane'), low: n('heptan', 'heptane'), formula: 'C₇H₁₆', M: 100.2, mp: -91, bp: 98, dens: 0.68, bond: 'vdw', family: 'alkan', nC: 7, pol: POL.np,
                     note: n('Alkan med sju kol.', 'Alkane with seven carbons.'),
-                    in: { varm: 'heptane', blanda: 'heptane', jamfor: true } },
+                    in: { varm: 'heptane', blanda: 'heptane' } },
         octane:   { name: n('Oktan', 'Octane'), low: n('oktan', 'octane'), formula: 'C₈H₁₈', M: 114.2, mp: -57, bp: 126, dens: 0.70, bond: 'vdw', family: 'alkan', nC: 8, pol: POL.np,
                     note: n('Alkan med åtta kol. Finns i bensin.', 'Alkane with eight carbons. Found in petrol.'),
-                    in: { varm: 'octane', blanda: 'octane', jamfor: true } },
+                    in: { varm: 'octane', blanda: 'octane' } },
         oil:      { name: n('Matolja', 'Cooking oil'), low: n('matolja', 'cooking oil'), formula: n('triglycerider', 'triglycerides'), M: 880, mp: null, bp: null, dens: 0.92, bond: 'vdw', family: 'annat', pol: POL.np,
                     note: n('Stora, nästan opolära molekyler. Sönderfaller innan den kokar.', 'Large, almost non-polar molecules. Decomposes before boiling.'),
                     in: { blanda: 'oil' } },
@@ -6524,8 +5858,7 @@ window.addEventListener('DOMContentLoaded', () => {
         },
         delar: {
             varm: { name: n('Värm och kyl', 'Heat and cool'), icon: '🌡️' },
-            blanda: { name: n('Blanda och lös', 'Mix and dissolve'), icon: '🧪' },
-            jamfor: { name: n('Jämför', 'Compare'), icon: '📈' }
+            blanda: { name: n('Blanda och lös', 'Mix and dissolve'), icon: '🧪' }
         },
         // Sök upp ämnet som har ett visst namn i en viss del (t.ex. 'h2o' i Värm och kyl)
         fran(del, id) {
@@ -6550,7 +5883,7 @@ const I18N = {
         openIn: 'Öppna i', putA: 'Bägare A', putB: 'Bägare B', addA: 'Tillsätt i A', addB: 'Tillsätt i B',
         pickHint: 'Välj ett ämne i listan för att se dess egenskaper. Prickarna visar i vilka delar ämnet finns.',
         notHere: 'Finns inte i {del}.', noBuild: 'Delarna saknas. Bygg ramen med bygg.py.',
-        legend: 'Prickar: Värm och kyl · Blanda och lös · Jämför'
+        legend: 'Prickar: Värm och kyl · Blanda och lös'
     },
     en: {
         title: 'Properties of substances', subtitle: 'From the forces between particles to the properties of substances',
@@ -6560,7 +5893,7 @@ const I18N = {
         openIn: 'Open in', putA: 'Beaker A', putB: 'Beaker B', addA: 'Add to A', addB: 'Add to B',
         pickHint: 'Choose a substance in the list to see its properties. The dots show which parts the substance appears in.',
         notHere: 'Not available in {del}.', noBuild: 'The parts are missing. Build the frame with bygg.py.',
-        legend: 'Dots: Heat and cool · Mix and dissolve · Compare'
+        legend: 'Dots: Heat and cool · Mix and dissolve'
     }
 };
 let lang = 'sv';
@@ -6569,7 +5902,8 @@ const L = (o) => (o && typeof o === 'object' ? (o[lang] ?? o.sv) : o);
 const fmt = (v, d = 0) => (v < 0 ? '−' : '') + (lang === 'sv' ? Math.abs(v).toFixed(d).replace('.', ',') : Math.abs(v).toFixed(d));
 
 const AM = window.AMNEN;
-const DELAR = ['varm', 'blanda', 'jamfor'];
+const DELAR = ['varm', 'blanda'];
+const iNagonDel = (k) => DELAR.some(d => AM.lista[k].in[d]);   // ämnen som inte finns i någon del visas inte
 const frames = {}, ready = {}, queue = {};
 let active = null, current = null, libOpen = true;
 
@@ -6636,7 +5970,7 @@ function renderTabs() {
 function renderList() {
     // Grupperat efter ämnesklass. Bindningstyperna visas inte i listan: eleverna ska se dem i animeringen.
     const groups = AM.familjer.map(g => {
-        const ids = Object.keys(AM.lista).filter(k => AM.lista[k].family === g.id);
+        const ids = Object.keys(AM.lista).filter(k => AM.lista[k].family === g.id && iNagonDel(k));
         if (!ids.length) return '';
         return `<div class="grp"><h4>${L(g.name)}</h4>` + ids.map(k => {
             const a = AM.lista[k], na = active && !a.in[active];
@@ -6724,9 +6058,9 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!I18N[lang]) lang = 'sv';
     document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
     if (window.innerWidth < 900) toggleLib();
-    // Direktlänkar: ?del=varm|blanda|jamfor  &amne=etanol  (Blanda och lös: &a=vatten&b=hexan)
+    // Direktlänkar: ?del=varm|blanda  &amne=etanol  (Blanda och lös: &a=vatten&b=hexan)
     const amne = q.get('amne'), a = q.get('a'), b = q.get('b');
-    if (amne && AM.lista[amne]) current = amne;
+    if (amne && AM.lista[amne] && iNagonDel(amne)) current = amne;
     applyLang();
     setDel(q.get('del') || 'varm', false);
     if (active === 'blanda') {
