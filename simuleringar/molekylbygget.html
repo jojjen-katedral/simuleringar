@@ -131,6 +131,23 @@ dl.kv dd{margin:0;font-weight:700;font-variant-numeric:tabular-nums;min-width:0}
   .palette{grid-template-columns:repeat(6,1fr)}
 }
 @media (prefers-reduced-motion: reduce){.tgl span.sw,.tgl span.sw::after{transition:none}}
+/* exportdialog */
+dialog.exp{border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);padding:0;width:min(820px,calc(100vw - 24px));max-height:calc(100vh - 24px);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog.exp::backdrop{background:rgba(10,15,25,.5)}
+.expwrap{display:grid;grid-template-columns:270px minmax(0,1fr);max-height:calc(100vh - 26px)}
+.expform{padding:16px;display:flex;flex-direction:column;gap:11px;overflow-y:auto;border-right:1px solid var(--line);margin:0}
+.expform h3{font-family:var(--f-display);font-weight:800;font-size:1.15rem;margin:0}
+.expform label.f{display:grid;gap:4px;font-weight:700;font-size:.84rem}
+.expform .check{margin:0}
+.expform .check input:disabled+span{opacity:.45}
+.expform input[type=range]{width:100%;accent-color:var(--accent)}
+.expprev{padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.prevbox{flex:1;min-height:260px;border:1px solid var(--line);border-radius:12px;display:grid;place-items:center;overflow:auto;padding:14px;background:#fff}
+.prevbox.tr{background-color:#fff;background-image:conic-gradient(#e4e7eb 25%,#fff 0 50%,#e4e7eb 0 75%,#fff 0);background-size:18px 18px}
+.prevbox svg{max-width:100%;height:auto;max-height:55vh}
+.prevbox p{color:#5a6576;margin:0}
+.expfoot{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+@media (max-width:720px){.expwrap{grid-template-columns:minmax(0,1fr);overflow-y:auto}.expform{border-right:0;border-bottom:1px solid var(--line);overflow:visible}.prevbox{min-height:200px}}
 </style>
 
 <div class="app">
@@ -164,6 +181,7 @@ dl.kv dd{margin:0;font-weight:700;font-variant-numeric:tabular-nums;min-width:0}
         <button class="btn" id="undo3">Ångra</button>
         <button class="btn" id="center3">Centrera</button>
         <button class="btn" id="clear3">Töm bordet</button>
+        <button class="btn" id="std3" title="Rätar ut kolkedjan och vrider modellen så att den syns från sidan">Standardvy</button>
       </div>
     </section>
     <section id="tools2d" hidden>
@@ -178,10 +196,15 @@ dl.kv dd{margin:0;font-weight:700;font-variant-numeric:tabular-nums;min-width:0}
         <button class="btn" id="fill2">Fyll på väten</button>
         <button class="btn" id="undo2">Ångra</button>
         <button class="btn" id="clear2">Töm</button>
+        <button class="btn" id="straight2" title="Lägger huvudkedjan rakt och sätter ut grenar och väten i fasta vinklar">Räta upp</button>
       </div>
-      <label class="tgl"><input type="checkbox" id="o_allat"><span class="sw"></span><span><b>Visa alla atomer</b><em>Av: ren streckformel (kol och väte ritas inte ut)</em></span></label>
       <label class="check"><input type="checkbox" id="fillOnConvert" checked> Fyll lediga platser med väte i 3D</label>
       <p class="hint">Det du ritar följer med när du byter till <b>Bygg i 3D</b>, och tvärtom.</p>
+    </section>
+    <section>
+      <h2>Bild</h2>
+      <button class="btn wide" id="exportBtn">Exportera som bild…</button>
+      <p class="hint" style="margin-top:6px">Spara strukturformel, streckformel, kondenserad formel, summaformel eller kulstavsmodell som PNG, JPG eller WebP. Formlerna kan också sparas som SVG.</p>
     </section>
     <section>
       <h2>Exempel</h2>
@@ -201,12 +224,20 @@ dl.kv dd{margin:0;font-weight:700;font-variant-numeric:tabular-nums;min-width:0}
   </main>
 
   <aside class="right">
-    <section>
+    <section id="view2d" hidden>
+      <h2>Visa</h2>
+      <label class="tgl"><input type="checkbox" id="o_allat"><span class="sw"></span><span><b>Visa alla atomer</b><em>Av: ren streckformel (kol och väte ritas inte ut)</em></span></label>
+      <label class="tgl"><input type="checkbox" id="o_hetH"><span class="sw"></span><span><b>Rita ut väten på syre och kväve</b><em>Visar bindningen i O–H och N–H i streckformeln</em></span></label>
+      <label class="tgl"><input type="checkbox" id="o2_lp"><span class="sw"></span><span><b>Fria elektronpar</b><em>Lewis-prickar runt atomerna</em></span></label>
+      <label class="tgl"><input type="checkbox" id="o2_partial"><span class="sw"></span><span><b>Laddningsförskjutning δ+ / δ−</b><em>Skriver ut δ+ och δ− vid polära bindningar</em></span></label>
+      <label class="tgl"><input type="checkbox" id="o2_holes"><span class="sw"></span><span><b>Lediga bindningsplatser</b><em>Streckade pinnar där atomen kan binda mer. Syns när alla atomer visas</em></span></label>
+    </section>
+    <section id="view3d">
       <div class="vhead"><h2>Visa</h2><button class="ib" id="clearOpts" title="Stäng av alla visningsval">Avmarkera alla</button></div>
       <label class="tgl"><input type="checkbox" id="o_holes"><span class="sw"></span><span><b>Lediga bindningsplatser</b><em>Grå pinnar där atomen kan binda mer</em></span></label>
       <label class="tgl"><input type="checkbox" id="o_lp"><span class="sw"></span><span><b>Fria elektronpar</b><em><i class="key" style="background:#8e6cf0"></i>Lila moln med två elektroner</em></span></label>
       <label class="tgl"><input type="checkbox" id="o_angles"><span class="sw"></span><span><b>Bindningsvinklar</b><em><i class="key" style="background:#0ca678"></i>Bågar med gradtal vid den markerade atomen. Uppdateras när du böjer</em></span></label>
-      <label class="tgl"><input type="checkbox" id="o_epair"><span class="sw"></span><span><b>Bindningar som elektronpar</b><em><i class="key" style="background:#2fb8c9"></i>Pinnarna byts mot delade elektronpar, två elektroner per par. Lediga platser visas som oparade elektroner</em></span></label>
+      <label class="tgl"><input type="checkbox" id="o_epair"><span class="sw"></span><span><b>Bindningar som elektronpar</b><em><i class="key" style="background:#2fb8c9"></i>Pinnarna byts mot delade elektronpar, två elektroner per par. Lediga platser visas som oparade elektroner <i class="key" style="background:#e03131;margin-left:2px"></i>i ett rött, pulserande moln: de är instabila och reaktiva</em></span></label>
       <label class="tgl"><input type="checkbox" id="o_rep"><span class="sw"></span><span><b>Repulsion mellan elektronpar</b><em><i class="key" style="background:#f59f00"></i>stark repulsion blir tjock och röd. <i class="key" style="background:#e03131"></i>Pilar visar kraften som återställer formen</em></span></label>
       <label class="tgl"><input type="checkbox" id="o_slow"><span class="sw"></span><span><b>Långsam återställning</b><em>Se molekylen fjädra tillbaka i slowmotion</em></span></label>
       <label class="tgl"><input type="checkbox" id="o_esp"><span class="sw"></span><span><b>Elektrontäthet (ESP-yta)</b><em>Rött = elektronrikt (δ−), blått = elektronfattigt (δ+)</em></span></label>
@@ -227,6 +258,60 @@ dl.kv dd{margin:0;font-weight:700;font-variant-numeric:tabular-nums;min-width:0}
     </section>
   </aside>
 </div>
+
+<dialog class="exp" id="expDlg" aria-labelledby="expTitle">
+  <div class="expwrap">
+    <form class="expform" id="expForm" onsubmit="return false">
+      <h3 id="expTitle">Exportera bild</h3>
+      <label class="f" id="ex_molRow">Molekyl<select id="ex_mol"></select></label>
+      <label class="f">Formel<select id="ex_kind">
+        <option value="full">Strukturformel – alla atomer</option>
+        <option value="skel">Streckformel (skelettformel)</option>
+        <option value="cond">Kondenserad strukturformel</option>
+        <option value="sum">Summaformel (molekylformel)</option>
+        <option value="ball">Kulstavsmodell (ball-and-stick)</option>
+      </select></label>
+      <label class="f" id="ex_layRow">Layout<select id="ex_layout">
+        <option value="straight">Rak (standard)</option>
+        <option value="drawn">Som ritad</option>
+      </select></label>
+      <label class="f" id="ex_tiltRow">Lutning kring kedjan: <span id="ex_tiltVal"></span><input type="range" id="ex_tilt" min="0" max="45" step="5"></label>
+      <label class="f">Filtyp<select id="ex_fmt">
+        <option value="png">PNG</option>
+        <option value="jpg">JPG</option>
+        <option value="webp">WebP</option>
+        <option value="svg">SVG (vektorbild, skalbar)</option>
+      </select></label>
+      <label class="f" id="ex_scaleRow">Upplösning<select id="ex_scale">
+        <option value="1">Normal (1×)</option>
+        <option value="2">Hög (2×)</option>
+        <option value="4">Tryckkvalitet (4×)</option>
+      </select></label>
+      <label class="f">Bakgrund<select id="ex_bg">
+        <option value="white">Vit</option>
+        <option value="none">Genomskinlig</option>
+      </select></label>
+      <label class="f">Färger<select id="ex_col">
+        <option value="color">Färgade grundämnen</option>
+        <option value="bw">Svartvitt</option>
+      </select></label>
+      <label class="check" id="ex_ccbRow"><input type="checkbox" id="ex_ccb"><span>Visa kol–kol-bindningar (CH₃–CH₂–OH)</span></label>
+      <label class="check" id="ex_hetHRow"><input type="checkbox" id="ex_hetH"><span>Rita ut väten på syre och kväve (O–H)</span></label>
+      <label class="check" id="ex_lpRow"><input type="checkbox" id="ex_lp"><span>Fria elektronpar (Lewis-prickar)</span></label>
+      <label class="check" id="ex_partRow"><input type="checkbox" id="ex_part"><span>Partialladdningar δ+ / δ−</span></label>
+      <label class="check"><input type="checkbox" id="ex_name"><span>Namnet under formeln</span></label>
+    </form>
+    <div class="expprev">
+      <div class="prevbox" id="ex_prev"></div>
+      <p class="hint" id="ex_info" style="margin:0"></p>
+      <div class="expfoot">
+        <button class="btn" id="ex_close" type="button">Stäng</button>
+        <button class="btn" id="ex_copy" type="button">Kopiera bild</button>
+        <button class="btn primary" id="ex_dl" type="button">Ladda ner</button>
+      </div>
+    </div>
+  </div>
+</dialog>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -343,7 +428,7 @@ const EGEO={2:'linjär',3:'plan triangulär',4:'tetraedrisk',5:'trigonal bipyram
 // ---------- tillstånd ----------
 let S={atoms:[],bonds:[]};          // 3D: atoms {el,q,p:[x,y,z],ps:[{k:'lp'|'hole',d:[..]}]}
 let G2={atoms:[],bonds:[]};         // 2D: atoms {el,q,x,y}
-const opts={angles:false,epair:false,allat:false,holes:false,lp:false,rep:false,slow:false,esp:false,partial:false,bdip:false,mdip:false,sym:false};
+const opts={angles:false,epair:false,allat:false,hetH:false,holes:false,lp:false,rep:false,slow:false,esp:false,partial:false,bdip:false,mdip:false,sym:false};
 const OPTS=Object.keys(opts);
 let sel={t:null,i:-1,hole:-1};
 let connectMode=false,mode='3d',el2='C',tool2='draw';
@@ -599,7 +684,12 @@ const matBondPos=new THREE.MeshStandardMaterial({color:0x8db8ff,roughness:.45});
 const matBondNeg=new THREE.MeshStandardMaterial({color:0xff9a9a,roughness:.45});
 const matBDweak=new THREE.MeshStandardMaterial({color:0xf08c00,roughness:.4,transparent:true,opacity:.5,depthWrite:false});
 const matAng=new THREE.MeshBasicMaterial({color:0x0ca678,depthTest:false,transparent:true,opacity:.95});
-const matRad=new THREE.MeshStandardMaterial({color:0x2fb8c9,transparent:true,opacity:.3,roughness:.3,depthWrite:false});
+// oparad elektron (radikal): rött moln som pulserar lugnt för att visa att den är instabil och reaktiv
+const matRad=new THREE.MeshStandardMaterial({color:0xe03131,emissive:0x5a0000,transparent:true,opacity:.45,roughness:.3,depthWrite:false});
+let radPulse=1;const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)');
+function pulseRadicals(){if(reduceMotion.matches){radPulse=1;matRad.opacity=.55;matRad.emissive.setHex(0x5a0000);return;}
+  const w=.5-.5*Math.cos(performance.now()/2600*Math.PI*2); // en lugn puls ungefär var 2,6:e sekund
+  radPulse=1+.16*w;matRad.opacity=.3+.4*w;matRad.emissive.setRGB(.2+.45*w,0,0);}
 const matBP=new THREE.MeshStandardMaterial({color:0x2fb8c9,transparent:true,opacity:.45,roughness:.3,depthWrite:false});
 const matBPsel=new THREE.MeshStandardMaterial({color:0x2756d1,transparent:true,opacity:.6,roughness:.3,depthWrite:false});
 const matForce=new THREE.MeshBasicMaterial({color:0xe03131,depthTest:false,transparent:true,opacity:.95});
@@ -645,11 +735,11 @@ function buildMeshes(){
     ups.push(()=>m.position.set(a.p[0],a.p[1],a.p[2]));
     if(sel.t==='atom'&&sel.i===i){const o=new THREE.Mesh(geo.sph,matSel);o.scale.setScalar(E.size*1.24);root.add(o);ups.push(()=>o.position.set(a.p[0],a.p[1],a.p[2]));}
     a.ps.forEach((p,k)=>{
-      if(p.k==='hole'&&opts.holes&&opts.epair){ // en ledig bindningsplats är en oparad elektron
+      if(p.k==='hole'&&opts.epair){ // en ledig bindningsplats är en oparad elektron
         const hs=sel.t==='atom'&&sel.i===i&&sel.hole===k;
         const lobe=new THREE.Mesh(geo.sph,hs?matBPsel:matRad),el1=new THREE.Mesh(geo.sph,matE),pk=new THREE.Mesh(geo.cylLo,matPick);
         lobe.renderOrder=2;el1.scale.setScalar(.05);lobe.userData={t:'hole',i,k};pk.userData={t:'hole',i,k};root.add(el1,lobe,pk);
-        ups.push(()=>{const c=add(a.p,mul(p.d,E.size+.2));lobe.position.set(c[0],c[1],c[2]);lobe.scale.set(.13,.24,.13);tv.set(p.d[0],p.d[1],p.d[2]);lobe.quaternion.setFromUnitVectors(Yv,tv);
+        ups.push(()=>{const c=add(a.p,mul(p.d,E.size+.2));lobe.position.set(c[0],c[1],c[2]);const sp=hs?1:radPulse;lobe.scale.set(.13*sp,.24*sp,.13*sp);tv.set(p.d[0],p.d[1],p.d[2]);lobe.quaternion.setFromUnitVectors(Yv,tv);
           const e=add(a.p,mul(p.d,E.size+.25));el1.position.set(e[0],e[1],e[2]);setCyl(pk,add(a.p,mul(p.d,E.size*.7)),add(a.p,mul(p.d,E.size+.5)),.17);});
       }
       else if(p.k==='hole'&&opts.holes){
@@ -1296,10 +1386,18 @@ const c2=$('#c2'),x2=c2.getContext('2d');let W2=0,H2=0,dpr2=1;
 const BL=55;
 function size2(){const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;dpr2=Math.min(2,window.devicePixelRatio||1);W2=w;H2=h;c2.width=Math.round(w*dpr2);c2.height=Math.round(h*dpr2);x2.setTransform(dpr2,0,0,dpr2,0,0);draw2();}
 function pos2(e){const r=c2.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};}
-function hidden2(i){if(opts.allat)return false;const a=G2.atoms[i];if(a.el!=='H')return false;const nb=nbrs(G2,i);return nb.length===1&&G2.atoms[nb[0].j].el!=='H';}
+function hidden2(i){if(opts.allat)return false;const a=G2.atoms[i];if(a.el!=='H')return false;const nb=nbrs(G2,i);return nb.length===1&&G2.atoms[nb[0].j].el!=='H'&&(!opts.hetH||G2.atoms[nb[0].j].el==='C');}
 function hitAtom2(p,excl){let bi=-1,bd=16;G2.atoms.forEach((a,i)=>{if(i===excl||hidden2(i))return;const d=Math.hypot(a.x-p.x,a.y-p.y);if(d<bd){bd=d;bi=i;}});return bi;}
 function hitBond2(p){let bi=-1,bd=8;G2.bonds.forEach((b,k)=>{if(hidden2(b.a)||hidden2(b.b))return;const A=G2.atoms[b.a],B=G2.atoms[b.b];const dx=B.x-A.x,dy=B.y-A.y,L2=dx*dx+dy*dy||1;let t=((p.x-A.x)*dx+(p.y-A.y)*dy)/L2;t=Math.max(0,Math.min(1,t));const d=Math.hypot(A.x+t*dx-p.x,A.y+t*dy-p.y);if(d<bd){bd=d;bi=k;}});return bi;}
 const angDist=(a,b)=>Math.abs(Math.atan2(Math.sin(a-b),Math.cos(a-b)));
+// fria elektronpar i strukturformeln: läggs i de största luckorna mellan bindningar och etiketter, jämnt fördelade (som i en Lewisstruktur)
+function lpAngles(taken,n){if(!n)return [];const TAU=Math.PI*2;
+  if(!taken.length){const res=[];for(let k=0;k<n;k++)res.push(-Math.PI/2+k*TAU/n);return res;}
+  const t=taken.map(a=>((a%TAU)+TAU)%TAU).sort((a,b)=>a-b),gaps=t.map((a,k)=>({s:a,size:(k+1<t.length?t[k+1]:t[0]+TAU)-a,k:0}));
+  for(let m=0;m<n;m++){let g=gaps[0];for(const x of gaps)if(x.size/(x.k+2)>g.size/(g.k+2)+1e-9)g=x;g.k++;}
+  const res=[];for(const g of gaps)for(let j=1;j<=g.k;j++)res.push(g.s+g.size*j/(g.k+1));return res;}
+// avstånd från atomens mitt till prickparet (lite längre i sidled för breda symboler som Cl och Br)
+const lpRad=(sym,t)=>17+(sym.length>1?5*Math.abs(Math.cos(t)):0);
 function freeAngles(taken,n,stepA){const res=[];for(let k=0;k<n;k++){let best=0,bs=-1;const all=taken.concat(res);
   for(let c=0;c<Math.PI*2-1e-6;c+=stepA){let m=Math.PI;for(const t of all)m=Math.min(m,angDist(c,t));const sc=m+(Math.abs(Math.sin(2*c))<1e-6?.02:0);if(sc>bs+1e-9){bs=sc;best=c;}}
   res.push(best);}return res;}
@@ -1409,12 +1507,12 @@ function draw2(){
       for(const t of freeAngles(taken,f.holes,Math.PI/6)){x2.beginPath();x2.moveTo(a.x+Math.cos(t)*14,a.y+Math.sin(t)*14);x2.lineTo(a.x+Math.cos(t)*24,a.y+Math.sin(t)*24);x2.stroke();taken.push(t);}
       x2.setLineDash([]);}
     if(opts.lp&&f.lp&&l.sym){x2.fillStyle=ink;
-      for(const t of freeAngles(taken,f.lp,Math.PI/4)){const r=a.el.length>1?17:15,cx=a.x+Math.cos(t)*r,cy=a.y+Math.sin(t)*r,px=-Math.sin(t)*4,py=Math.cos(t)*4;
+      for(const t of lpAngles(taken,f.lp)){const r=lpRad(l.sym,t),cx=a.x+Math.cos(t)*r,cy=a.y+Math.sin(t)*r,px=-Math.sin(t)*4.5,py=Math.cos(t)*4.5;
         x2.beginPath();x2.arc(cx+px,cy+py,2.2,0,Math.PI*2);x2.arc(cx-px,cy-py,2.2,0,Math.PI*2);x2.fill();taken.push(t);}}
-    if(f.qEff){const t=(Math.abs(f.qEff)>1?Math.abs(f.qEff):'')+(f.qEff>0?'+':'−'),an=freeAngles(taken,1,Math.PI/8)[0],rr=l.sym?25:14,cx=a.x+Math.cos(an)*rr,cy=a.y+Math.sin(an)*rr,r=Math.abs(f.qEff)>1?10:8.5;
+    if(f.qEff){const t=(Math.abs(f.qEff)>1?Math.abs(f.qEff):'')+(f.qEff>0?'+':'−'),an=freeAngles(taken,1,Math.PI/8)[0],rr=l.sym?(opts.lp&&f.lp?31:25):14,cx=a.x+Math.cos(an)*rr,cy=a.y+Math.sin(an)*rr,r=Math.abs(f.qEff)>1?10:8.5;
       x2.fillStyle=f.qEff>0?'#1d5bd6':'#cf2525';x2.beginPath();x2.arc(cx,cy,r,0,Math.PI*2);x2.fill();x2.fillStyle='#fff';x2.font='800 13px '+F2;x2.fillText(t,cx,cy+1);taken.push(an);}
     if(part&&Math.abs(part[i])>=.3){const t=freeAngles(taken,1,Math.PI/4)[0];x2.fillStyle=part[i]<0?'#d42b2b':'#1d6fd8';x2.font='700 13px '+F2;
-      x2.fillText(part[i]<0?'δ−':'δ+',a.x+Math.cos(t)*(l.sym?27:16),a.y+Math.sin(t)*(l.sym?27:16));}
+      x2.fillText(part[i]<0?'δ−':'δ+',a.x+Math.cos(t)*(l.sym?(opts.lp&&f.lp?32:27):16),a.y+Math.sin(t)*(l.sym?(opts.lp&&f.lp?32:27):16));}
   });
   if(d2&&tool2==='draw'&&d2.moved&&(d2.from>=0||d2.bond<0)){const E=end2();x2.strokeStyle=acc;x2.lineWidth=2.2;x2.setLineDash([5,4]);x2.beginPath();x2.moveTo(E.o.x,E.o.y);for(const pt of E.pts)x2.lineTo(pt.x,pt.y);x2.stroke();x2.setLineDash([]);
     x2.fillStyle=acc;x2.globalAlpha=.6;x2.font='700 20px '+F2;
@@ -1504,11 +1602,12 @@ function setMode(m){
   c3.hidden=m!=='3d';c2.hidden=m!=='2d';labelLayer.hidden=m!=='3d';$('#tools3d').hidden=m!=='3d';$('#tools2d').hidden=m!=='2d';
   $('#palHint').textContent=m==='3d'?'Markera en atom och klicka på en ny atom för att fästa den. Utan markering läggs atomen fritt på bordet.':'Välj vilket grundämne du ritar med.';
   $('#stageHint').textContent=m==='3d'?'Dra i en atom eller ett elektronpar för att böja · dra i tomma ytan för att vrida · scrolla eller nyp för att zooma · klicka för att markera':'Dra för att rita en bindning – med kol valt blir det en sicksack-kedja ju längre du drar · klicka på en bindning för dubbel/trippel';
+  $('#view3d').hidden=m!=='3d';$('#view2d').hidden=m!=='2d';
   connectMode=false;markPalette();renderCtx();renderInfo();$('#espLegend').hidden=!(opts.esp&&m==='3d');
   if(m==='2d'){size2();if(G2._center||offscreen2()){center2();delete G2._center;}draw2();}else resize();
   save();
 }
-$('#clearOpts').onclick=()=>{['holes','lp','angles','epair','rep','slow','esp','partial','bdip','mdip','sym'].forEach(k=>{opts[k]=false;const c=$('#o_'+k);if(c)c.checked=false;});buildMeshes();draw2();save();};
+$('#clearOpts').onclick=()=>{['holes','lp','angles','epair','rep','slow','esp','partial','bdip','mdip','sym'].forEach(k=>{opts[k]=false;optBoxes(k).forEach(c=>c.checked=false);});buildMeshes();draw2();save();};
 $('#tab3d').onclick=()=>setMode('3d');$('#tab2d').onclick=()=>setMode('2d');
 $('#fill3').onclick=fillH3;
 $('#undo3').onclick=()=>{if(!undo3.length){toast('Inget att ångra.');return;}S=JSON.parse(undo3.pop());sel={t:null,i:-1,hole:-1};connectMode=false;ensurePseudos();topo();buildMeshes();renderInfo();renderCtx();kick();save();};
@@ -1518,8 +1617,12 @@ document.querySelectorAll('#tool2btns .btn').forEach(b=>b.onclick=()=>{tool2=b.d
 $('#fill2').onclick=()=>{if(!fillH2())toast('Inga lediga bindningsplatser att fylla.');draw2();renderInfo();save();};
 $('#undo2').onclick=()=>{if(!undo2.length){toast('Inget att ångra.');return;}G2=JSON.parse(undo2.pop());draw2();renderInfo();save();};
 $('#clear2').onclick=()=>{if(!G2.atoms.length)return;pushUndo2();G2={atoms:[],bonds:[]};draw2();renderInfo();save();};
-OPTS.forEach(k=>{const c=$('#o_'+k);c.checked=opts[k];c.onchange=()=>{opts[k]=c.checked;buildMeshes();draw2();save();};});
+// varje visningsval kan ha en ruta i 3D-panelen (o_) och en i strukturformelpanelen (o2_); de hålls i takt
+const optBoxes=k=>['#o_'+k,'#o2_'+k].map(id=>$(id)).filter(Boolean);
+function setOpt(k,v){opts[k]=v;optBoxes(k).forEach(c=>c.checked=v);buildMeshes();draw2();save();}
+OPTS.forEach(k=>optBoxes(k).forEach(c=>{c.checked=opts[k];c.onchange=()=>setOpt(k,c.checked);}));
 window.addEventListener('keydown',e=>{
+  if($('#expDlg').open)return;
   if(e.target.closest&&e.target.closest('input,select,textarea'))return;
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();(mode==='3d'?$('#undo3'):$('#undo2')).click();return;}
   if(e.ctrlKey||e.metaKey||e.altKey)return;
@@ -1530,6 +1633,472 @@ window.addEventListener('keydown',e=>{
 });
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{buildMeshes();draw2();});
 new MutationObserver(()=>{buildMeshes();draw2();}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+// ---------- rak layout: huvudkedjan som grund ----------
+// Gemensam grund för rak strukturformel, streckformel, kondenserad formel och kulstavsmodell:
+// längsta kedjan (flest kol, sedan flest atomer) eller en ensam ring.
+const TAU=Math.PI*2;
+function heavyOf(g,comp){const h=comp.filter(i=>g.atoms[i].el!=='H');return h.length?h:comp.slice();}
+function bondOrd(g,i,j){const b=g.bonds.find(b=>(b.a===i&&b.b===j)||(b.a===j&&b.b===i));return b?b.o:0;}
+function linearAt(g,i){const nb=nbrs(g,i);return nb.some(x=>x.o===3)||nb.filter(x=>x.o===2).length>=2;}
+function subtreeSize(adj,j,from){let n=0;const st=[[j,from]];while(st.length){const [x,f]=st.pop();n++;for(const y of adj.get(x)||[])if(y!==f)st.push([y,x]);}return n;}
+// null = strukturen klaras inte (t.ex. flera ringar)
+function mainFrame(g,heavy){
+  const hs=new Set(heavy),adj=new Map(heavy.map(i=>[i,[]]));let E=0;
+  for(const b of g.bonds){if(b.o>0&&hs.has(b.a)&&hs.has(b.b)){adj.get(b.a).push(b.b);adj.get(b.b).push(b.a);E++;}}
+  const cyc=E-heavy.length+1;
+  if(cyc===0){let best=null,bs=-1;
+    for(const s of heavy){const par=new Map([[s,-1]]),q=[s];
+      while(q.length){const x=q.shift();for(const y of adj.get(x))if(!par.has(y)){par.set(y,x);q.push(y);}}
+      if(par.size!==heavy.length)return null;
+      for(const t of heavy){const p=[];let x=t;while(x!==-1){p.push(x);x=par.get(x);}
+        let sc=p.filter(i=>g.atoms[i].el==='C').length*1e4+p.length*100;
+        if(p.length>1){if(bondOrd(g,p[0],p[1])===1)sc+=2;if(bondOrd(g,p[p.length-1],p[p.length-2])===1)sc+=2;}
+        if(g.atoms[p[0]].el==='C')sc+=1;
+        if(sc>bs){bs=sc;best=p;}}}
+    return {path:best,adj};}
+  if(cyc!==1)return null;
+  const deg=new Map(heavy.map(i=>[i,adj.get(i).length])),ring=new Set(heavy);let ch=true;
+  while(ch){ch=false;for(const c of [...ring])if(deg.get(c)<=1){ring.delete(c);for(const y of adj.get(c))if(ring.has(y))deg.set(y,deg.get(y)-1);ch=true;}}
+  const n=ring.size;if(n<3||n>8)return null;
+  const R=[...ring];if(R.some(c=>adj.get(c).filter(y=>ring.has(y)).length!==2))return null;
+  const ord=[R[0]];let prev=-1,cur=R[0];
+  while(ord.length<n){const nx=adj.get(cur).find(y=>ring.has(y)&&y!==prev&&!ord.includes(y));if(nx===undefined)return null;prev=cur;cur=nx;ord.push(cur);}
+  return {ring:ord,adj};
+}
+// den ringatom som har störst substituent (läggs överst)
+function ringTop(fr){let top=-1,bs=0;for(const c of fr.ring){let s=0;for(const y of fr.adj.get(c))if(!fr.ring.includes(y))s+=subtreeSize(fr.adj,y,c);if(s>bs){bs=s;top=c;}}return top;}
+
+// 2D: full = rutnät (kedjan vågrät, grenar och väten i 90°), skel = vågrät sicksack med 120°
+function layoutComp(g,comp,kind){
+  const full=kind==='full',BLc=full?64:55,HLc=full?44:42,inC=new Set(comp);
+  const heavy=heavyOf(g,comp),hs=new Set(heavy),fr=mainFrame(g,heavy);if(!fr)return null;
+  const P=new Map(),par=new Map(),role=new Map();
+  const angTo=(u,j)=>{const a=P.get(u),b=P.get(j);return Math.atan2(b.y-a.y,b.x-a.x);};
+  if(fr.ring){const r=fr.ring,n=r.length,Rr=BLc/(2*Math.sin(Math.PI/n)),k0=Math.max(0,r.indexOf(ringTop(fr)));
+    r.forEach((c,k)=>{const t=-Math.PI/2+(k-k0)*TAU/n;P.set(c,{x:Rr*Math.cos(t),y:Rr*Math.sin(t)});role.set(c,'ring');});}
+  else{const p=fr.path;let x=0,y=0,sign=1,prevZig=false;
+    // sicksack med 120°, men steg som rör en trippelbindning (linjär atom) går rakt vågrätt
+    p.forEach((c,k)=>{if(k>0){if(full)x+=BLc;else{const lin=linearAt(g,p[k-1])||linearAt(g,p[k]);let dir=0;
+        if(!lin){sign=prevZig?-sign:(k===1?-1:sign);dir=sign*Math.PI/6;}prevZig=!lin;x+=BLc*Math.cos(dir);y+=BLc*Math.sin(dir);}}
+      P.set(c,{x,y});role.set(c,'path');});}
+  const clear=(pt,u)=>{let m=1e9;for(const [k,v] of P)if(k!==u)m=Math.min(m,Math.hypot(v.x-pt.x,v.y-pt.y));return m;};
+  const free=(a,taken)=>taken.every(t=>angDist(a,t)>.4);
+  const D4=[-Math.PI/4,-3*Math.PI/4,Math.PI/4,3*Math.PI/4];
+  function prefs(u){
+    if(role.get(u)==='path'){const p=fr.path,k=p.indexOf(u),out=[];
+      if(p.length===1)out.push(0,Math.PI);else{if(k===0)out.push(Math.PI);if(k===p.length-1)out.push(0);}
+      return [...out,-Math.PI/2,Math.PI/2,0,Math.PI,...D4];}
+    const din=angTo(par.get(u),u),perp=[din-Math.PI/2,din+Math.PI/2].sort((a,b)=>Math.sin(a)-Math.sin(b));
+    return [din,...perp,din-Math.PI/4,din+Math.PI/4,din-3*Math.PI/4,din+3*Math.PI/4];}
+  function place(u,ch,len){
+    const pu=P.get(u),r=role.get(u),taken=nbrs(g,u).map(x=>x.j).filter(j=>P.has(j)).map(j=>angTo(u,j));
+    const at=a=>({x:pu.x+len*Math.cos(a),y:pu.y+len*Math.sin(a)});
+    const put=(j,a,L)=>{P.set(j,L?{x:pu.x+L*Math.cos(a),y:pu.y+L*Math.sin(a)}:at(a));par.set(j,u);role.set(j,'branch');taken.push(a);};
+    if(full&&r!=='ring'){let pf=prefs(u);
+      // två väten (t.ex. NH₂) på en gren: H–N–H åt var sitt håll
+      if(r==='branch'&&ch.length===2)pf=[pf[1],pf[2],pf[0],...pf.slice(3)];
+      for(const j of ch){let pick=null,best=null,bc=-1;
+        // grenar som går rakt upp eller ner från huvudkedjan blir längre, så att deras väten får plats i 90°
+        const Lof=a=>r==='path'&&nbrs(g,j).length>1&&Math.abs(Math.sin(a))>.9?len*1.5:len;
+        for(const a of pf){if(!free(a,taken))continue;const L=Lof(a),c=clear({x:pu.x+L*Math.cos(a),y:pu.y+L*Math.sin(a)},u);
+          if(c>=len*.72){pick=a;break;}if(c>bc){bc=c;best=a;}}
+        const a=pick!==null?pick:best!==null?best:freeAngles(taken,1,Math.PI/4)[0];put(j,a,Lof(a));}
+      return;}
+    if(!full&&taken.length===1&&ch.length===1&&r!=='ring'){ // fortsätt sicksacken
+      const din=taken[0]+Math.PI,cs=linearAt(g,u)?[din]:[din-Math.PI/3,din+Math.PI/3];let best=cs[0],bc=-1;
+      for(const a of cs){const c=clear(at(a),u);if(c>bc+1e-6){bc=c;best=a;}}put(ch[0],best);return;}
+    const an=lpAngles(taken,ch.length);ch.forEach((j,k)=>put(j,an[k]));
+  }
+  const q=[...P.keys()];
+  while(q.length){const u=q.shift();const ch=nbrs(g,u).map(x=>x.j).filter(j=>hs.has(j)&&!P.has(j));if(!ch.length)continue;
+    ch.sort((a,b)=>subtreeSize(fr.adj,b,u)-subtreeSize(fr.adj,a,u));place(u,ch,BLc);q.push(...ch);}
+  for(const u of [...P.keys()]){const ch=nbrs(g,u).map(x=>x.j).filter(j=>inC.has(j)&&!P.has(j));if(ch.length)place(u,ch,HLc);}
+  return comp.every(i=>P.has(i))?P:null;
+}
+function layout2D(g,kind){
+  const out={atoms:g.atoms.map(a=>({...a})),bonds:g.bonds.map(b=>({...b}))};let cx=0;
+  for(const comp of components(g)){const P=layoutComp(g,comp,kind);if(!P)return null;
+    let mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;for(const v of P.values()){mnx=Math.min(mnx,v.x);mxx=Math.max(mxx,v.x);mny=Math.min(mny,v.y);mxy=Math.max(mxy,v.y);}
+    const dx=cx-mnx,dy=-(mny+mxy)/2;for(const [i,v] of P){out.atoms[i].x=v.x+dx;out.atoms[i].y=v.y+dy;}cx+=mxx-mnx+(kind==='full'?90:70);}
+  return out;
+}
+
+// kondenserad strukturformel, t.ex. CH₃CH(OH)CH₃ eller CH₃–CH(OH)–CH₃. null = går inte (ringar)
+function condensed(g,comp,showCC){
+  const A=g.atoms;if(!comp.some(i=>A[i].el==='C'))return formula(g,comp).txt;
+  const heavy=heavyOf(g,comp),fr=mainFrame(g,heavy);if(!fr||fr.ring)return null;
+  const adj=fr.adj,hn=i=>nbrs(g,i).filter(x=>A[x.j].el==='H').length+info(g,i).holes,qs=i=>chargeStr(info(g,i).qEff);
+  const leaf=j=>adj.get(j).length===1;
+  let p=fr.path.slice();
+  while(p.length>1&&A[p[p.length-1]].el!=='C'&&leaf(p[p.length-1]))p.pop();
+  while(p.length>1&&A[p[0]].el!=='C'&&leaf(p[0]))p.shift();
+  const heteroSubs=i=>adj.get(i).filter(j=>!p.includes(j)&&A[j].el!=='C').length;
+  if(p.length>1&&heteroSubs(p[0])>heteroSubs(p[p.length-1]))p.reverse();
+  const sep=(i,j)=>{if(A[i].el!=='C'||A[j].el!=='C')return '';const o=bondOrd(g,i,j);return o===2?'=':o===3?'≡':showCC?'–':'';};
+  const cnt=list=>{const m=new Map();for(const t of list)m.set(t,(m.get(t)||0)+1);return [...m];};
+  // pos: start | mid | end | only
+  function group(i,ex,pos){
+    const subs=adj.get(i).filter(j=>!ex.includes(j)),h=hn(i),el=A[i].el;
+    const dblO=[],simple=[],hsub=[],cx=[];
+    for(const j of subs){
+      if(leaf(j)&&A[j].el==='O'&&bondOrd(g,i,j)===2&&!hn(j))dblO.push(j);
+      else if(leaf(j)&&A[j].el!=='C'&&!hn(j))simple.push(A[j].el+qs(j));
+      else if(leaf(j)&&A[j].el!=='C')hsub.push(j);
+      else cx.push('('+branch(j,i)+')');}
+    const hText=n=>n?'H'+subN(n):'';
+    const oTxt=dblO.length?'O'+subN(dblO.length):'';
+    const sTxt=cnt(simple).map(([t,n])=>t.replace(/([⁰-⁹⁺⁻]*)$/,m=>subN(n)+m)).join('');
+    const cTxt=cnt(cx).map(([t,n])=>t+subN(n)).join('');
+    const hsTxt=front=>cnt(hsub.map(j=>front?hText(hn(j))+A[j].el+qs(j):A[j].el+hText(hn(j))+qs(j))).map(([t,n])=>(n===1&&(pos!=='mid'))?t:'('+t+')'+subN(n)).join('');
+    if(pos==='only'&&dblO.length&&h&&el==='C')return 'H'+el+hText(h-1)+qs(i)+oTxt+sTxt+cTxt+hsTxt(false); // HCHO, HCOOH
+    if(pos==='start')return hsTxt(true)+oTxt+sTxt+el+hText(h)+qs(i)+cTxt;
+    return el+hText(h)+qs(i)+oTxt+sTxt+cTxt+hsTxt(false);
+  }
+  function branch(j,from){ // grenen skrivs som en egen kort kedja
+    const ch=[j];let cur=j,prv=from;
+    for(;;){const k=adj.get(cur).filter(y=>y!==prv&&A[y].el==='C');
+      if(!k.length)break;k.sort((a,b)=>subtreeSize(adj,b,cur)-subtreeSize(adj,a,cur));prv=cur;cur=k[0];ch.push(cur);}
+    let t='';ch.forEach((c,k)=>{const ex=[k?ch[k-1]:from,ch[k+1]].filter(x=>x!==undefined);t+=(k?sep(ch[k-1],c):'')+group(c,ex,k===ch.length-1?'end':'mid');});
+    return t;
+  }
+  let t='';p.forEach((c,k)=>{const ex=[p[k-1],p[k+1]].filter(x=>x!==undefined);
+    t+=(k?sep(p[k-1],c):'')+group(c,ex,p.length===1?'only':k===0?'start':k===p.length-1?'end':'mid');});
+  return t;
+}
+
+// ---------- 3D: rak kedja (anti-läge) och standardorientering ----------
+function pca3(pts){let c=[0,0,0];for(const p of pts)c=add(c,p);c=mul(c,1/pts.length);
+  const C=[[0,0,0],[0,0,0],[0,0,0]];for(const p of pts){const d=sub(p,c);for(let r=0;r<3;r++)for(let k=0;k<3;k++)C[r][k]+=d[r]*d[k];}
+  const mv=v=>[0,1,2].map(r=>dot(C[r],v));
+  let e1=[1,.31,.17];for(let k=0;k<80;k++){const w=mv(e1);if(len(w)<1e-9){e1=[1,0,0];break;}e1=nrm(w);}
+  let e2=[-.23,1,.37];for(let k=0;k<80;k++){let w=mv(e2);w=sub(w,mul(e1,dot(w,e1)));if(len(w)<1e-9){e2=anyPerp(e1);break;}e2=nrm(w);}
+  e2=sub(e2,mul(e1,dot(e2,e1)));e2=len(e2)<.5?anyPerp(e1):nrm(e2);
+  return {c,e1,e2,e3:nrm(crs(e1,e2))};}
+function dihedral(a,b,c,d){const b1=sub(b,a),b2=sub(c,b),b3=sub(d,c),n1=crs(b1,b2),n2=crs(b2,b3);return Math.atan2(dot(crs(n1,n2),nrm(b2)),dot(n1,n2));}
+// vrider varje enkelbindning i huvudkedjan till anti-läge (180°). P: Map atom -> [x,y,z]
+function straighten3D(P,g,comp,onRot){
+  const fr=mainFrame(g,heavyOf(g,comp));if(!fr||!fr.path)return fr;
+  const p=fr.path,inC=new Set(comp);
+  for(let k=0;k+3<p.length;k++){const [a,b,c,d]=p.slice(k,k+4);if(bondOrd(g,b,c)!==1)continue;
+    const side=[],seen=new Set([b,c]),st=[c];
+    while(st.length){const x=st.pop();side.push(x);for(const y of nbrs(g,x))if(!seen.has(y.j)&&inC.has(y.j)){seen.add(y.j);st.push(y.j);}}
+    const rot=th=>{const O=P.get(b),ax=nrm(sub(P.get(c),O));for(const x of side){if(x!==c)P.set(x,add(O,rotAx(sub(P.get(x),O),ax,th)));if(onRot)onRot(x,ax,th);}};
+    const th=Math.PI-dihedral(P.get(a),P.get(b),P.get(c),P.get(d));rot(th);
+    if(Math.cos(dihedral(P.get(a),P.get(b),P.get(c),P.get(d)))>-.99)rot(-2*th);}
+  return fr;
+}
+// bas för sidovyn: x längs kedjan, kedjans plan mot betraktaren, tyngre grupper uppåt, sedan lutning kring x
+function straightBasis(P,g,comp,fr,tilt){
+  const Aall=pca3(comp.map(i=>P.get(i))),pathOK=fr&&fr.path&&fr.path.length>=2;
+  let x,z;
+  if(pathOK){const p=fr.path;x=nrm(sub(P.get(p[p.length-1]),P.get(p[0])));z=p.length>=3?pca3(p.map(i=>P.get(i))).e3:Aall.e3;}
+  else if(fr&&fr.ring){const F=pca3(fr.ring.map(i=>P.get(i)));z=F.e3;x=F.e1;const s=ringTop(fr);
+    if(s>=0){let yv=sub(P.get(s),F.c);yv=sub(yv,mul(z,dot(yv,z)));if(len(yv)>1e-3)x=nrm(crs(nrm(yv),z));}}
+  else{x=Aall.e1;z=Aall.e3;}
+  z=sub(z,mul(x,dot(z,x)));z=len(z)<1e-3?anyPerp(x):nrm(z);
+  let y=crs(z,x);
+  if(!(fr&&fr.ring)){const heavy=heavyOf(g,comp),sig=pathOK?heavy.filter(i=>!fr.path.includes(i)):heavy;
+    let sv=[0,0,0];for(const i of sig)sv=add(sv,sub(P.get(i),Aall.c));
+    if(dot(sv,y)<-1e-6){y=mul(y,-1);z=mul(z,-1);}}
+  const t=tilt*Math.PI/180,c=Math.cos(t),s=Math.sin(t);
+  return {c:Aall.c,x,y:add(mul(y,c),mul(z,s)),z:sub(mul(z,c),mul(y,s))};
+}
+function viewBasis(P,comp){let c=[0,0,0];for(const i of comp)c=add(c,P.get(i));c=mul(c,1/comp.length);
+  const qi=root.quaternion.clone().invert(),v=a=>{const t=new THREE.Vector3(a[0],a[1],a[2]).applyQuaternion(qi);return [t.x,t.y,t.z];};
+  return {c,x:v([1,0,0]),y:v([0,1,0]),z:v([0,0,1])};}
+function idBasis(P,comp){let c=[0,0,0];for(const i of comp)c=add(c,P.get(i));return {c:mul(c,1/comp.length),x:[1,0,0],y:[0,1,0],z:[0,0,1]};}
+// bygger en 3D-modell av en ritad struktur i bakgrunden (samma VSEPR-beräkning som på bordet), utan att röra modellen på bordet
+function model3DFrom(g){
+  const keepS=S,keepT=T;let out=null;
+  try{let cx=0,cy=0;g.atoms.forEach(a=>{cx+=a.x;cy+=a.y;});cx/=g.atoms.length||1;cy/=g.atoms.length||1;const s=1.5/55;
+    S={atoms:g.atoms.map(a=>({el:a.el,q:a.q||0,p:[(a.x-cx)*s+(Math.random()-.5)*.06,-(a.y-cy)*s+(Math.random()-.5)*.06,(Math.random()-.5)*.5],ps:[]})),bonds:g.bonds.filter(b=>b.o>0).map(b=>({a:b.a,b:b.b,o:b.o}))};
+    ensurePseudos();topo();relaxSync(600);fillHoles();ensurePseudos();topo();relaxSync(400);out=S;}
+  finally{S=keepS;T=keepT;}
+  return out;}
+// atomer och bindningar i vyns koordinater (Å, y uppåt), flera molekyler bredvid varandra
+function ballLayout(M,comps,straight,tilt,v3){
+  const atoms=[],bonds=[];let cx=0;
+  for(const comp of comps){const P=new Map(comp.map(i=>[i,M.atoms[i].p.slice()]));let B;
+    if(straight){const fr=straighten3D(P,M,comp);B=straightBasis(P,M,comp,fr,tilt);}else B=v3?viewBasis(P,comp):idBasis(P,comp);
+    const pr=comp.map(i=>{const d=sub(P.get(i),B.c);return {i,el:M.atoms[i].el,X:dot(d,B.x),Y:dot(d,B.y),Z:dot(d,B.z),r:EL[M.atoms[i].el].size};});
+    let mn=1e9,mx=-1e9,mny=1e9,mxy=-1e9;for(const q of pr){mn=Math.min(mn,q.X-q.r);mx=Math.max(mx,q.X+q.r);mny=Math.min(mny,q.Y-q.r);mxy=Math.max(mxy,q.Y+q.r);}
+    const dx=cx-mn,dy=-(mny+mxy)/2;for(const q of pr){q.X+=dx;q.Y+=dy;atoms.push(q);}cx+=mx-mn+.9;
+    const set=new Set(comp);for(const b of M.bonds)if(b.o>0&&set.has(b.a)&&set.has(b.b))bonds.push({a:b.a,b:b.b,o:b.o});}
+  return {atoms,bonds};}
+// reserv om 3D-motorn inte kan rita (t.ex. utan WebGL): kulor med färgtoning och pinnar, bakifrån och fram
+const BSC=46;
+function shade(hx,f){const n=parseInt(hx.slice(1),16),m=v=>Math.round(f>0?v+(255-v)*f:v*(1+f));
+  return '#'+[n>>16,n>>8&255,n&255].map(v=>m(v).toString(16).padStart(2,'0')).join('');}
+function ballCols(el,bw){let base=hex(EL[el].col);
+  if(bw){const n=parseInt(base.slice(1),16),l=Math.round(.3*(n>>16)+.59*(n>>8&255)+.11*(n&255)).toString(16).padStart(2,'0');base='#'+l+l+l;}
+  return [shade(base,.6),base,shade(base,-.55)];}
+function ballFlatOps(L,bw){
+  const ops=[],at=new Map(L.atoms.map(q=>[q.i,{...q,X:q.X*BSC,Y:-q.Y*BSC,r:q.r*BSC}])),adj=new Map(),done=new Set();
+  for(const b of L.bonds)for(const [x,y] of [[b.a,b.b],[b.b,b.a]]){if(!adj.has(x))adj.set(x,[]);adj.get(x).push({j:y,o:b.o});}
+  for(const q of [...at.values()].sort((a,b)=>a.Z-b.Z)){
+    for(const x of adj.get(q.i)||[]){if(!done.has(x.j))continue;const o=at.get(x.j);
+      const L2=Math.hypot(q.X-o.X,q.Y-o.Y)||1,nx=-(q.Y-o.Y)/L2,ny=(q.X-o.X)/L2,w=x.o===1?.17*BSC:.12*BSC;
+      for(const f of (x.o===1?[0]:x.o===2?[-.65*w,.65*w]:[-1.3*w,0,1.3*w]))ops.push({t:'stick',x1:o.X+nx*f,y1:o.Y+ny*f,x2:q.X+nx*f,y2:q.Y+ny*f,w,bw});}
+    ops.push({t:'ball',x:q.X,y:q.Y,r:q.r,el:q.el,bw});done.add(q.i);}
+  return ops;}
+// riktig 3D-rendering med samma material och ljus som modellen på bordet. box = bildytan i exportens pixelenheter
+let glR=null,glGeo=null;
+function renderBallGL(L,box,wpx,hpx,bw){
+  if(!glR){glR=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});glR.setPixelRatio(1);
+    glGeo={s:new THREE.SphereGeometry(1,48,32),c:new THREE.CylinderGeometry(1,1,1,32)};}
+  glR.setSize(wpx,hpx,false);glR.setClearColor(0x000000,0);
+  const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0x3a4250,.75));
+  const d1=new THREE.DirectionalLight(0xffffff,.8);d1.position.set(4,6,8);sc.add(d1);const d2=new THREE.DirectionalLight(0xffffff,.25);d2.position.set(-5,-3,3);sc.add(d2);
+  const own=[],mat=el=>{if(!bw)return matEl(el);const m=new THREE.MeshStandardMaterial({color:new THREE.Color(ballCols(el,true)[1]),roughness:.32,metalness:.05});own.push(m);return m;};
+  const bmat=bw?(()=>{const m=new THREE.MeshStandardMaterial({color:0xc9c9c9,roughness:.45});own.push(m);return m;})():matBond;
+  const pos=new Map();let zmax=0;
+  for(const q of L.atoms){const m=new THREE.Mesh(glGeo.s,mat(q.el));m.scale.setScalar(q.r);m.position.set(q.X,q.Y,q.Z);sc.add(m);pos.set(q.i,[q.X,q.Y,q.Z]);zmax=Math.max(zmax,q.Z+q.r);}
+  for(const b of L.bonds){const pa=pos.get(b.a),pb=pos.get(b.b);if(!pa||!pb)continue;const ax=nrm(sub(pb,pa));let pv=crs(ax,[0,0,1]);pv=len(pv)<.1?anyPerp(ax):nrm(pv);
+    const r=b.o===1?.085:b.o===2?.062:.052,offs=b.o===1?[0]:b.o===2?[-.1,.1]:[-.13,0,.13];
+    for(const o of offs){const m=new THREE.Mesh(glGeo.c,bmat);setCyl(m,add(pa,mul(pv,o)),add(pb,mul(pv,o)),r);sc.add(m);}}
+  const cam=new THREE.OrthographicCamera(box.x/BSC,(box.x+box.w)/BSC,-box.y/BSC,-(box.y+box.h)/BSC,.1,zmax+40);cam.position.set(0,0,zmax+20);cam.lookAt(0,0,-1e3);
+  cam.position.set(0,0,zmax+20);cam.updateProjectionMatrix();
+  glR.render(sc,cam);own.forEach(m=>m.dispose());
+  return glR.domElement;}
+
+// ---------- export av strukturformel som bild ----------
+// Ritningen byggs som en lista med enkla figurer (linjer, cirklar, text) som sedan kan skrivas ut som SVG eller ritas på en canvas (PNG/JPG/WebP).
+const XFONT='\"Atkinson Hyperlegible\", Arial, Helvetica, sans-serif';
+const mctx=document.createElement('canvas').getContext('2d');
+function tw(s,size,weight){mctx.font=(weight||700)+' '+size+'px '+XFONT;return mctx.measureText(s).width;}
+const XKIND={full:'strukturformel',skel:'streckformel',cond:'kondenserad-formel',sum:'summaformel',ball:'kulstavsmodell'};
+let XP={mol:'all',kind:'full',fmt:'png',scale:'2',bg:'white',col:'color',lp:false,part:false,name:false,layout:'straight',tilt:20,hetH:false,ccb:false};
+try{Object.assign(XP,JSON.parse(localStorage.getItem('molekylbygget.export')||'{}'));}catch(e){}
+let XS=null; // {g, comps}
+function exportSource(){
+  let g;
+  if(mode==='2d')g=G2;else if(!S.atoms.length)g={atoms:[],bonds:[]};else g=topoSig(S)===topoSig(G2)?G2:graph2DFrom3D();
+  g=JSON.parse(JSON.stringify(g));delete g._center;g.bonds=g.bonds.filter(b=>b.o>0);return g;
+}
+function subGraph(g,comp){const m=new Map(comp.map((i,k)=>[i,k]));
+  return {atoms:comp.map(i=>({...g.atoms[i]})),bonds:g.bonds.filter(b=>m.has(b.a)&&m.has(b.b)).map(b=>({a:m.get(b.a),b:m.get(b.b),o:b.o}))};}
+function fillHg(g){const n=g.atoms.length;
+  for(let i=0;i<n;i++){const f=info(g,i);if(!f.holes)continue;const a=g.atoms[i];
+    const taken=nbrs(g,i).map(x=>Math.atan2(g.atoms[x.j].y-a.y,g.atoms[x.j].x-a.x));
+    for(const t of freeAngles(taken,f.holes,Math.PI/6)){g.atoms.push({el:'H',x:a.x+42*Math.cos(t),y:a.y+42*Math.sin(t),q:0});g.bonds.push({a:i,b:g.atoms.length-1,o:1});}}}
+// struktur- eller streckformel som figurer (samma regler som på ritytan)
+function structOps(g,cfg){
+  const ops=[],A=g.atoms,ink=cfg.ink;
+  const hid=i=>{if(cfg.all)return false;const a=A[i];if(a.el!=='H')return false;const nb=nbrs(g,i);return nb.length===1&&A[nb[0].j].el!=='H'&&(!cfg.hetH||A[nb[0].j].el==='C');};
+  const lab=i=>{const a=A[i];if(cfg.all)return {sym:a.el,h:0};if(hid(i))return null;
+    const nb=nbrs(g,i),hc=nb.filter(x=>hid(x.j)).length+info(g,i).holes;
+    if(a.el==='C'){const heavy=nb.filter(x=>!hid(x.j)).length;return heavy?{sym:'',h:0}:{sym:'C',h:hc};}
+    return {sym:a.el,h:hc};};
+  const L=A.map((a,i)=>lab(i));
+  const trim=i=>{const l=L[i];if(!l||!l.sym)return 0;return l.sym.length>1?14:A[i].q?13:11;};
+  for(const b of g.bonds){if(!L[b.a]||!L[b.b])continue;const P=A[b.a],Q=A[b.b];const dx=Q.x-P.x,dy=Q.y-P.y,Ln=Math.hypot(dx,dy)||1,ux=dx/Ln,uy=dy/Ln,nx=-uy,ny=ux;
+    const sx=P.x+ux*trim(b.a),sy=P.y+uy*trim(b.a),ex=Q.x-ux*trim(b.b),ey=Q.y-uy*trim(b.b);
+    for(const o of (b.o===1?[0]:b.o===2?[-3.6,3.6]:[-5.5,0,5.5]))ops.push({t:'line',x1:sx+nx*o,y1:sy+ny*o,x2:ex+nx*o,y2:ey+ny*o,w:2.2,c:ink});}
+  const part=cfg.part?partials(g):null;
+  A.forEach((a,i)=>{
+    const l=L[i];if(!l)return;const f=info(g,i),col=cfg.color?(EL[a.el].c2||ink):ink;
+    const nbv=nbrs(g,i).filter(x=>L[x.j]),taken=nbv.map(x=>Math.atan2(A[x.j].y-a.y,A[x.j].x-a.x));
+    if(l.sym){ops.push({t:'text',x:a.x,y:a.y+1,s:l.sym,size:20,wt:700,c:col});
+      if(l.h){const left=taken.length&&taken.reduce((s,t)=>s+Math.cos(t),0)/taken.length>.3,w=tw(l.sym,20)/2;
+        ops.push({t:'text',x:left?a.x-w-(l.h>1?17:8):a.x+w+8,y:a.y+1,s:'H',size:20,wt:700,c:col});
+        if(l.h>1)ops.push({t:'text',x:left?a.x-w-6:a.x+w+20,y:a.y+8,s:String(l.h),size:13,wt:700,c:col});
+        taken.push(left?Math.PI:0);}}
+    if(cfg.lp&&f.lp&&l.sym){
+      for(const t of lpAngles(taken,f.lp)){const r=lpRad(l.sym,t),cx=a.x+Math.cos(t)*r,cy=a.y+Math.sin(t)*r,px=-Math.sin(t)*4.5,py=Math.cos(t)*4.5;
+        ops.push({t:'dot',x:cx+px,y:cy+py,r:2.2,c:ink},{t:'dot',x:cx-px,y:cy-py,r:2.2,c:ink});taken.push(t);}}
+    if(f.qEff){const s=(Math.abs(f.qEff)>1?Math.abs(f.qEff):'')+(f.qEff>0?'+':'−'),an=freeAngles(taken,1,Math.PI/8)[0],rr=l.sym?(cfg.lp&&f.lp?31:25):14,cx=a.x+Math.cos(an)*rr,cy=a.y+Math.sin(an)*rr,r=Math.abs(f.qEff)>1?10:8.5;
+      if(cfg.color){ops.push({t:'dot',x:cx,y:cy,r,c:f.qEff>0?'#1d5bd6':'#cf2525'},{t:'text',x:cx,y:cy+1,s,size:13,wt:800,c:'#ffffff'});}
+      else ops.push({t:'ring',x:cx,y:cy,r,w:1.5,c:ink},{t:'text',x:cx,y:cy+1,s,size:13,wt:800,c:ink});
+      taken.push(an);}
+    if(part&&Math.abs(part[i])>=.3){const t=freeAngles(taken,1,Math.PI/4)[0],rr=l.sym?(cfg.lp&&f.lp?32:27):16;
+      ops.push({t:'text',x:a.x+Math.cos(t)*rr,y:a.y+Math.sin(t)*rr,s:part[i]<0?'δ−':'δ+',size:13,wt:700,c:cfg.color?(part[i]<0?'#d42b2b':'#1d6fd8'):ink});}
+  });
+  return ops;
+}
+// summaformel: siffror som index, laddning upphöjd
+function formulaRuns(txt){const runs=[];
+  for(const ch of txt){let r;const si=SUB.indexOf(ch),pi=SUP.indexOf(ch);
+    if(si>=0)r={s:String(si),k:'sub'};else if(pi>=0)r={s:String(pi),k:'sup'};else if(ch==='⁺')r={s:'+',k:'sup'};else if(ch==='⁻')r={s:'−',k:'sup'};else r={s:ch,k:''};
+    const last=runs[runs.length-1];if(last&&last.k===r.k)last.s+=r.s;else runs.push(r);}
+  return runs;}
+function runsOp(runs,x,y,size,c){const ws=runs.map(r=>tw(r.s,r.k?size*.62:size));const tot=ws.reduce((s,v)=>s+v,0);
+  let cx=x-tot/2;const parts=runs.map((r,k)=>{const p={x:cx,y:y+(r.k==='sub'?size*.28:r.k==='sup'?-size*.38:0),s:r.s,size:r.k?size*.62:size};cx+=ws[k];return p;});
+  return {t:'runs',parts,c,w:tot,x,y,size};}
+function opBox(o){
+  if(o.t==='line')return [Math.min(o.x1,o.x2)-o.w,Math.min(o.y1,o.y2)-o.w,Math.max(o.x1,o.x2)+o.w,Math.max(o.y1,o.y2)+o.w];
+  if(o.t==='dot'||o.t==='ring')return [o.x-o.r-1,o.y-o.r-1,o.x+o.r+1,o.y+o.r+1];
+  if(o.t==='text'){const w=tw(o.s,o.size,o.wt)/2;return [o.x-w,o.y-o.size*.62,o.x+w,o.y+o.size*.5];}
+  if(o.t==='runs')return [o.x-o.w/2,o.y-o.size*.95,o.x+o.w/2,o.y+o.size*.7];
+  if(o.t==='gl')return [o.x,o.y,o.x+o.w,o.y+o.h];
+  if(o.t==='ball')return [o.x-o.r-1,o.y-o.r-1,o.x+o.r+1,o.y+o.r+1];
+  if(o.t==='stick'){const w=o.w/2+1;return [Math.min(o.x1,o.x2)-w,Math.min(o.y1,o.y2)-w,Math.max(o.x1,o.x2)+w,Math.max(o.y1,o.y2)+w];}
+}
+function bboxOf(ops){let b=[1e9,1e9,-1e9,-1e9];for(const o of ops){const q=opBox(o);b=[Math.min(b[0],q[0]),Math.min(b[1],q[1]),Math.max(b[2],q[2]),Math.max(b[3],q[3])];}return b;}
+// bygger hela bilden utifrån valen i dialogen. Returnerar null (ingen molekyl) eller {err} om valet inte går att göra
+// i 3D-läget används modellen på bordet; i strukturformelläget byggs en egen modell av ritningen
+function ballComps(){
+  let M,v3=mode==='3d';
+  if(v3)M=S;else{if(!XS.ball&&XS.g.atoms.length)XS.ball=model3DFrom(XS.g);M=XS.ball;}
+  if(!M||!M.atoms.length)return {err:'Det finns ingen molekyl att bygga en modell av.'};
+  const sc=components(M);return {M,v3,comps:XP.mol==='all'?sc:(sc[+XP.mol]?[sc[+XP.mol]]:sc)};
+}
+function buildExport(){
+  const ink=XP.col==='bw'?'#000000':'#18202b',comps=XS.comps.filter((c,k)=>XP.mol==='all'||String(k)===XP.mol);
+  const sel=XS.g;let ops=[],names=[],formulas=[],note='',ball=null;
+  for(const comp of comps){formulas.push(formula(sel,comp).txt);
+    let r=null;try{r=nameComp(sel,comp,i=>[sel.atoms[i].x,-sel.atoms[i].y,0]);}catch(e){}
+    names.push(r?r.name:null);}
+  if(!comps.length)return null;
+  if(XP.kind==='sum'){ops.push(runsOp(formulaRuns(formulas.join(' + ')),0,0,34,ink));}
+  else if(XP.kind==='cond'){const t=comps.map(c=>{try{return condensed(sel,c,XP.ccb);}catch(e){return null;}});
+    if(t.some(x=>!x))return {err:'Appen kan inte skriva en kondenserad strukturformel för molekyler med ringar. Välj en annan formeltyp.'};
+    ops.push(runsOp(formulaRuns(t.join(' + ')),0,0,30,ink));}
+  else if(XP.kind==='ball'){const bc=ballComps();if(bc.err)return {err:bc.err};
+    try{const L=ballLayout(bc.M,bc.comps,XP.layout==='straight',+XP.tilt,bc.v3),bw=XP.col==='bw';
+      let b=[1e9,1e9,-1e9,-1e9];for(const q of L.atoms){const r=q.r*BSC;b=[Math.min(b[0],q.X*BSC-r),Math.min(b[1],-q.Y*BSC-r),Math.max(b[2],q.X*BSC+r),Math.max(b[3],-q.Y*BSC+r)];}
+      ball={L,bw,flat:ballFlatOps(L,bw)};ops=[{t:'gl',x:b[0]-4,y:b[1]-4,w:b[2]-b[0]+8,h:b[3]-b[1]+8}];}
+    catch(e){return {err:'Kulstavsmodellen kunde inte byggas.'};}}
+  else{let g=subGraph(sel,comps.flat());fillHg(g);
+    if(XP.layout==='straight'){let L=null;try{L=layout2D(g,XP.kind);}catch(e){}if(L)g=L;else note='Strukturen kunde inte rätas upp automatiskt (till exempel vid flera ringar), så den visas som ritad.';}
+    ops=structOps(g,{all:XP.kind==='full',ink,color:XP.col==='color',lp:XP.lp,part:XP.part,hetH:XP.hetH});}
+  if(!ops.length)return null;
+  const known=names.filter(Boolean);
+  if(XP.name&&known.length){const b=bboxOf(ops);ops.push({t:'text',x:(b[0]+b[2])/2,y:b[3]+24,s:known.join(' + '),size:17,wt:400,c:ink});}
+  const b=bboxOf(ops),pad=18,box={x:b[0]-pad,y:b[1]-pad,w:Math.ceil(b[2]-b[0]+2*pad),h:Math.ceil(b[3]-b[1]+2*pad)};
+  const base=known.join('-')||formulas.join('-');
+  return {ops,box,names,base,note,ball,missingName:XP.name&&known.length<names.length};
+}
+const r2=v=>Math.round(v*100)/100;
+const escX=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function toSVG(E,bg){const {box}=E;
+  let o=`<svg xmlns="http://www.w3.org/2000/svg" width="${box.w}" height="${box.h}" viewBox="${r2(box.x)} ${r2(box.y)} ${box.w} ${box.h}" font-family="${escX(XFONT)}">`;
+  if(bg)o+=`<rect x="${r2(box.x)}" y="${r2(box.y)}" width="${box.w}" height="${box.h}" fill="${bg}"/>`;
+  const gk=new Map();for(const p of E.ops)if(p.t==='ball'){const k=p.el+(p.bw?'_g':'');if(!gk.has(k))gk.set(k,ballCols(p.el,p.bw));}
+  if(gk.size){o+='<defs>';for(const [k,c] of gk)o+=`<radialGradient id="mb_${k}" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="${c[0]}"/><stop offset=".5" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></radialGradient>`;o+='</defs>';}
+  for(const p of E.ops){
+    if(p.t==='ball'){const k=p.el+(p.bw?'_g':'');o+=`<circle cx="${r2(p.x)}" cy="${r2(p.y)}" r="${r2(p.r)}" fill="url(#mb_${k})" stroke="${gk.get(k)[2]}" stroke-opacity=".6" stroke-width=".8"/>`;continue;}
+    if(p.t==='stick'){const l=`x1="${r2(p.x1)}" y1="${r2(p.y1)}" x2="${r2(p.x2)}" y2="${r2(p.y2)}" stroke-linecap="round"`;o+=`<line ${l} stroke="#6f7782" stroke-width="${r2(p.w+2)}"/><line ${l} stroke="#c5cbd3" stroke-width="${r2(p.w)}"/>`;continue;}
+    if(p.t==='line')o+=`<line x1="${r2(p.x1)}" y1="${r2(p.y1)}" x2="${r2(p.x2)}" y2="${r2(p.y2)}" stroke="${p.c}" stroke-width="${p.w}" stroke-linecap="round"/>`;
+    else if(p.t==='dot')o+=`<circle cx="${r2(p.x)}" cy="${r2(p.y)}" r="${p.r}" fill="${p.c}"/>`;
+    else if(p.t==='ring')o+=`<circle cx="${r2(p.x)}" cy="${r2(p.y)}" r="${p.r}" fill="none" stroke="${p.c}" stroke-width="${p.w}"/>`;
+    else if(p.t==='text')o+=`<text x="${r2(p.x)}" y="${r2(p.y+p.size*.35)}" text-anchor="middle" font-size="${p.size}" font-weight="${p.wt}" fill="${p.c}">${escX(p.s)}</text>`;
+    else if(p.t==='runs')for(const q of p.parts)o+=`<text x="${r2(q.x)}" y="${r2(q.y+q.size*.35)}" font-size="${r2(q.size)}" font-weight="700" fill="${p.c}" xml:space="preserve">${escX(q.s)}</text>`;
+  }
+  return o+'</svg>';
+}
+function drawOps(ctx,E,scale){ctx.lineCap='round';ctx.textBaseline='alphabetic';
+  for(const p of E.ops){
+    if(p.t==='gl'){let ok=false;
+      try{const cv=renderBallGL(E.ball.L,p,Math.max(1,Math.round(p.w*scale)),Math.max(1,Math.round(p.h*scale)),E.ball.bw);ctx.drawImage(cv,p.x,p.y,p.w,p.h);ok=true;}catch(e){}
+      if(!ok){E.glFailed=true;drawOps(ctx,{ops:E.ball.flat},scale);}
+      continue;}
+    if(p.t==='ball'){const c=ballCols(p.el,p.bw),gx=p.x-.3*p.r,gy=p.y-.4*p.r,gr=ctx.createRadialGradient(gx,gy,0,gx,gy,1.5*p.r);
+      gr.addColorStop(0,c[0]);gr.addColorStop(.5,c[1]);gr.addColorStop(1,c[2]);ctx.fillStyle=gr;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=.6;ctx.strokeStyle=c[2];ctx.lineWidth=.8;ctx.stroke();ctx.globalAlpha=1;continue;}
+    if(p.t==='stick'){for(const [col,w] of [['#6f7782',p.w+2],['#c5cbd3',p.w]]){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(p.x1,p.y1);ctx.lineTo(p.x2,p.y2);ctx.stroke();}continue;}
+    if(p.t==='line'){ctx.strokeStyle=p.c;ctx.lineWidth=p.w;ctx.beginPath();ctx.moveTo(p.x1,p.y1);ctx.lineTo(p.x2,p.y2);ctx.stroke();}
+    else if(p.t==='dot'){ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();}
+    else if(p.t==='ring'){ctx.strokeStyle=p.c;ctx.lineWidth=p.w;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.stroke();}
+    else if(p.t==='text'){ctx.fillStyle=p.c;ctx.textAlign='center';ctx.font=p.wt+' '+p.size+'px '+XFONT;ctx.fillText(p.s,p.x,p.y+p.size*.35);}
+    else if(p.t==='runs'){ctx.fillStyle=p.c;ctx.textAlign='left';for(const q of p.parts){ctx.font='700 '+q.size+'px '+XFONT;ctx.fillText(q.s,q.x,q.y+q.size*.35);}}
+  }}
+const MIME={png:'image/png',jpg:'image/jpeg',webp:'image/webp'};
+// ritar bilden på en canvas (används både för förhandsvisning och för filen)
+async function rasterCanvas(E,scale,bg){
+  try{await document.fonts.load('700 20px "Atkinson Hyperlegible"');await document.fonts.load('400 17px "Atkinson Hyperlegible"');}catch(e){}
+  const cv=document.createElement('canvas');cv.width=Math.round(E.box.w*scale);cv.height=Math.round(E.box.h*scale);
+  const ctx=cv.getContext('2d');ctx.scale(scale,scale);ctx.translate(-E.box.x,-E.box.y);
+  if(bg){ctx.fillStyle=bg;ctx.fillRect(E.box.x,E.box.y,E.box.w,E.box.h);}
+  drawOps(ctx,E,scale);
+  return cv;
+}
+async function rasterBlob(E,fmt,scale,bg){const cv=await rasterCanvas(E,scale,bg);
+  return new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error('toBlob')),MIME[fmt],.95));
+}
+function fileBase(E){const s=(E.base||'molekyl').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase()
+  .replace(/[₀-₉]/g,c=>SUB.indexOf(c)).replace(/[⁰-⁹]/g,c=>SUP.indexOf(c)).replace(/⁺/g,'plus').replace(/⁻/g,'minus')
+  .replace(/[^a-z0-9,]+/g,'-').replace(/^-+|-+$/g,'');return (s||'molekyl')+'-'+XKIND[XP.kind];}
+function saveBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);}
+function syncExportUI(){
+  const k=XP.kind,struct=k==='full'||k==='skel',svg=XP.fmt==='svg',jpg=XP.fmt==='jpg';
+  if(jpg)XP.bg='white';
+  $('#ex_bg').querySelector('[value=none]').disabled=jpg;
+  $('#ex_scaleRow').hidden=svg;
+  $('#ex_layRow').hidden=!(struct||k==='ball');
+  $('#ex_layout').querySelector('[value=drawn]').textContent=k==='ball'&&mode==='3d'?'Som du har vridit den i 3D':'Som ritad';
+  // en kulstavsmodell med ljus och skuggor går inte att spara som vektorbild
+  if(k==='ball'&&svg){XP.fmt='png';}$('#ex_fmt').querySelector('[value=svg]').disabled=k==='ball';
+  $('#ex_scaleRow').hidden=XP.fmt==='svg';
+  $('#ex_tiltRow').hidden=!(k==='ball'&&XP.layout==='straight');$('#ex_tiltVal').textContent=XP.tilt+'°';
+  $('#ex_lpRow').hidden=$('#ex_partRow').hidden=!struct;$('#ex_hetHRow').hidden=k!=='skel';$('#ex_ccbRow').hidden=k!=='cond';
+  $('#ex_molRow').hidden=!XS||XS.comps.length<=1;
+  for(const x of ['mol','kind','fmt','scale','bg','col','layout','tilt'])$('#ex_'+x).value=XP[x];
+  for(const x of ['lp','part','name','hetH','ccb'])$('#ex_'+x).checked=XP[x];
+}
+let XE=null;
+function renderExport(){
+  syncExportUI();try{localStorage.setItem('molekylbygget.export',JSON.stringify(XP));}catch(e){}
+  XE=buildExport();const pv=$('#ex_prev'),inf=$('#ex_info');
+  $('#ex_dl').disabled=$('#ex_copy').disabled=!XE;
+  pv.classList.toggle('tr',XP.bg==='none');
+  if(XE&&XE.err){pv.innerHTML='<p>'+escX(XE.err)+'</p>';inf.textContent='';XE=null;$('#ex_dl').disabled=$('#ex_copy').disabled=true;return;}
+  if(!XE){pv.innerHTML='<p>Det finns ingen molekyl att exportera. Bygg eller rita en först.</p>';inf.textContent='';return;}
+  if(XE.ball){const myE=XE;pv.innerHTML='<p>Ritar modellen…</p>';
+    // canvasen visas direkt: inbäddade förhandsvisningar tillåter inte alltid bildlänkar (blob:)
+    rasterCanvas(XE,2,XP.bg==='white'?'#ffffff':null).then(cv=>{if(XE!==myE)return;
+      cv.setAttribute('role','img');cv.setAttribute('aria-label','Förhandsvisning av kulstavsmodellen');
+      cv.style.cssText=`width:${Math.round(myE.box.w)}px;max-width:100%;height:auto;max-height:55vh;object-fit:contain`;
+      pv.textContent='';pv.appendChild(cv);}).catch(()=>{pv.innerHTML='<p>Förhandsvisningen kunde inte ritas.</p>';});}
+  else pv.innerHTML=toSVG(XE,XP.bg==='white'?'#ffffff':null);
+  const sc=+XP.scale,dim=XP.fmt==='svg'?'Vektorbild som kan förstoras utan att bli suddig':`${Math.round(XE.box.w*sc)} × ${Math.round(XE.box.h*sc)} pixlar`;
+  inf.textContent=`${dim} · filnamn: ${fileBase(XE)}.${XP.fmt}`+(XE.missingName?' · Appen kan inte namnge allt säkert, så bara kända namn skrivs ut.':'')
+    +(XP.name&&!XE.names.some(Boolean)?' · Appen kan inte namnge strukturen säkert, så inget namn skrivs ut.':'')+(XE.note?' · '+XE.note:'');
+}
+function openExport(){
+  const g=exportSource(),comps=components(g);
+  XS={g,comps,ball:null};
+  // standardvalen följer det som visas just nu
+  XP.lp=opts.lp;XP.hetH=opts.hetH;XP.part=opts.partial;
+  if(mode==='2d'&&(XP.kind==='full'||XP.kind==='skel'))XP.kind=opts.allat?'full':'skel';
+  const sel=$('#ex_mol');
+  sel.innerHTML=(comps.length>1?`<option value="all">Alla (${comps.length} st)</option>`:'')+comps.map((c,k)=>{let n=null;try{const r=nameComp(g,c,i=>[g.atoms[i].x,-g.atoms[i].y,0]);n=r&&r.name;}catch(e){}
+    return `<option value="${k}">${formula(g,c).txt}${n?' – '+n:''}</option>`;}).join('');
+  if(comps.length<=1)XP.mol='0';else if(XP.mol!=='all'&&!(+XP.mol<comps.length))XP.mol='all';
+  if(!comps.length)sel.innerHTML='<option value="0">–</option>';
+  renderExport();$('#expDlg').showModal();
+}
+$('#exportBtn').onclick=openExport;
+$('#ex_close').onclick=()=>$('#expDlg').close();
+$('#expDlg').addEventListener('click',e=>{if(e.target===$('#expDlg'))$('#expDlg').close();});
+for(const k of ['mol','kind','fmt','scale','bg','col','layout'])$('#ex_'+k).addEventListener('change',e=>{XP[k]=e.target.value;renderExport();});
+$('#ex_tilt').addEventListener('input',e=>{XP.tilt=+e.target.value;renderExport();});
+for(const k of ['lp','part','name','hetH','ccb'])$('#ex_'+k).addEventListener('change',e=>{XP[k]=e.target.checked;renderExport();});
+$('#ex_dl').onclick=async()=>{if(!XE)return;const bg=XP.bg==='white'?'#ffffff':null;
+  try{
+    if(XP.fmt==='svg'){saveBlob(new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n'+toSVG(XE,bg)],{type:'image/svg+xml'}),fileBase(XE)+'.svg');return;}
+    const b=await rasterBlob(XE,XP.fmt,+XP.scale,bg);
+    // vissa webbläsare (t.ex. äldre Safari) kan inte skapa WebP och lämnar PNG i stället
+    const ext=b.type==='image/jpeg'?'jpg':b.type==='image/webp'?'webp':'png';
+    if(ext!==XP.fmt)toast('Din webbläsare kan inte spara '+XP.fmt.toUpperCase()+', så bilden sparades som '+ext.toUpperCase()+'.');
+    saveBlob(b,fileBase(XE)+'.'+ext);
+  }catch(e){toast('Bilden kunde inte sparas.');}
+};
+$('#straight2').onclick=()=>{if(!G2.atoms.length)return;let L=null;try{L=layout2D(G2,opts.allat?'full':'skel');}catch(e){}
+  if(!L){toast('Den här strukturen går inte att räta upp automatiskt (till exempel molekyler med flera ringar).');return;}
+  pushUndo2();G2=L;center2();draw2();renderInfo();save();};
+$('#std3').onclick=()=>{if(!S.atoms.length)return;pushUndo3();const comps=components(S);let big=comps[0];
+  for(const comp of comps){if(comp.length>big.length)big=comp;const P=new Map(comp.map(i=>[i,S.atoms[i].p.slice()]));
+    straighten3D(P,S,comp,(x,ax,th)=>{for(const p of S.atoms[x].ps)p.d=rotAx(p.d,ax,th);});for(const [i,v] of P)S.atoms[i].p=v;}
+  const P=new Map(big.map(i=>[i,S.atoms[i].p])),B=straightBasis(P,S,big,mainFrame(S,heavyOf(S,big)),20);
+  root.quaternion.setFromRotationMatrix(new THREE.Matrix4().set(B.x[0],B.x[1],B.x[2],0,B.y[0],B.y[1],B.y[2],0,B.z[0],B.z[1],B.z[2],0,0,0,0,1));
+  spin=null;sel={t:null,i:-1,hole:-1};connectMode=false;ensurePseudos();topo();buildMeshes();renderInfo();renderCtx();kick(400);save();fitSoon();};
+$('#ex_copy').onclick=async()=>{if(!XE)return;
+  try{const p=rasterBlob(XE,'png',+XP.scale||2,XP.bg==='white'?'#ffffff':null);
+    await navigator.clipboard.write([new ClipboardItem({'image/png':p})]);
+    $('#ex_info').textContent='Bilden är kopierad. Klistra in den i ett dokument eller en presentation.';}
+  catch(e){$('#ex_info').textContent='Webbläsaren tillåter inte att bilden kopieras här. Använd Ladda ner i stället.';}
+};
 
 // ---------- animationsloop ----------
 let fc=0;
@@ -1551,7 +2120,7 @@ function frame(){
   // vrid alltid kring molekylens mittpunkt (pivoten står still medan man drar i en atom)
   if(S.atoms.length&&!dragging){let c=[0,0,0];for(const a of S.atoms)c=add(c,a.p);c=mul(c,1/S.atoms.length);
     const w=new THREE.Vector3(c[0],c[1],c[2]).applyQuaternion(root.quaternion).negate();root.position.lerp(w,.2);}
-  for(const u of ups)u();updateBand();
+  pulseRadicals();for(const u of ups)u();updateBand();
   renderer.render(scene,camera);updateLabels();
 }
 
@@ -1559,7 +2128,7 @@ function frame(){
 buildPalette();buildExamples();
 let loaded=false;
 try{const raw=localStorage.getItem('molekylbygget.v1');if(raw){const d=JSON.parse(raw);if(d&&d.S&&d.G2){S=d.S;G2=d.G2;Object.assign(opts,d.opts||{});loaded=true;}}}catch(e){}
-OPTS.forEach(k=>$('#o_'+k).checked=opts[k]);
+OPTS.forEach(k=>optBoxes(k).forEach(c=>c.checked=opts[k]));
 resize();setMode('3d');
 if(loaded&&S.atoms.length){ensurePseudos();topo();buildMeshes();renderInfo();kick(300);fitSoon();}
 else{loadGraphTo3D(exGraph(EX[1].items[4]),true);undo3.length=0;}
