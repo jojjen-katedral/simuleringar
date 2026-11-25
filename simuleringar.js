@@ -28,9 +28,9 @@ const SIMULERINGAR = [
     en: { titel: "Cellular Respiration", text: "Follow glucose through glycolysis, the link reaction, the citric acid cycle and the electron transport chain – all the way to ATP." }
   },
   {
-    fil: "fasovergangar", amnen: ["kemi"], bild: "fas",
-    sv: { titel: "Fasövergångar", text: "Värm och kyl koldioxid, väteklorid och vatten. Se hur bindningar mellan molekylerna och värmerörelse styr fasövergångarna." },
-    en: { titel: "Phase Transitions", text: "Heat and cool carbon dioxide, hydrogen chloride and water. See how intermolecular forces and thermal motion drive phase changes." }
+    fil: "amnens-egenskaper", amnen: ["kemi"], interaktiv: true, bild: "egenskaper",
+    sv: { titel: "Ämnens egenskaper", text: "Värm och kyl, blanda och lös, och jämför ämnen. Se hur bindningarna mellan partiklarna styr smältpunkt, kokpunkt och löslighet." },
+    en: { titel: "Properties of Substances", text: "Heat and cool, mix and dissolve, and compare substances. See how the forces between particles determine melting point, boiling point and solubility." }
   },
   {
     fil: "kolets-kretslopp", amnen: ["biologi", "kemi"], bild: "kol",
@@ -166,6 +166,33 @@ const BILDER = {
       <circle cx="296" cy="100" r="14" fill="url(#ca-atp)"/><text x="296" y="103">ATP</text>
       <circle cx="300" cy="18" r="10" fill="url(#ca-atp)" opacity=".75"/><circle cx="302" cy="132" r="10" fill="url(#ca-atp)" opacity=".75"/>
     </g>
+  </svg>`,
+
+  /* ---------- Ämnens egenskaper: termometer, bägare med två skikt och diagram ---------- */
+  egenskaper: `<svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="ae-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6f4fb"/><stop offset="1" stop-color="#cfe6f5"/></linearGradient>
+      <linearGradient id="ae-t" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#0ea5e9"/><stop offset="1" stop-color="#f43f5e"/></linearGradient>
+    </defs>
+    <rect width="320" height="150" fill="url(#ae-bg)"/>
+    <!-- termometer -->
+    <rect x="44" y="22" width="16" height="88" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="2"/>
+    <rect x="48" y="50" width="8" height="64" rx="4" fill="url(#ae-t)"/>
+    <circle cx="52" cy="118" r="13" fill="#f43f5e" stroke="#94a3b8" stroke-width="2"/>
+    <g stroke="#94a3b8" stroke-width="1.5"><line x1="62" y1="40" x2="68" y2="40"/><line x1="62" y1="58" x2="68" y2="58"/><line x1="62" y1="76" x2="68" y2="76"/><line x1="62" y1="94" x2="68" y2="94"/></g>
+    <!-- bägare med två skikt (olja på vatten) -->
+    <path d="M104 30v86a8 8 0 0 0 8 8h56a8 8 0 0 0 8-8V30" fill="#ffffff" fill-opacity=".55"/>
+    <path d="M104 92h72v24a8 8 0 0 1-8 8h-56a8 8 0 0 1-8-8z" fill="#3b82f6" fill-opacity=".75"/>
+    <rect x="104" y="66" width="72" height="26" fill="#f59e0b" fill-opacity=".75"/>
+    <g fill="#fff" fill-opacity=".7"><circle cx="122" cy="104" r="3"/><circle cx="150" cy="110" r="2.5"/><circle cx="160" cy="78" r="2.5"/><circle cx="132" cy="80" r="2"/></g>
+    <path d="M100 26q3 2 4 6v84a8 8 0 0 0 8 8h56a8 8 0 0 0 8-8V30l4-4" fill="none" stroke="#64748b" stroke-width="3" stroke-linejoin="round"/>
+    <!-- diagram: kokpunkt mot molmassa -->
+    <g stroke="#64748b" stroke-width="2" fill="none"><path d="M208 22v96h92"/></g>
+    <path d="M216 104L240 88L264 72L290 58" fill="none" stroke="#34d399" stroke-width="2.5"/>
+    <path d="M216 66L240 52L264 42L290 32" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+    <g fill="#34d399"><circle cx="216" cy="104" r="5"/><circle cx="240" cy="88" r="5"/><circle cx="264" cy="72" r="5"/><circle cx="290" cy="58" r="5"/></g>
+    <g fill="#38bdf8"><circle cx="216" cy="66" r="5"/><circle cx="240" cy="52" r="5"/><circle cx="264" cy="42" r="5"/><circle cx="290" cy="32" r="5"/></g>
+    <circle cx="226" cy="90" r="5" fill="#fbbf24"/>
   </svg>`,
 
   /* ---------- Fasövergångar: fast → flytande → gas ---------- */

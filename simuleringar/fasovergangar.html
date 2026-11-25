@@ -57,21 +57,12 @@
     .controls-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
     .label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 
-    .sbtn {
-        display: flex; align-items: center; gap: 8px;
-        padding: 6px 12px 6px 6px;
+    .subst-select {
         background: #1e293b; border: 1px solid var(--line-2); border-radius: 10px;
-        cursor: pointer; font-size: 13px; font-weight: 500; color: #fff;
-        transition: background 0.15s, border-color 0.15s;
+        padding: 7px 10px; font-size: 13px; font-weight: 500; color: #fff; min-width: 210px; cursor: pointer;
     }
-    .sbtn:hover { background: #273449; }
-    .sbtn.active { background: #273449; border-color: var(--sky); box-shadow: 0 0 0 1px var(--sky); }
-    .sbtn .chip {
-        min-width: 34px; height: 24px; padding: 0 4px; border-radius: 6px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 12px; font-weight: 700;
-    }
-    .sbtn small { font-size: 11px; color: var(--muted); font-weight: 400; }
+    .subst-select:hover { background: #273449; }
+    .bond-chip { padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; border: 1px solid; white-space: nowrap; }
     .pressure { display: flex; align-items: center; gap: 6px; padding-left: 10px; border-left: 1px solid var(--line-2); font-size: 12px; }
     .pressure select { background: #1e293b; border: 1px solid var(--line-2); border-radius: 6px; padding: 4px 6px; font-size: 12px; }
     .lang { display: flex; gap: 2px; padding: 2px; background: #1e293b; border: 1px solid var(--line-2); border-radius: 8px; }
@@ -125,8 +116,9 @@
         padding: 8px 4px 0;
         border-top: 1px solid var(--line);
     }
-    .slider-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; }
+    .slider-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 0; font-size: 12px; }
     .slider-head .val { font-size: 16px; font-weight: 700; color: #fff; }
+    .pts-toggle { display: flex; align-items: center; gap: 5px; cursor: pointer; color: var(--text); font-size: 12px; margin: 0 10px 0 auto; }
     input[type=range] {
         -webkit-appearance: none; appearance: none;
         width: 100%; height: 12px; margin: 8px 0 2px;
@@ -276,6 +268,7 @@
         .thermo { grid-template-columns: 1fr; }
         .btn-groups, .btn-row { align-items: stretch; justify-content: flex-start; }
         .title p { display: none; }
+        .subst-select { min-width: 0; max-width: 220px; }
     }
     @media (max-height: 760px) and (min-width: 1024px) {
         .title p { display: none; }
@@ -295,18 +288,8 @@
         </div>
         <div class="controls-top">
             <span class="label" data-i18n="subject">Ämne</span>
-            <button id="btn-co2" class="sbtn" onclick="setSubstance('co2')">
-                <span class="chip" style="background:rgba(16,185,129,.2);color:#34d399">CO₂</span>
-                <span><span data-i18n="co2Name">Koldioxid</span> <small data-i18n="co2Tag">(opolär)</small></span>
-            </button>
-            <button id="btn-hcl" class="sbtn" onclick="setSubstance('hcl')">
-                <span class="chip" style="background:rgba(245,158,11,.2);color:#fbbf24">HCl</span>
-                <span><span data-i18n="hclName">Väteklorid</span> <small data-i18n="hclTag">(dipol)</small></span>
-            </button>
-            <button id="btn-h2o" class="sbtn" onclick="setSubstance('h2o')">
-                <span class="chip" style="background:rgba(6,182,212,.2);color:#22d3ee">H₂O</span>
-                <span><span data-i18n="h2oName">Vatten</span> <small data-i18n="h2oTag">(vätebindning)</small></span>
-            </button>
+            <select id="subst-select" class="subst-select" onchange="setSubstance(this.value)" aria-label="Ämne"></select>
+            <span id="bond-chips" style="display:flex;gap:4px;flex-wrap:wrap"></span>
             <div id="co2-pressure-toggle" class="pressure">
                 <label for="pressure-select" class="muted" data-i18n="pressure">Tryck:</label>
                 <select id="pressure-select" onchange="setCo2Pressure(this.value)">
@@ -337,7 +320,8 @@
                     <button class="btn" onclick="takeStill()" data-i18n-title="stillTitle" data-i18n="still">📷 Stillbild</button>
                 </div>
                 <div class="toggles">
-                    <label><input type="checkbox" checked onchange="renderOptions.bonds = this.checked"> <span data-i18n="bonds">Bindningar</span></label>
+                    <label id="lbl-dir"><input type="checkbox" checked onchange="renderOptions.dir = this.checked"> <span id="dir-name">Vätebindningar</span></label>
+                    <label id="lbl-vdw"><input type="checkbox" checked onchange="renderOptions.vdw = this.checked"> <span data-i18n="vdwToggle">van der Waals</span></label>
                     <label><input type="checkbox" checked onchange="renderOptions.charges = this.checked"> <span data-i18n="charges">Laddningar (δ⁺/δ⁻)</span></label>
                     <button class="icon-btn" onclick="resetSimulation()" data-i18n-title="reset" data-i18n-aria="reset">↻</button>
                 </div>
@@ -354,9 +338,10 @@
                 <div>
                     <div class="slider-head">
                         <label for="temp-slider" class="muted" data-i18n="thermoLabel">🌡️ Termostat (önskad temperatur)</label>
+                        <label class="pts-toggle"><input type="checkbox" id="show-points" onchange="setShowPoints(this.checked)"> <span data-i18n="showPoints">Visa smält- och kokpunkt</span></label>
                         <span id="setpoint-big" class="val mono">−90 °C</span>
                     </div>
-                    <input type="range" id="temp-slider" min="-150" max="150" value="-90" step="1" oninput="setSetpoint(parseFloat(this.value))">
+                    <input type="range" id="temp-slider" min="-200" max="150" value="-90" step="1" oninput="setSetpoint(parseFloat(this.value))">
                     <div id="slider-markers" class="markers mono"></div>
                 </div>
                 <div class="btn-groups">
@@ -471,9 +456,11 @@
             title: 'Molekylära Fasövergångar & Värmerörelse',
             subtitle: 'Observera hur partiklarnas rörelseenergi och de intermolekylära bindningarna styr aggregationsformerna.',
             subject: 'Ämne',
-            co2Name: 'Koldioxid', co2Tag: '(opolär)',
-            hclName: 'Väteklorid', hclTag: '(dipol)',
-            h2oName: 'Vatten', h2oTag: '(vätebindning)',
+            co2Name: 'Koldioxid', hclName: 'Väteklorid', h2oName: 'Vatten',
+            methanolName: 'Metanol', ethanolName: 'Etanol', propanolName: '1-propanol', butanolName: '1-butanol', pentanolName: '1-pentanol',
+            acetoneName: 'Aceton', pentaneName: 'Pentan', hexaneName: 'Hexan', heptaneName: 'Heptan', octaneName: 'Oktan',
+            gOther: 'Vatten och andra ämnen', gAlc: 'Alkoholer', gAlk: 'Alkaner',
+            gHb: 'Vätebindningar', gDd: 'Dipol–dipolbindningar', gVdw: 'van der Waals-bindningar',
             pressure: 'Tryck:', p1: '1 atm (sublimerar)', p10: '10 atm (har flytande fas)',
             theoryLink: 'Förklaring ↓',
             lens: '🔍 Förstoringsglas',
@@ -482,7 +469,7 @@
             still: '📷 Stillbild', stillTitle: 'Ta stillbild (S)',
             bonds: 'Bindningar', charges: 'Laddningar (δ⁺/δ⁻)', reset: 'Återställ partiklar',
             pausedTag: '⏸ PAUSAD: tiden står still',
-            thermoLabel: '🌡️ Termostat (önskad temperatur)',
+            thermoLabel: '🌡️ Termostat (önskad temperatur)', showPoints: 'Visa smält- och kokpunkt',
             solidBtn: '🧊 Fast', liquidBtn: '💧 Vätska', gasBtn: '💨 Gas',
             power: 'Värmeeffekt:', low: 'Låg', normal: 'Normal', high: 'Hög',
             substTemp: 'Ämnets temperatur', thermostat: 'Termostat:', thermalMotion: 'Värmerörelse',
@@ -535,16 +522,22 @@
             // teckenförklaring
             lgC: 'Kol (C, δ⁺)', lgO: 'Syre (O, δ⁻)', lgVdw: 'van der Waals-bindning',
             lgCl: 'Klor (Cl, δ⁻)', lgH: 'Väte (H, δ⁺)', lgDd: 'Dipol–dipolbindning (H···Cl)', lgHb: 'Vätebindning (H···O)',
-            bond_co2: 'van der Waals-bindningar (dispersion)', bond_hcl: 'dipol–dipolbindningar', bond_h2o: 'vätebindningar'
+            lgCchain: 'Kol (C). Väten på kol visas inte.', lgOgen: 'Syre (O, δ⁻)', lgHoh: 'Väte i O–H (δ⁺)',
+            lgHbGen: 'Vätebindning (O–H···O)', lgDdGen: 'Dipol–dipolbindning (C=O···C=O)',
+            lgVdwChain: 'van der Waals-bindning mellan kolkedjorna (tjockare linje = längre kedja)', vdwToggle: 'van der Waals',
+            bond_co2: 'van der Waals-bindningar (dispersion)', bond_hcl: 'dipol–dipol och van der Waals', bond_h2o: 'vätebindningar',
+            bond_hb: 'vätebindningar och van der Waals', bond_dd: 'dipol–dipolbindningar och van der Waals', bond_vdw: 'van der Waals-bindningar'
         },
         en: {
             docTitle: 'Molecular Phase Transitions & Thermal Motion',
             title: 'Molecular Phase Transitions & Thermal Motion',
             subtitle: 'See how the kinetic energy of the particles and the intermolecular forces determine the state of matter.',
             subject: 'Substance',
-            co2Name: 'Carbon dioxide', co2Tag: '(non-polar)',
-            hclName: 'Hydrogen chloride', hclTag: '(dipole)',
-            h2oName: 'Water', h2oTag: '(hydrogen bonding)',
+            co2Name: 'Carbon dioxide', hclName: 'Hydrogen chloride', h2oName: 'Water',
+            methanolName: 'Methanol', ethanolName: 'Ethanol', propanolName: '1-propanol', butanolName: '1-butanol', pentanolName: '1-pentanol',
+            acetoneName: 'Acetone', pentaneName: 'Pentane', hexaneName: 'Hexane', heptaneName: 'Heptane', octaneName: 'Octane',
+            gOther: 'Water and other substances', gAlc: 'Alcohols', gAlk: 'Alkanes',
+            gHb: 'Hydrogen bonds', gDd: 'Dipole–dipole forces', gVdw: 'van der Waals forces',
             pressure: 'Pressure:', p1: '1 atm (sublimes)', p10: '10 atm (liquid phase exists)',
             theoryLink: 'Explanation ↓',
             lens: '🔍 Magnifier',
@@ -553,7 +546,7 @@
             still: '📷 Snapshot', stillTitle: 'Take snapshot (S)',
             bonds: 'Bonds', charges: 'Charges (δ⁺/δ⁻)', reset: 'Reset particles',
             pausedTag: '⏸ PAUSED: time is frozen',
-            thermoLabel: '🌡️ Thermostat (target temperature)',
+            thermoLabel: '🌡️ Thermostat (target temperature)', showPoints: 'Show melting and boiling point',
             solidBtn: '🧊 Solid', liquidBtn: '💧 Liquid', gasBtn: '💨 Gas',
             power: 'Heating power:', low: 'Low', normal: 'Normal', high: 'High',
             substTemp: 'Temperature of the substance', thermostat: 'Thermostat:', thermalMotion: 'Thermal motion',
@@ -601,7 +594,11 @@
             'sublime>solid': 'All the gas has been deposited. Now the temperature falls again.',
             lgC: 'Carbon (C, δ⁺)', lgO: 'Oxygen (O, δ⁻)', lgVdw: 'van der Waals force',
             lgCl: 'Chlorine (Cl, δ⁻)', lgH: 'Hydrogen (H, δ⁺)', lgDd: 'Dipole–dipole force (H···Cl)', lgHb: 'Hydrogen bond (H···O)',
-            bond_co2: 'van der Waals forces (dispersion)', bond_hcl: 'dipole–dipole forces', bond_h2o: 'hydrogen bonds'
+            lgCchain: 'Carbon (C). Hydrogens on carbon are not shown.', lgOgen: 'Oxygen (O, δ⁻)', lgHoh: 'Hydrogen in O–H (δ⁺)',
+            lgHbGen: 'Hydrogen bond (O–H···O)', lgDdGen: 'Dipole–dipole force (C=O···C=O)',
+            lgVdwChain: 'van der Waals force between the carbon chains (thicker line = longer chain)', vdwToggle: 'van der Waals',
+            bond_co2: 'van der Waals forces (dispersion)', bond_hcl: 'dipole–dipole and van der Waals', bond_h2o: 'hydrogen bonds',
+            bond_hb: 'hydrogen bonds and van der Waals', bond_dd: 'dipole–dipole and van der Waals', bond_vdw: 'van der Waals forces'
         }
     };
 
@@ -644,7 +641,7 @@
 
     const SUBSTANCES = {
         co2: {
-            id: 'co2', formula: 'CO₂', M: 44, r: 15,
+            id: 'co2', formula: 'CO₂', M: 44, r: 15, bonds: ['vdw'],
             lattice: 'hex', sx: 32, sy: 28,
             pressures: {
                 '1atm':  { subl: true,  mp: -78.5, bp: -78.5, Hsub: 25.2 },
@@ -671,7 +668,7 @@
             ].join('')
         },
         hcl: {
-            id: 'hcl', formula: 'HCl', M: 36.5, r: 14,
+            id: 'hcl', formula: 'HCl', M: 36.5, r: 14, bonds: ['dd', 'vdw'],
             lattice: 'hex', sx: 32, sy: 26,
             mp: -114.2, bp: -85.1, Hfus: 2.0, Hvap: 16.2,
             explanation: () => lang === 'en' ? [
@@ -691,7 +688,7 @@
             ].join('')
         },
         h2o: {
-            id: 'h2o', formula: 'H₂O', M: 18, r: 12,
+            id: 'h2o', formula: 'H₂O', M: 18, r: 12, bonds: ['hb'],
             lattice: 'honeycomb', b: 30,
             mp: 0.0, bp: 100.0, Hfus: 6.0, Hvap: 40.7,
             explanation: () => lang === 'en' ? [
@@ -712,21 +709,169 @@
         }
     };
 
+    // ---- Fler ämnen: alkoholer, aceton och alkaner ----
+    // Molekylerna byggs av en mall (atomer i molekylens eget koordinatsystem) och skalas så att
+    // de ryms i sin kollisionscirkel. Väteatomer på kol ritas inte (som i Lika löser lika).
+    const TPL_R = { C: 4.2, O: 4.8, H: 2.8 };
+    function mkTpl(atoms, bonds, opt, r) {
+        let mx = 0, my = 0;
+        for (const a of atoms) { mx += a.x; my += a.y; }
+        mx /= atoms.length; my /= atoms.length;
+        let R0 = 0;
+        for (const a of atoms) R0 = Math.max(R0, Math.hypot(a.x - mx, a.y - my) + TPL_R[a.e]);
+        const s = Math.min(1.15, (r - 1) / R0);
+        return Object.assign({
+            s, bonds,
+            atoms: atoms.map(a => ({ x: (a.x - mx) * s, y: (a.y - my) * s, e: a.e, rr: TPL_R[a.e] * Math.max(0.72, s) }))
+        }, opt);
+    }
+    function chainAtoms(n) {
+        const atoms = [], bonds = [];
+        for (let i = 0; i < n; i++) { atoms.push({ x: i * 6.5, y: i % 2 ? -2.8 : 2.8, e: 'C' }); if (i) bonds.push([i - 1, i]); }
+        return { atoms, bonds };
+    }
+    // fam: 'alc' (alkohol), 'alk' (alkan), 'ket' (aceton)
+    function genSub(id, fam, nC, formula, M, mp, bp, Hfus, Hvap) {
+        let atoms, bonds, opt = {}, heavy;
+        if (fam === 'ket') {
+            atoms = [{ x: 0, y: 0, e: 'C' }, { x: 0, y: -7.5, e: 'O' }, { x: -6.2, y: 3.6, e: 'C' }, { x: 6.2, y: 3.6, e: 'C' }];
+            bonds = [[0, 2], [0, 3]]; opt = { dbl: [0, 1], donor: 0, base: 1, acc: 1 }; heavy = 4;
+        } else {
+            ({ atoms, bonds } = chainAtoms(nC));
+            heavy = nC;
+            if (fam === 'alc') {
+                const oy = nC % 2 ? -2.8 : 2.8;
+                atoms.push({ x: nC * 6.5, y: oy, e: 'O' }); bonds.push([nC - 1, nC]);
+                atoms.push({ x: nC * 6.5 + 4, y: oy + (oy > 0 ? 3.6 : -3.6), e: 'H' }); bonds.push([nC, nC + 1]);
+                opt = { donor: nC + 1, base: nC, acc: nC };
+                heavy = nC + 1;
+            }
+        }
+        const r = Math.max(13, 11 + heavy);
+        const sx = 2 * r + 2;
+        return {
+            id, formula, M, r, family: fam, nC,
+            bond: fam === 'alc' ? 'hb' : fam === 'ket' ? 'dd' : 'vdw',
+            // alla bindningstyper som ritas, den starkaste först
+            bonds: fam === 'alc' ? ['hb', 'vdw'] : fam === 'ket' ? ['dd', 'vdw'] : ['vdw'],
+            lattice: 'hex', sx, sy: Math.round(sx * 0.87),
+            mp, bp, Hfus, Hvap,
+            tpl: mkTpl(atoms, bonds, opt, r),
+            explanation: () => genExplanation(SUBSTANCES[id])
+        };
+    }
+    Object.assign(SUBSTANCES, {
+        methanol: genSub('methanol', 'alc', 1, 'CH₃OH', 32.04, -98, 65, 3.2, 35.3),
+        ethanol:  genSub('ethanol', 'alc', 2, 'C₂H₅OH', 46.07, -114, 78, 4.9, 38.6),
+        propanol: genSub('propanol', 'alc', 3, 'C₃H₇OH', 60.1, -126, 97, 5.4, 41.4),
+        butanol:  genSub('butanol', 'alc', 4, 'C₄H₉OH', 74.12, -89, 118, 9.4, 43.3),
+        pentanol: genSub('pentanol', 'alc', 5, 'C₅H₁₁OH', 88.15, -78, 138, 9.8, 44.4),
+        acetone:  genSub('acetone', 'ket', 3, 'CH₃COCH₃', 58.08, -95, 56, 5.7, 29.1),
+        pentane:  genSub('pentane', 'alk', 5, 'C₅H₁₂', 72.15, -130, 36, 8.4, 25.8),
+        hexane:   genSub('hexane', 'alk', 6, 'C₆H₁₄', 86.18, -95, 69, 13.1, 28.9),
+        heptane:  genSub('heptane', 'alk', 7, 'C₇H₁₆', 100.2, -91, 98, 14.0, 31.8),
+        octane:   genSub('octane', 'alk', 8, 'C₈H₁₈', 114.2, -57, 126, 20.7, 34.4)
+    });
+    // Rullistan grupperas efter ämnesklass, inte bindningstyp: eleverna ska upptäcka bindningarna i animeringen
+    const SUBST_GROUPS = [
+        ['gOther', ['h2o', 'hcl', 'acetone', 'co2']],
+        ['gAlc', ['methanol', 'ethanol', 'propanol', 'butanol', 'pentanol']],
+        ['gAlk', ['pentane', 'hexane', 'heptane', 'octane']]
+    ];
+    const BOND_COL = { hb: '#38bdf8', dd: '#fbbf24', vdw: '#34d399' };
+    const bondType = () => cur.tpl ? cur.bond : ({ co2: 'vdw', hcl: 'dd', h2o: 'hb' })[cur.id];
+
+    // Alkan med ungefär samma molmassa, att jämföra alkoholernas kokpunkter med
+    const ALC_CMP = {
+        methanol: ['etan', 'ethane', 30, -89], ethanol: ['propan', 'propane', 44, -42], propanol: ['butan', 'butane', 58, -0.5],
+        butanol: ['pentan', 'pentane', 72, 36], pentanol: ['hexan', 'hexane', 86, 69]
+    };
+    function genExplanation(s) {
+        const en = lang === 'en';
+        const Name = tr(s.id + 'Name'), low = Name.toLowerCase();
+        const mp = fmtT(s.mp), bp = fmtT(s.bp), Ms = fmt(s.M, 0);
+        const c = BOND_COL[s.bond];
+        if (s.family === 'alc') {
+            const [cs, ce, cM, cbp] = ALC_CMP[s.id];
+            return en ? [
+                card(c, 'Carbon chain with an OH group',
+                    `${Name} has ${s.nC} carbon${s.nC > 1 ? 's' : ''} in the chain and an OH group. Oxygen pulls the electrons in the O–H bond towards itself, so O gets &delta;⁻ and H gets &delta;⁺.`),
+                card(c, 'Hydrogen bonds + van der Waals',
+                    'The H (&delta;⁺) of an OH group bonds to the oxygen in a neighbouring OH group. The carbon chain adds van der Waals forces, which get stronger the longer the chain. That is why the boiling point rises from methanol to 1-pentanol.'),
+                card(c, 'Phase transitions',
+                    `Melts at <strong>${mp} °C</strong> and boils at <strong>${bp} °C</strong>. Compare with ${ce} (${fmt(cM, 0)} g/mol), which has about the same molar mass (${low}: ${Ms} g/mol) but boils at only ${fmtT(cbp)} °C. The hydrogen bonds must be broken when ${low} boils.`)
+            ].join('') : [
+                card(c, 'Kolkedja med OH-grupp',
+                    `${Name} har ${s.nC} kol i kedjan och en OH-grupp. Syret drar åt sig elektronerna i O–H-bindningen, så O får &delta;⁻ och H får &delta;⁺.`),
+                card(c, 'Vätebindningar + van der Waals',
+                    'OH-gruppens väte (&delta;⁺) binder till syret i grannmolekylens OH-grupp. Kolkedjan ger dessutom van der Waals-bindningar, som blir starkare ju längre kedjan är. Därför stiger kokpunkten från metanol till 1-pentanol.'),
+                card(c, 'Fasövergångar',
+                    `Smälter vid <strong>${mp} °C</strong> och kokar vid <strong>${bp} °C</strong>. Jämför med ${cs} (${fmt(cM, 0)} g/mol), som har ungefär samma molmassa (${low}: ${Ms} g/mol) men kokar redan vid ${fmtT(cbp)} °C. Vätebindningarna måste brytas när ${low} kokar.`)
+            ].join('');
+        }
+        if (s.family === 'alk') {
+            return en ? [
+                card(c, 'Non-polar carbon chain',
+                    `${Name} is an alkane with ${s.nC} carbons. Carbon and hydrogen have almost the same electronegativity, so the molecule is non-polar. (The hydrogens on the carbons are not shown.)`),
+                card(c, 'Van der Waals forces',
+                    'The electron clouds fluctuate and form temporary dipoles, which give weak attractions between the molecules. The longer the chain, the larger the contact area and the stronger the forces.'),
+                card(c, 'Phase transitions',
+                    `Melts at <strong>${mp} °C</strong> and boils at <strong>${bp} °C</strong>. The boiling point rises along the series pentane (36 °C) → hexane (69 °C) → heptane (98 °C) → octane (126 °C).`)
+            ].join('') : [
+                card(c, 'Opolär kolkedja',
+                    `${Name} är en alkan med ${s.nC} kol. Kol och väte har nästan samma elektronegativitet, så molekylen är opolär. (Väteatomerna på kolen visas inte.)`),
+                card(c, 'Van der Waals-bindningar',
+                    'Elektronmolnen fluktuerar och bildar tillfälliga dipoler, som ger svaga bindningar mellan molekylerna. Ju längre kedja, desto större kontaktyta och desto starkare bindningar.'),
+                card(c, 'Fasövergångar',
+                    `Smälter vid <strong>${mp} °C</strong> och kokar vid <strong>${bp} °C</strong>. Kokpunkten stiger i serien pentan (36 °C) → hexan (69 °C) → heptan (98 °C) → oktan (126 °C).`)
+            ].join('');
+        }
+        return en ? [
+            card(c, 'Polar C=O group',
+                'In acetone, oxygen is double-bonded to a carbon. Oxygen pulls the electrons towards itself: O gets &delta;⁻ and the carbon gets &delta;⁺. The molecule is polar but has no O–H.'),
+            card(c, 'Dipole–dipole forces',
+                'The positive end (C) of one molecule is attracted to the negative end (O) of a neighbour. Because acetone has no hydrogen bonded to oxygen, acetone molecules cannot form hydrogen bonds with each other.'),
+            card(c, 'Phase transitions',
+                `Melts at <strong>${mp} °C</strong> and boils at <strong>${bp} °C</strong>. Compare with molecules of almost the same molar mass: butane (58 g/mol, van der Waals) boils at −0.5 °C and 1-propanol (60 g/mol, hydrogen bonds) at 97 °C.`)
+        ].join('') : [
+            card(c, 'Polär C=O-grupp',
+                'I aceton sitter syret med en dubbelbindning till ett kol. Syret drar åt sig elektronerna: O får &delta;⁻ och kolet &delta;⁺. Molekylen är polär men saknar O–H.'),
+            card(c, 'Dipol–dipolbindningar',
+                'Den positiva änden (C) i en molekyl attraheras av den negativa änden (O) i grannen. Eftersom aceton saknar väte bundet till syre kan acetonmolekylerna inte bilda vätebindningar till varandra.'),
+            card(c, 'Fasövergångar',
+                `Smälter vid <strong>${mp} °C</strong> och kokar vid <strong>${bp} °C</strong>. Jämför med molekyler med nästan samma molmassa: butan (58 g/mol, van der Waals) kokar vid −0,5 °C och 1-propanol (60 g/mol, vätebindningar) vid 97 °C.`)
+        ].join('');
+    }
+
     // =====================================================================
     //  TILLSTÅND
     // =====================================================================
-    const N = 64;
+    // Antal molekyler: 64 på stora skärmar, färre i små kärl (mobil) så att kristallen ryms och gasen inte blir trång
+    const N_MAX = 64, N_MIN = 20;
+    let N = N_MAX;
+    function fitN() {
+        const cellA = cur.lattice === 'hex' ? cur.sx * cur.sy : Math.sqrt(3) * cur.b * 1.5 * cur.b / 2;   // yta per gitterplats
+        const fit = Math.floor(0.4 * vessel.w * vessel.h / cellA);
+        return Math.max(N_MIN, Math.min(N_MAX, fit));
+    }
     const LUNIT = 60;          // skala för latent värme: L = LUNIT·√(ΔH)  (komprimerad men rätt ordning)
     const HEAT_RATE = 0.04;    // värmeöverföring per steg per grad skillnad
     const HEAT_MAX = 0.6;      // max värmeflöde per steg (°C-ekvivalenter) vid "Normal"
-    const A_COND = 0.35;       // hastighetsskala i fast/flytande fas  (σ = A·√(T/M))
+    const T_MIN = -200, T_MAX = 150;   // termostatens skala (°C)
+    const A_COND = 0.6;        // hastighetsskala i flytande fas  (σ = A·√(T/M)). Högre = rörligare vätska
+    const LIQ_DAMP = 0.05;     // dämpning i vätskan (lägre = molekylerna glider längre innan de byter riktning)
+    const LIQ_ATTR = 0.5;      // andel av dragningen som verkar mellan vätskemolekyler (lägre = de fastnar inte på sin plats)
+    const COH = 0.07;          // sammanhållning: molekyler i vätskeytan med få grannar dras tillbaka mot vätskan
     const A_GAS = 0.9;         // hastighetsskala i gasfas
     const GRAVITY = 0.08;
     const ATTR_C = 0.012;      // attraktion ∝ kokpunkt(K)/M
     const ATTR_W = 16;         // attraktionens räckvidd utanför kontakt (px)
-    const VIB_AMP_MP = 1.6;    // vibrationsamplitud (px) vid smältpunkten
-    const VIB_EXP = 2;         // hur snabbt vibrationerna avtar under smältpunkten: amplitud ∝ (T/Tsmp)^VIB_EXP
+    const VIB_AMP_MP = 2.4;    // vibrationsamplitud (px) vid smältpunkten
+    const VIB_EXP = 4;         // hur snabbt vibrationerna avtar under smältpunkten: amplitud ∝ (T/Tsmp)^VIB_EXP
+                               // (kraftigt förstärkt: nästan stilla långt under smältpunkten, kraftig vibration strax innan)
     const K_SOLID = 0.08;      // fjäderkonstant mot gitterplatsen (lägre = lugnare, mjukare svängning)
+    // Rörelsens massa begränsas uppåt, så att tunga molekyler (t.ex. oktan) inte blir orimligt tröga på skärmen
+    const kinM = () => Math.min(cur.M, 60);
 
     let cur = SUBSTANCES.co2;
     let co2Pressure = '1atm';
@@ -735,7 +880,9 @@
     let heatPower = 1;
     let lastFlow = 0;
     let lastSegment = null;
-    const renderOptions = { bonds: true, charges: true };
+    const renderOptions = { dir: true, vdw: true, charges: true, points: false };   // dir = vätebindningar / dipol–dipol
+    // points: smält- och kokpunkt visas på termostatreglaget och i temperaturkurvan. Dolda från början,
+    // så att eleverna kan undersöka dem själva (virtuell labb). ?punkter=1 i adressen visar dem direkt.
 
     let canvas, ctx, width = 0, height = 0;
     let curveCanvas, cctx, cW = 0, cH = 0;
@@ -744,6 +891,29 @@
     let occ = [];              // occ[siteIndex] = molekylindex eller -1
     let molecules = [];
     let lockWait = 0;
+    let evapWait = 0;
+    // Is flyter: för vatten kan hela kristallen förskjutas i höjdled (iceY) och bärs då upp av vätskan under den
+    let iceY = 0, iceV = 0, iceBotPrev = Infinity, iceOrder = [], iceRank = [];
+    const floats = () => cur.id === 'h2o';
+    // Isens läge i gittrets egna koordinater: översta och understa raden, samt en "effektiv" underkant
+    // där en halvfull understa rad räknas till en del (så att kristallen lyfts gradvis, inte en hel rad i taget).
+    function iceGeometry() {
+        const lv = new Map();
+        for (const s of sites) { if (!lv.has(s.level)) lv.set(s.level, { y: s.y, n: 0, occ: 0 }); lv.get(s.level).n++; }
+        let top = Infinity, low = -Infinity, minL = Infinity;
+        for (let i = 0; i < sites.length; i++) {
+            if (occ[i] === -1) continue;
+            const s = sites[i];
+            lv.get(s.level).occ++;
+            top = Math.min(top, s.y); low = Math.max(low, s.y);
+            minL = Math.min(minL, s.level);
+        }
+        if (minL === Infinity) return null;
+        let lowEff = low;
+        const L = lv.get(minL), up = lv.get(minL + 1);
+        if (up && up.occ > 0) lowEff = up.y + (L.y - up.y) * Math.min(1, L.occ / L.n);
+        return { top, low, lowEff };
+    }   // paus (i steg) innan nästa molekyl får avdunsta under kokpunkten
     let frameCount = 0;
     const history = [];        // {T, sp}
     const mouse = { x: 0, y: 0, down: false, radius: 60 };
@@ -861,9 +1031,12 @@
         let nbThr;
 
         if (cur.lattice === 'hex') {
-            const { sx, sy } = cur;
-            const cols = Math.floor(span / sx) + 1;
-            const x0 = left + (span - (cols - 1) * sx) / 2;
+            const { sy } = cur;
+            const cols = Math.floor(span / cur.sx) + 1;
+            // Raderna sträcks ut så att de når ända fram till kärlets väggar. Annars blir det glipor vid
+            // väggen där vätskemolekyler fastnar och inte kan binda in.
+            const sx = cols > 1 ? span / (cols - 1) : cur.sx;
+            const x0 = left;
             for (let r = 0; sites.length < N; r++) {
                 const odd = r % 2 === 1;
                 const n = odd ? cols - 1 : cols;
@@ -904,13 +1077,22 @@
             }
         }
         occ = new Array(sites.length).fill(-1);
+        // Is fryser i en bestämd ordning uppifrån och ned: översta lagret (ett A- och ett B-skikt) från mitten och utåt,
+        // sedan nästa lager under. Då blir isen ett sammanhängande flak utan hål, och vätskan stannar under den.
+        const cxL = vessel.x + vessel.w / 2;
+        iceOrder = sites.map((st, i) => i).sort((a, b) =>
+            Math.floor(sites[b].level / 2) - Math.floor(sites[a].level / 2) ||
+            Math.abs(sites[a].x - cxL) - Math.abs(sites[b].x - cxL) ||
+            sites[b].level - sites[a].level);
+        iceRank = new Array(sites.length);
+        iceOrder.forEach((si, r) => { iceRank[si] = r; });
     }
 
     // =====================================================================
     //  MOLEKYLER
     // =====================================================================
-    function sigmaCond(TK) { return A_COND * Math.sqrt(TK / cur.M); }
-    function sigmaGas(TK) { return A_GAS * Math.sqrt(TK / cur.M); }
+    function sigmaCond(TK) { return A_COND * Math.sqrt(TK / Math.max(30, kinM())); }   // golv 30: små molekyler (vatten) skvätter inte iväg
+    function sigmaGas(TK) { return A_GAS * Math.sqrt(TK / kinM()); }
 
     function makeGasVelocity(m, TK, upward) {
         const s = sigmaGas(TK);
@@ -921,33 +1103,54 @@
 
     // Placera alla molekyler direkt enligt aktuell entalpi (vid start/byte av ämne)
     function placeAll() {
+        N = fitN();
         buildLattice();
         const st = HtoState(H);
         const TK = st.T + 273.15;
         const nS = Math.round(st.fs * N);
         const nG = Math.round(st.fg * N);
         const cx = vessel.x + vessel.w / 2;
-
-        const order = sites.map((s, i) => i)
+        const fl = floats();
+        // Kristallen byggs nerifrån och upp, utom is som byggs uppifrån och ned (den flyter på vätskan)
+        const order = fl ? iceOrder : sites.map((s, i) => i)
             .sort((a, b) => sites[a].level - sites[b].level || Math.abs(sites[a].x - cx) - Math.abs(sites[b].x - cx));
 
         molecules = [];
-        let topY = vessel.bottom;
-        for (let i = 0; i < nS; i++) {
-            const si = order[i], s = sites[si];
-            molecules.push({ x: s.x, y: s.y, vx: 0, vy: 0, angle: s.angle, av: 0, state: 'solid', site: si, ramp: 1 });
-            occ[si] = i;
-            topY = Math.min(topY, s.y);
-        }
-        // Vätska staplas ovanpå
+        iceY = 0; iceV = 0;
         const d = cur.r * 2 + 1;
         const left = vessel.x + cur.r + 3, right = vessel.x + vessel.w - cur.r - 3;
-        let lx = left, ly = (nS > 0 ? topY - d : vessel.bottom - cur.r - 3), row = 0;
         const nL = N - nS - nG;
-        for (let i = 0; i < nL; i++) {
-            molecules.push({ x: lx, y: ly, vx: 0, vy: 0, angle: Math.random() * 6.28, av: 0, state: 'liquid', site: -1, ramp: 0 });
-            lx += d;
-            if (lx > right) { row++; lx = left + (row % 2 ? d / 2 : 0); ly -= d * 0.87; }
+        const stackLiquid = (yStart) => {
+            let lx = left, ly = yStart, row = 0;
+            for (let i = 0; i < nL; i++) {
+                molecules.push({ x: lx, y: ly, vx: 0, vy: 0, angle: Math.random() * 6.28, av: 0, state: 'liquid', site: -1, ramp: 0 });
+                lx += d;
+                if (lx > right) { row++; lx = left + (row % 2 ? d / 2 : 0); ly -= d * 0.87; }
+            }
+            return molecules.length ? Math.min(...molecules.map(m => m.y)) : vessel.bottom;
+        };
+        const placeSolids = () => {
+            let topY = vessel.bottom, lowY = -Infinity;
+            for (let i = 0; i < nS; i++) { const sy = sites[order[i]].y; topY = Math.min(topY, sy); lowY = Math.max(lowY, sy); }
+            return { topY, lowY };
+        };
+        const addSolids = () => {
+            for (let i = 0; i < nS; i++) {
+                const si = order[i], s = sites[si];
+                occ[si] = molecules.length;
+                molecules.push({ x: s.x, y: s.y + iceY, vx: 0, vy: 0, angle: s.angle, av: 0, state: 'solid', site: si, ramp: 1 });
+            }
+        };
+        if (fl && nS > 0) {
+            // Vätskan ligger underst och isen flyter ovanpå
+            const { lowY } = placeSolids();
+            const liqTop = nL > 0 ? stackLiquid(vessel.bottom - cur.r - 3) : vessel.bottom - cur.r - 3 + d;
+            iceY = Math.min(vessel.bottom - cur.r - 3 - lowY, (liqTop - d) - lowY);
+            addSolids();
+        } else {
+            const { topY } = placeSolids();
+            addSolids();
+            stackLiquid(nS > 0 ? topY - d : vessel.bottom - cur.r - 3);
         }
         // Gas fördelas i hela kärlet
         for (let i = 0; i < nG; i++) {
@@ -976,11 +1179,31 @@
         return n;
     }
 
-    // Fäst en fri molekyl på en ledig plats som gränsar till kristallen (kärnbildning + tillväxt)
+    // Fäst en fri molekyl på en ledig plats som gränsar till kristallen (kärnbildning + tillväxt).
+    // Bara en molekyl som redan finns nära platsen får binda in, så att ingen molekyl åker genom kristallen.
+    // Finns ingen nära väntar kristallen (temperaturen står kvar på platån under tiden).
     function lockOne(nSolidNow) {
         const cx = vessel.x + vessel.w / 2;
+        const fl = floats();
         let cand = [];
         if (nSolidNow === 0) {
+            if (fl) {
+                // Is: kärnbildning i vätskeytan. Den översta vätskemolekylen nära mitten blir första platsen,
+                // och kristallen (översta gitterraden) läggs på den höjden.
+                let mi = -1, bs = Infinity;
+                molecules.forEach((m, i) => {
+                    if (m.state !== 'liquid') return;
+                    const sc = m.y + Math.abs(m.x - cx) * 0.5;
+                    if (sc < bs) { bs = sc; mi = i; }
+                });
+                if (mi < 0) return false;
+                const m = molecules[mi];
+                const best = iceOrder[0];
+                iceY = m.y - sites[best].y; iceV = 0;
+                m.state = 'solid'; m.site = best; m.ramp = 0; occ[best] = mi;
+                lockWait = 0;
+                return true;
+            }
             // Kärnbildning: lägsta platsen närmast mitten
             let best = -1, bd = Infinity;
             for (let i = 0; i < sites.length; i++) {
@@ -989,26 +1212,65 @@
                 if (dd < bd) { bd = dd; best = i; }
             }
             if (best >= 0) cand.push({ si: best, nbs: 0 });
+        } else if (fl) {
+            // Is: nästa lediga platser i frysordningen (alltid i isflakets underkant, där vätskan finns)
+            // (alla lediga platser i det lager som fryser just nu, så att närmaste vätskemolekyl kan binda in)
+            let layer = null;
+            for (let r = 0; r < Math.min(N, iceOrder.length); r++) {
+                const si = iceOrder[r];
+                if (occ[si] !== -1) continue;
+                const L = Math.floor(sites[si].level / 2);
+                if (layer === null) layer = L;
+                if (L !== layer) break;
+                cand.push({ si, nbs: solidNeighbours(si) });
+            }
         } else {
+            // Is växer bara i zonen ovanför vätskan (där den flytande isen ska ligga), ungefär en rad i taget.
+            // När den understa raden fylls lyfts kristallen (se physicsStep) och nästa rad hamnar i zonen.
+            const maxY = Infinity;
+            // Övriga ämnen växer underifrån: en plats kan bara fyllas när platserna under den är fyllda.
+            // Då kan kristallen aldrig växa över en vätskemolekyl och stänga in den.
+            const strict = lockWait < 360;
+            // Is växer på samma sätt men uppifrån och ned: en plats kan bara fyllas när platserna ovanför är fyllda.
+            // De två översta nivåerna (själva ytskiktet) får breda ut sig så länge det finns is alldeles intill.
+            let topL = -Infinity;
+            if (fl) for (const st of sites) topL = Math.max(topL, st.level);
+            const nearIce = (i) => {
+                for (let k = 0; k < sites.length; k++) if (occ[k] !== -1 && Math.hypot(sites[k].x - sites[i].x, sites[k].y - sites[i].y) < 2.1 * cur.b) return true;
+                return false;
+            };
             for (let i = 0; i < sites.length; i++) {
                 if (occ[i] !== -1) continue;
+                if (sites[i].y > maxY) continue;
                 const nbs = solidNeighbours(i);
+                if (fl && sites[i].level >= topL - 1) { if (nbs > 0 || nearIce(i)) cand.push({ si: i, nbs }); continue; }
+                if (strict && sites[i].nb.some(k => (fl ? sites[k].level > sites[i].level : sites[k].level < sites[i].level) && occ[k] === -1)) continue;
                 if (nbs > 0) cand.push({ si: i, nbs });
             }
-            cand.sort((a, b) => b.nbs - a.nbs || sites[a.si].level - sites[b.si].level);
-            cand = cand.slice(0, 8);
+        }
+        // Is: de sista vätskemolekylerna kan ligga en bit från nästa plats i frysordningen. Då får de i stället
+        // binda in på en ledig plats alldeles intill isen där de är, så att ingen molekyl åker genom flaket.
+        if (fl && nSolidNow > 0 && lockWait > 30) {
+            for (let i = 0; i < sites.length; i++) {
+                if (occ[i] === -1 && !cand.some(c => c.si === i)) { const nbs = solidNeighbours(i); if (nbs > 0) cand.push({ si: i, nbs }); }
+            }
         }
         if (cand.length === 0) return false;
 
-        const R = Math.min(500, 36 + lockWait * 5);
+        // Kort räckvidd. Om ingen molekyl finns nära på en stund (t.ex. instängd vid kärlväggen) växer den långsamt.
+        const minD = cur.r * 2;
+        const R = Math.min(500, minD + 12 + Math.max(0, lockWait - 45) * 0.4);
+        const Rgas = minD + 24;   // en gasmolekyl som passerar nära kristallen fastnar (deposition); gasen rör sig, så räckvidden växer inte
         let bestScore = Infinity, bestM = -1, bestS = -1;
         for (const c of cand) {
             const s = sites[c.si];
+            const sy = s.y + iceY;
+            if (!fl && sy > vessel.bottom - cur.r - 1) continue;
             for (let i = 0; i < molecules.length; i++) {
                 const m = molecules[i];
                 if (m.state === 'solid') continue;
-                const dist = Math.hypot(m.x - s.x, m.y - s.y);
-                if (dist > R) continue;
+                const dist = Math.hypot(m.x - s.x, m.y - sy);
+                if (dist > (m.state === 'gas' ? Rgas : R)) continue;
                 const score = dist + (m.state === 'gas' ? 25 : 0) - c.nbs * 6;
                 if (score < bestScore) { bestScore = score; bestM = i; bestS = c.si; }
             }
@@ -1031,14 +1293,17 @@
             const m = molecules[i];
             if (m.state !== 'solid') continue;
             const s = sites[m.site];
-            let nbs = 0, above = false;
+            // Vanligen smälter kristallen ovanifrån. Is smälter underifrån, där den möter vätskan.
+            const fl = floats() && !toGas;
+            let nbs = 0, covered = false;
             for (const k of s.nb) {
                 if (occ[k] !== -1) {
                     nbs++;
-                    if (sites[k].level > s.level) above = true;
+                    if (fl ? sites[k].level < s.level : sites[k].level > s.level) covered = true;
                 }
             }
-            const score = nbs + (above ? 10 : 0) - s.level * 0.01 + Math.random() * 0.5;
+            // (is smälter i omvänd frysordning: först de sist frusna längst ned i flaket)
+            const score = fl ? -iceRank[m.site] : nbs + (covered ? 10 : 0) - s.level * 0.01 + Math.random() * 0.5;
             if (score < bestScore) { bestScore = score; best = i; }
         }
         if (best < 0) return false;
@@ -1076,16 +1341,24 @@
         const nS = Math.round(st.fs * N);
         let nG = Math.round(st.fg * N);
         if (st.seg === 'liquid') {
-            // Avdunstning: några molekyler i gasfas ovanför vätskan även under kokpunkten
-            nG = Math.round(3 * Math.max(0, Math.min(1, (st.T - t.mp) / (t.bp - t.mp))));
+            // Avdunstning: först i den övre halvan av vätskeintervallet lämnar enstaka molekyler vätskan,
+            // högst två nära kokpunkten. De kondenserar igen när de träffar vätskan (se physicsStep).
+            const x = (st.T - t.mp) / (t.bp - t.mp);
+            nG = x < 0.5 ? 0 : x < 0.85 ? 1 : 2;
         }
+        if (evapWait > 0) evapWait--;
 
         for (let k = 0; k < 3; k++) {
             const c = counts();
             if (c.s > nS) { releaseOne(t.subl, TK); continue; }
             if (c.s < nS) { if (lockOne(c.s)) continue; }
             if (!t.subl && c.g > nG) { if (condenseOne()) continue; }
-            if (!t.subl && c.g < nG && c.l > 0) { if (evaporateOne(TK)) continue; }
+            if (!t.subl && c.g < nG && c.l > 0) {
+                // under kokpunkten avdunstar en molekyl i taget, med en paus efter varje kondensation
+                if (st.seg !== 'liquid' || evapWait <= 0) {
+                    if (evaporateOne(TK)) { if (st.seg === 'liquid') evapWait = 90; continue; }
+                }
+            }
             if (t.subl && c.l > 0) {
                 // Ingen vätska vid detta tryck: överbliven vätska blir gas eller fryser
                 if (nS > c.s) { if (lockOne(c.s)) continue; }
@@ -1109,13 +1382,15 @@
         const mpK = t.mp + 273.15;
         // Fast fas: vibrationens amplitud avtar stegvis med temperaturen (förstärkt skala så att
         // skillnaden syns tydligt). Hastighetsbruset väljs så att amplituden blir den önskade.
-        const vibF = Math.pow(Math.min(1.1, TK / mpK), VIB_EXP);
+        const vibF = Math.pow(Math.min(1, TK / mpK), VIB_EXP);
         const sS = VIB_AMP_MP * vibF * Math.sqrt(K_SOLID);
-        const attr = ATTR_C * ((t.subl ? t.mp : t.bp) + 273.15) / cur.M;
+        const attr = ATTR_C * ((t.subl ? t.mp : t.bp) + 273.15) / kinM();
         const minD = cur.r * 2;
         const n = molecules.length;
 
-        for (const m of molecules) m.lonely = true;
+        for (const m of molecules) { m.lonely = true; m.nb = 0; m.cond = false; m.touchS = false; m.deep = false; }
+        const evapPhase = st.seg === 'liquid';
+        const floatNow = floats();
         // Parvisa krafter
         for (let i = 0; i < n; i++) {
             const a = molecules[i];
@@ -1128,8 +1403,26 @@
                 if (d2 > maxR * maxR) continue;
                 const d = Math.sqrt(d2) || 0.001;
                 const nx = dx / d, ny = dy / d;
-                if (a.state !== 'gas' && b.state !== 'gas') { a.lonely = false; b.lonely = false; }
+                if (a.state !== 'gas' && b.state !== 'gas') { a.lonely = false; b.lonely = false; a.nb++; b.nb++; }
+                // En avdunstad molekyl som träffar vätskan kondenserar igen (under kokpunkten)
+                else if (evapPhase && d < minD + 4) {
+                    if (a.state === 'gas' && b.state === 'liquid') a.cond = true;
+                    else if (b.state === 'gas' && a.state === 'liquid') b.cond = true;
+                }
 
+                // Is: vätska som har hamnat inne i iskristallen (t.ex. instängd i ett av hålrummen)
+                // glider igenom och sjunker ner under isen i stället för att fastna
+                if (floatNow && d < minD && iceBotPrev < Infinity && ((a.state === 'solid' && b.state === 'liquid' && b.y < iceBotPrev - cur.r * 0.5) ||
+                    (b.state === 'solid' && a.state === 'liquid' && a.y < iceBotPrev - cur.r * 0.5))) continue;
+                // Vätska som har klämts in mellan molekylerna i kristallen ("jam") glider ut ur den
+                // i stället för att fastna: uppåt till kristallens yta (is: nedåt, under isen).
+                const ls = a.state === 'liquid' && b.state === 'solid' ? a : b.state === 'liquid' && a.state === 'solid' ? b : null;
+                if (ls) {
+                    if (d < minD) { ls.touchS = true; if (d < minD * 0.72) ls.deep = true; }
+                    if (ls.jam) continue;   // varken stöts bort av eller dras till kristallen medan den glider ut
+                } else if (a.jam || b.jam) {
+                    if (a.state === 'liquid' && b.state === 'liquid') continue;   // fastklämda molekyler glider fritt förbi annan vätska
+                }
                 if (d < minD) {
                     const invA = a.state === 'solid' ? 0.1 : 1;
                     const invB = b.state === 'solid' ? 0.1 : 1;
@@ -1137,6 +1430,9 @@
                     const overlap = (minD - d) * 0.8;
                     a.x -= nx * overlap * invA / sum; a.y -= ny * overlap * invA / sum;
                     b.x += nx * overlap * invB / sum; b.y += ny * overlap * invB / sum;
+                    // Vätska som en växande kristall tränger undan skjuts mot kristallens yta (uppåt; is: nedåt)
+                    // i stället för åt sidan, så att den inte kläms fast mellan molekylerna i kristallen.
+                    if (ls) ls.y += (floatNow ? 1 : -1) * overlap * 0.5;
                     const vn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
                     if (vn < 0) {
                         const e = (a.state === 'gas' || b.state === 'gas') ? 1.0 : 0.2;
@@ -1146,11 +1442,64 @@
                     }
                 } else if (a.state !== 'gas' && b.state !== 'gas') {
                     // Attraktion (intermolekylära bindningar) i fast/flytande fas
-                    const f = attr * (1 - (d - minD) / ATTR_W);
+                    // (svagare mellan två vätskemolekyler, så att de kan glida förbi varandra)
+                    const both = a.state === 'liquid' && b.state === 'liquid';
+                    const f = attr * (both ? LIQ_ATTR : 1) * (1 - (d - minD) / ATTR_W);
                     if (a.state === 'liquid') { a.vx += nx * f; a.vy += ny * f; }
                     if (b.state === 'liquid') { b.vx -= nx * f; b.vy -= ny * f; }
                 }
             }
+        }
+
+        // Is flyter: kristallen sjunker av sin tyngd tills vätskan under den bär upp den.
+        // När isen växer nedåt (eller smälter underifrån) puttas hela kristallen upp (eller sjunker).
+        let iceBot = Infinity;   // isens underkant (y), om den flyter
+        if (floatNow) {
+            const ice = iceGeometry();
+            if (ice) {
+                // Isen vilar på vätskan: isflakets underkant läggs vid vätskeytan (vätskans höjd räknas fram ur
+                // antalet vätskemolekyler). Kristallen glider mjukt dit. När isen växer nedåt (nya molekyler binder in
+                // underifrån) puttas hela kristallen uppåt, och när den smälter underifrån sjunker den.
+                const c = counts();
+                const hL = c.l > 0 ? Math.max(2 * cur.r + 2, c.l * (2 * cur.r + 1) ** 2 * 0.87 / (vessel.w - 6)) : 0;
+                const floor = vessel.bottom - cur.r - 3 - ice.low;        // kristallen vilar på botten
+                const ceil = vessel.y + cur.r + 3 - ice.top;               // och kan inte gå genom locket
+                let target = (vessel.bottom - cur.r - 3) - hL + 0.3 * cur.r - ice.lowEff;
+                target = Math.max(ceil, Math.min(floor, target));
+                iceY += Math.max(-0.6, Math.min(0.6, target - iceY));
+                iceY = Math.max(ceil, iceY);
+                iceBot = ice.lowEff + iceY;
+            }
+        } else iceY = 0;
+        iceBotPrev = iceBot;
+
+        for (const m of molecules) {
+            if (m.state !== 'liquid') { m.jam = false; continue; }
+            if (m.deep) m.jam = true; else if (!m.touchS) m.jam = false;
+        }
+
+        // Kondensation av gasmolekyler som träffat vätskan
+        for (const m of molecules) {
+            if (!m.cond) continue;
+            m.state = 'liquid'; m.vx *= 0.3; m.vy *= 0.3;
+            evapWait = 150 + Math.random() * 250;   // dröjer innan nästa molekyl avdunstar
+        }
+
+        // Sammanhållning (ytspänning): en vätskemolekyl med högst en granne dras mot närmaste molekyl
+        // i vätskan eller kristallen, så att lösryckta molekyler hittar tillbaka i stället för att fastna ovanför.
+        for (const m of molecules) {
+            if (m.state !== 'liquid' || m.nb > 1) continue;
+            let best = null, bd = Infinity;
+            for (const o of molecules) {
+                if (o === m || o.state === 'gas') continue;
+                const d2 = (o.x - m.x) ** 2 + (o.y - m.y) ** 2;
+                if (d2 < bd) { bd = d2; best = o; }
+            }
+            if (!best) continue;
+            const d = Math.sqrt(bd) || 1;
+            if (d < minD * 0.9) continue;
+            m.vx += (best.x - m.x) / d * COH;
+            m.vy += (best.y - m.y) / d * COH + COH * 0.5;
         }
 
         // Enskilda molekyler
@@ -1164,18 +1513,21 @@
                 m.ramp = Math.min(1, m.ramp + 1 / 40);
                 const k = K_SOLID * m.ramp * m.ramp + 0.004;
                 m.vx += (s.x - m.x) * k;
-                m.vy += (s.y - m.y) * k;
+                m.vy += (s.y + iceY - m.y) * k;
                 const g = 0.1 + 0.3 * (1 - m.ramp);
                 const c = Math.sqrt(1 - (1 - g) * (1 - g));
                 m.vx = m.vx * (1 - g) + sS * c * gauss();
                 m.vy = m.vy * (1 - g) + sS * c * gauss();
                 // Orienteringen glider mot gitterplatsens riktning och vickar mindre ju kallare det är
-                m.av += 0.05 * wrapAngle(s.angle - m.angle) + gauss() * 0.01 * vibF;
+                m.av += 0.05 * wrapAngle(s.angle - m.angle) + gauss() * 0.03 * vibF;
                 m.av *= 0.75;
             } else if (m.state === 'liquid') {
                 m.vy += GRAVITY;
+                // Vatten är tätare än is: vätska som hamnat i eller ovanpå isen sjunker ner under den
+                if (iceBot < Infinity && m.y < iceBot - cur.r * 0.5) m.vy += 0.35;
+                if (m.jam) { m.vy += floatNow && vessel.bottom - iceBot > 2.5 * cur.r ? 0.3 : -0.32; m.vx *= 0.85; }
                 // Ensam vätskemolekyl (t.ex. nyss kondenserad) faller fritt, annars viskös dämpning
-                const g = m.lonely ? 0.01 : 0.12, c = Math.sqrt(1 - (1 - g) * (1 - g));
+                const g = m.lonely ? 0.01 : LIQ_DAMP, c = Math.sqrt(1 - (1 - g) * (1 - g));
                 m.vx = m.vx * (1 - g) + sC * c * gauss();
                 m.vy = m.vy * (1 - g) + sC * c * gauss();
                 m.av = m.av * 0.92 + gauss() * 0.02 * sC;
@@ -1277,6 +1629,10 @@
     }
     const H2O_D = 9, H2O_A = 0.91;
     function hydrogens(m) {
+        if (cur.tpl) {
+            const T = cur.tpl;
+            return T.donor === undefined ? [] : [local(m, T.atoms[T.donor].x, T.atoms[T.donor].y)];
+        }
         if (cur.id === 'hcl') return [local(m, 9, 0)];
         if (cur.id === 'h2o') return [
             local(m, H2O_D * Math.cos(H2O_A), H2O_D * Math.sin(H2O_A)),
@@ -1285,20 +1641,33 @@
         return [];
     }
     function acceptor(m) {
+        if (cur.tpl) {
+            const T = cur.tpl;
+            return T.acc === undefined ? { x: m.x, y: m.y } : local(m, T.atoms[T.acc].x, T.atoms[T.acc].y);
+        }
         if (cur.id === 'hcl') return local(m, -5, 0);
         return { x: m.x, y: m.y };
     }
+    // Varifrån bindningens riktning räknas: O i O–H (alkoholer), O i C=O (aceton), annars mitten
+    function donorBase(m) {
+        if (cur.tpl && cur.tpl.base !== undefined) return local(m, cur.tpl.atoms[cur.tpl.base].x, cur.tpl.atoms[cur.tpl.base].y);
+        return { x: m.x, y: m.y };
+    }
 
+    // Alla bindningstyper som ämnet har ritas: van der Waals (grönt) och vätebindningar/dipol–dipol (blått/gult).
     function renderBonds() {
-        if (!renderOptions.bonds) return;
+        const BT = cur.bonds;
         ctx.save();
         const n = molecules.length;
 
-        if (cur.id === 'co2') {
-            // Riktningslösa van der Waals-bindningar
+        if (BT.includes('vdw') && renderOptions.vdw) {
+            // Riktningslösa van der Waals-bindningar. För kolkedjor dras linjen mellan de närmaste kolatomerna,
+            // och den blir tjockare ju längre kedjan är (större kontaktyta = starkare bindning).
             const maxD = cur.r * 2 + 8;
-            ctx.setLineDash([2, 4]);
-            ctx.lineWidth = 1.2;
+            const Cs = cur.tpl ? molecules.map(m => cur.tpl.atoms.filter(a => a.e === 'C').map(a => local(m, a.x, a.y))) : null;
+            const k = Cs ? 1.3 : 1;          // kolkedjornas linjer är korta, så de ritas lite tydligare
+            ctx.setLineDash(Cs ? [3, 3] : [2, 4]);
+            ctx.lineWidth = cur.nC ? 0.9 + 0.17 * cur.nC : 1.2;
             for (let i = 0; i < n; i++) {
                 const a = molecules[i];
                 if (a.state === 'gas') continue;
@@ -1308,15 +1677,25 @@
                     const d = Math.hypot(a.x - b.x, a.y - b.y);
                     if (d < maxD) {
                         const solid = a.state === 'solid' && b.state === 'solid';
-                        ctx.strokeStyle = `rgba(52, 211, 153, ${(solid ? 0.7 : 0.45) * Math.min(1, 1.4 - d / maxD)})`;
-                        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+                        ctx.strokeStyle = `rgba(52, 211, 153, ${k * (solid ? 0.7 : 0.45) * Math.min(1, 1.4 - d / maxD)})`;
+                        let p = a, q = b;
+                        if (Cs) {
+                            let bd = Infinity;
+                            for (const u of Cs[i]) for (const v of Cs[j]) {
+                                const dd = (u.x - v.x) ** 2 + (u.y - v.y) ** 2;
+                                if (dd < bd) { bd = dd; p = u; q = v; }
+                            }
+                        }
+                        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
                     }
                 }
             }
-        } else {
-            // Riktade bindningar: H (δ⁺) -> Cl/O (δ⁻) i grannmolekylen
-            const maxD = cur.id === 'h2o' ? 25 : 22;
-            const color = cur.id === 'h2o' ? '56, 189, 248' : '251, 191, 36';
+        }
+        if ((BT.includes('hb') || BT.includes('dd')) && renderOptions.dir) {
+            // Riktade bindningar: δ⁺ (H, eller C i C=O) -> δ⁻ (O/Cl) i grannmolekylen
+            const maxD = cur.id === 'h2o' ? 25 : cur.id === 'hcl' ? 22 : 24;
+            const color = bondType() === 'hb' ? '56, 189, 248' : '251, 191, 36';
+            const thr = cur.tpl ? 0.3 : 0.6;
             ctx.setLineDash([3, 3]);
             ctx.lineWidth = 2;
             const acc = molecules.map(acceptor);
@@ -1324,9 +1703,10 @@
                 const a = molecules[i];
                 if (a.state === 'gas') continue;
                 const hs = hydrogens(a);
+                const base = donorBase(a);
                 for (const h of hs) {
-                    const dirx = h.x - a.x, diry = h.y - a.y;
-                    const dl = Math.hypot(dirx, diry);
+                    const dirx = h.x - base.x, diry = h.y - base.y;
+                    const dl = Math.hypot(dirx, diry) || 1;
                     for (let j = 0; j < n; j++) {
                         if (j === i) continue;
                         const b = molecules[j];
@@ -1336,7 +1716,7 @@
                         const d = Math.hypot(ex, ey);
                         if (d > maxD || d < 1) continue;
                         const align = (dirx * ex + diry * ey) / (dl * d);
-                        if (align < 0.6) continue;
+                        if (align < thr) continue;
                         const solid = a.state === 'solid' && b.state === 'solid';
                         ctx.strokeStyle = `rgba(${color}, ${(solid ? 1 : 0.75) * Math.min(1, 1.6 - d / maxD)})`;
                         ctx.beginPath(); ctx.moveTo(h.x, h.y); ctx.lineTo(o.x, o.y); ctx.stroke();
@@ -1352,6 +1732,41 @@
         ctx.fillText(text, x, y);
     }
 
+    const ATOM_COL = { C: ['#475569', '#94a3b8'], O: ['#ef4444', '#dc2626'], H: ['#f8fafc', '#94a3b8'] };
+    function drawTemplate(m) {
+        const T = cur.tpl;
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = Math.max(1.4, 2.3 * T.s);
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        for (const [i, j] of T.bonds) { ctx.moveTo(T.atoms[i].x, T.atoms[i].y); ctx.lineTo(T.atoms[j].x, T.atoms[j].y); }
+        ctx.stroke();
+        if (T.dbl) {
+            // dubbelbindning C=O
+            const a = T.atoms[T.dbl[0]], b = T.atoms[T.dbl[1]];
+            const dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy) || 1, ox = -dy / l * 1.6 * T.s, oy = dx / l * 1.6 * T.s;
+            ctx.beginPath();
+            ctx.moveTo(a.x + ox, a.y + oy); ctx.lineTo(b.x + ox, b.y + oy);
+            ctx.moveTo(a.x - ox, a.y - oy); ctx.lineTo(b.x - ox, b.y - oy);
+            ctx.stroke();
+        }
+        for (const a of T.atoms) {
+            ctx.beginPath(); ctx.arc(a.x, a.y, a.rr, 0, Math.PI * 2);
+            ctx.fillStyle = ATOM_COL[a.e][0]; ctx.fill();
+            ctx.strokeStyle = ATOM_COL[a.e][1]; ctx.lineWidth = 1; ctx.stroke();
+        }
+        if (renderOptions.charges) {
+            ctx.rotate(-m.angle);
+            const c = Math.cos(m.angle), s = Math.sin(m.angle);
+            const rot = (a) => ({ x: a.x * c - a.y * s, y: a.x * s + a.y * c });
+            for (const a of T.atoms) {
+                if (a.e === 'O') { const p = rot(a); chargeLabel('δ⁻', p.x, p.y, '#fee2e2'); }
+                else if (a.e === 'H') { const p = rot(a); chargeLabel('δ⁺', p.x, p.y, '#0369a1'); }
+            }
+            if (T.dbl) { const p = rot(T.atoms[T.dbl[0]]); chargeLabel('δ⁺', p.x, p.y, '#7dd3fc'); }
+        }
+    }
+
     function drawMolecule(m) {
         ctx.save();
         ctx.translate(m.x, m.y);
@@ -1360,7 +1775,9 @@
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        if (cur.id === 'co2') {
+        if (cur.tpl) {
+            drawTemplate(m);
+        } else if (cur.id === 'co2') {
             const d = 10;
             ctx.strokeStyle = '#94a3b8';
             ctx.lineWidth = 2.5;
@@ -1431,7 +1848,7 @@
     function drawCurve() {
         if (!cctx || cW === 0) return;
         const pad = { l: 34, r: 6, t: 6, b: 6 };
-        const Tmin = -150, Tmax = 150;
+        const Tmin = T_MIN, Tmax = T_MAX;
         const gw = cW - pad.l - pad.r, gh = cH - pad.t - pad.b;
         const yOf = (T) => pad.t + (1 - (T - Tmin) / (Tmax - Tmin)) * gh;
 
@@ -1439,7 +1856,7 @@
         cctx.font = '9px monospace';
         cctx.textAlign = 'right';
         cctx.textBaseline = 'middle';
-        for (let T = -150; T <= 150; T += 50) {
+        for (let T = T_MIN; T <= T_MAX; T += 50) {
             const y = yOf(T);
             cctx.strokeStyle = T === 0 ? 'rgba(148,163,184,0.35)' : 'rgba(148,163,184,0.12)';
             cctx.beginPath(); cctx.moveTo(pad.l, y); cctx.lineTo(cW - pad.r, y); cctx.stroke();
@@ -1447,7 +1864,7 @@
             cctx.fillText(fmt(T), pad.l - 4, y);
         }
         const t = trans();
-        const lines = t.subl ? [[t.mp, '#a78bfa', tr('sublShort')]] : [[t.mp, '#22d3ee', tr('mpShort')], [t.bp, '#fbbf24', tr('bpShort')]];
+        const lines = !renderOptions.points ? [] : t.subl ? [[t.mp, '#a78bfa', tr('sublShort')]] : [[t.mp, '#22d3ee', tr('mpShort')], [t.bp, '#fbbf24', tr('bpShort')]];
         cctx.setLineDash([4, 3]);
         cctx.textAlign = 'left';
         for (const [T, col, lab] of lines) {
@@ -1483,7 +1900,6 @@
     // =====================================================================
     //  UI
     // =====================================================================
-    // [css-klass, pulserande?, text]
     // [css-klass, pulserande?]  (texten hämtas med tr('st_' + nyckel))
     const BADGES = {
         solid:   ['st-solid',  false], melt_up: ['st-melt', true], melt_dn: ['st-melt', true], melt_eq: ['st-melt', false],
@@ -1555,18 +1971,24 @@
 
     function updateMarkers() {
         const t = trans();
-        const pct = (T) => ((T + 150) / 300 * 100).toFixed(2) + '%';
+        const pct = (T) => ((T - T_MIN) / (T_MAX - T_MIN) * 100).toFixed(2) + '%';
         const tick = (T, label, color, low) =>
             `<div class="marker${low ? ' low' : ''}" style="left:${pct(T)};color:${color}"><i></i>${label}</div>`;
-        let html = `<div class="marker end" style="left:0">−150</div><div class="marker end" style="left:100%">+150</div>`;
-        const close = !t.subl && (t.bp - t.mp) < 40;
-        if (t.subl) {
+        // ändetiketterna döljs när en smält-/kokpunktsmarkering ligger så nära att texterna skulle krocka
+        const show = renderOptions.points;
+        const near = (E) => show && (Math.abs(t.mp - E) < 30 || Math.abs(t.bp - E) < 30);
+        let html = (near(T_MIN) ? '' : `<div class="marker end" style="left:0">${fmt(T_MIN)}</div>`) +
+                   (near(T_MAX) ? '' : `<div class="marker end" style="left:100%">+${T_MAX}</div>`);
+        const close = show && !t.subl && (t.bp - t.mp) < 40;
+        if (!show) {
+            // dolda: bara skalans ändar och 0 °C
+        } else if (t.subl) {
             html += tick(t.mp, `${tr('subl')} ${fmtT(t.mp)}°`, '#c4b5fd', false);
         } else {
             html += tick(t.mp, `${tr('mp')} ${fmtT(t.mp)}°`, '#67e8f9', false);
             html += tick(t.bp, `${tr('bp')} ${fmtT(t.bp)}°`, '#fcd34d', close);
         }
-        if (Math.abs(t.mp) > 12 && Math.abs(t.bp) > 12) html += tick(0, '0°', '#64748b', false);
+        if (!show || (Math.abs(t.mp) > 12 && Math.abs(t.bp) > 12)) html += tick(0, '0°', '#64748b', false);
         const el = document.getElementById('slider-markers');
         el.innerHTML = html;
         el.style.height = close ? '44px' : '30px';
@@ -1577,23 +1999,47 @@
             `<div class="lg"><span class="sw" style="background:${color};width:${size}px;height:${size}px;${border ? 'border:1px solid #94a3b8' : ''}"></span>${label}</div>`;
         const bond = (color, label) => `<div class="lg"><span class="sw-line" style="border-color:${color}"></span>${label}</div>`;
         const el = document.getElementById('molecule-legend');
-        if (cur.id === 'co2') el.innerHTML =
+        if (cur.tpl) {
+            const has = (e) => cur.tpl.atoms.some(a => a.e === e);
+            let html = atom('#475569', 12, tr('lgCchain'), true);
+            if (has('O')) html += atom('#ef4444', 12, tr('lgOgen'));
+            if (has('H')) html += atom('#f8fafc', 9, tr('lgHoh'), true);
+            if (cur.bonds.includes('hb')) html += bond('#38bdf8', tr('lgHbGen'));
+            if (cur.bonds.includes('dd')) html += bond('#fbbf24', tr('lgDdGen'));
+            if (cur.bonds.includes('vdw')) html += bond('#34d399', tr(cur.bonds.length > 1 ? 'lgVdwChain' : 'lgVdw'));
+            el.innerHTML = html;
+        } else if (cur.id === 'co2') el.innerHTML =
             atom('#334155', 14, tr('lgC'), true) + atom('#ef4444', 12, tr('lgO')) + bond('#34d399', tr('lgVdw'));
         else if (cur.id === 'hcl') el.innerHTML =
-            atom('#16a34a', 14, tr('lgCl')) + atom('#f8fafc', 10, tr('lgH')) + bond('#fbbf24', tr('lgDd'));
+            atom('#16a34a', 14, tr('lgCl')) + atom('#f8fafc', 10, tr('lgH')) + bond('#fbbf24', tr('lgDd')) + bond('#34d399', tr('lgVdw'));
         else el.innerHTML =
             atom('#ef4444', 14, tr('lgO')) + atom('#ffffff', 10, tr('lgH'), true) + bond('#38bdf8', tr('lgHb'));
+    }
+
+    function renderSubstSelect() {
+        const s = document.getElementById('subst-select');
+        s.innerHTML = SUBST_GROUPS.map(([g, ids]) =>
+            `<optgroup label="${tr(g)}">${ids.map(id => `<option value="${id}">${tr(id + 'Name')} (${SUBSTANCES[id].formula})</option>`).join('')}</optgroup>`
+        ).join('');
+        s.value = cur.id;
+        s.setAttribute('aria-label', tr('subject'));
+        const NAMES = { hb: 'gHb', dd: 'gDd', vdw: 'gVdw' };
+        document.getElementById('bond-chips').innerHTML = cur.bonds.map(b =>
+            `<span class="bond-chip" style="color:${BOND_COL[b]};border-color:${BOND_COL[b]}">${tr(NAMES[b])}</span>`
+        ).join('<span class="muted" style="align-self:center">+</span>');
+        // av/på för varje bindningstyp som ämnet har
+        const dir = cur.bonds.find(b => b === 'hb' || b === 'dd');
+        document.getElementById('lbl-dir').classList.toggle('hidden', !dir);
+        if (dir) document.getElementById('dir-name').textContent = tr(NAMES[dir]);
+        document.getElementById('lbl-vdw').classList.toggle('hidden', !cur.bonds.includes('vdw'));
     }
 
     // =====================================================================
     //  KONTROLLER
     // =====================================================================
     function setSubstance(key) {
+        if (!SUBSTANCES[key]) return;
         cur = SUBSTANCES[key];
-        ['co2', 'hcl', 'h2o'].forEach(k => {
-            const btn = document.getElementById(`btn-${k}`);
-            btn.classList.toggle('active', k === key);
-        });
         document.getElementById('co2-pressure-toggle').classList.toggle('hidden', key !== 'co2');
         refreshSubstanceTexts();
         // Starta i jämvikt med termostaten
@@ -1609,8 +2055,9 @@
         const t = trans();
         const liq = document.getElementById('btn-liquid-preset');
         liq.title = t.subl ? tr('liquidPresetTitle') : '';
-        document.getElementById('current-bond-name').textContent = tr('bond_' + cur.id);
+        document.getElementById('current-bond-name').textContent = tr('bond_' + (cur.tpl ? cur.bond : cur.id));
         document.getElementById('theory-content').innerHTML = cur.explanation();
+        renderSubstSelect();
         updateLegend();
         updateMarkers();
     }
@@ -1627,8 +2074,15 @@
         placeAll();
     }
 
+    function setShowPoints(on) {
+        renderOptions.points = !!on;
+        document.getElementById('show-points').checked = renderOptions.points;
+        updateMarkers();
+        drawCurve();
+    }
+
     function setSetpoint(v) {
-        setpoint = Math.max(-150, Math.min(150, v));
+        setpoint = Math.max(T_MIN, Math.min(T_MAX, v));
         updateSetpointUI();
     }
     function nudgeSetpoint(d) { setSetpoint(setpoint + d); }
@@ -1641,7 +2095,7 @@
         else if (target === 'solid') T = t.mp - 25;
         else if (target === 'liquid') T = (t.mp + t.bp) / 2;
         else T = t.bp + 25;
-        setSetpoint(Math.round(T));
+        setSetpoint(Math.round(Math.max(T_MIN, Math.min(T_MAX, T))));
     }
 
     function resetSimulation() {
@@ -1752,8 +2206,6 @@
     const stills = [];
     const MAX_STILLS = 12;
     let stillSeq = 0, viewId = null, compareId = null;
-
-
 
     function drawScene() {
         drawVessel();
@@ -2026,7 +2478,10 @@
         setupInteractions();
         lang = initialLang();
         updateSetpointUI();
-        setSubstance('co2');
+        const q = new URLSearchParams(location.search).get('amne');
+        if (new URLSearchParams(location.search).get('punkter') === '1') renderOptions.points = true;
+        document.getElementById('show-points').checked = renderOptions.points;
+        setSubstance(q && SUBSTANCES[q] ? q : 'co2');
         applyLang();
         requestAnimationFrame(loop);
     });
